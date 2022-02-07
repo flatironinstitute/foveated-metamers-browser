@@ -4,5 +4,58 @@
   </head>
   <body>
     <h1>Foveated Metamers Browser</h1>
+    <div id="select">
+      <div>
+        <label>
+          <select name="model_name"></select>
+          The model used to synthesize this image.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="downsampled"></select>
+          Whether the image was downsampled before synthesis.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="psychophysics_comparison"></select>
+          The experimental comparison(s) this image was used in.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="target_image"></select>
+          The natural image whose model representation this metamer was synthesized to match.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="scaling"></select>
+          The model's scaling parameter used to synthesize this image.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="initialization_type"></select>
+          The image used to initialize metamer synthesis fo this image.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="random_seed"></select>
+          The number used to set pytorch and numpy's random number generators for synthesis.
+        </label>
+      </div>
+      <div>
+        <label>
+          <select name="gamma_corrected"></select>
+          Whether this image has been gamma corrected (to 2.2?).
+        </label>
+      </div>
+    </div>
+    <div id="view">
+      <img id="img">
+    </div>
   </body>
 </html>
