@@ -1,0 +1,24 @@
+{
+  "name": "foveated-metamers-browser",
+  "version": "0.1.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "compile": "tsc",
+    "build-dev": "webpack --mode=development",
+    "build": "webpack --mode=production",
+    "serve": "webpack serve --mode=development --static ."
+  },
+  "author": "Flatiron Institute",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "compression-webpack-plugin": "^7.0.1",
+    "file-loader": "^6.2.0",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.2",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.4"
+  },
+  "dependencies": {}
+}
