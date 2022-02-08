@@ -59,7 +59,7 @@ function viewImage(img: null|Image) {
     Img.src = "";
 }
 
-function populate(changed: undefined|Field) {
+function populate(changed: Field=undefined) {
   const filter: {
     [Property in keyof Metadata]?: Set<string>;
   } = {};
@@ -107,14 +107,13 @@ function genericCompare(a: any, b: any) {
 
 function init(images: Image[]) {
   Images = images;
-  let f: Field;
   Selects = <any>{};
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
-  for (f of Fields) {
+  for (let f of Fields) {
     const name = namerow.insertCell(-1);
     name.innerText = f;
     name.title = Field_descriptions[f];
@@ -135,6 +134,8 @@ function init(images: Image[]) {
   Info = table.createTFoot().insertRow(-1).insertCell(-1);
   Info.colSpan = Fields.length;
   Img = <HTMLImageElement>document.getElementById("img");
+
+  populate();
 }
 
 function loadMetadata() {
