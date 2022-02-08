@@ -23,8 +23,9 @@ type FieldMap<T> = {
 
 var Images: Image[];
 var Selects: FieldMap<HTMLSelectElement>;
+var Tab: HTMLTableSectionElement;
+var Info: HTMLTableCellElement;
 var Img: HTMLImageElement;
-var Info: HTMLSpanElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -37,10 +38,12 @@ const Field_descriptions: FieldMap<string> = {
   gamma_corrected: "Whether this image has been gamma corrected (to 2.2?)."
 };
 
+const Fields: Field[] = Object.keys(Field_descriptions) as Field[];
+
 function fieldMap<T>(g: (field: Field) => T): FieldMap<T> {
   const r: FieldMap<T> = <any>{};
   let f: Field;
-  for (f in Field_descriptions)
+  for (f of Fields)
     r[f] = g(f);
   return r;
 }
@@ -49,29 +52,52 @@ function select(ev: Event) {
   populate(<Field>(<HTMLSelectElement>ev.target).name);
 }
 
+function viewImage(img: null|Image) {
+  if (img)
+    Img.src = Data_root+img.file;
+  else
+    Img.src = "";
+}
+
 function populate(changed: undefined|Field) {
-  const filter = fieldMap(f => {
+  const filter: {
+    [Property in keyof Metadata]?: Set<string>;
+  } = {};
+  for (let f of Fields) {
     const sel = Selects[f];
-    const opts = new Set();
+    const opts: Set<string> = new Set();
     for (let o of sel.options)
       if (o.selected)
         opts.add(o.value);
-    return opts.size ? opts : undefined;
-  });
+    if (opts.size)
+      filter[f] = opts;
+  }
 
   const match = Images.filter(i => {
     let f: Field;
     for (f in filter)
-      if (filter[f] && !filter[f].has(i[f].toString()))
+      if (!filter[f].has(i[f].toString()))
         return false;
     return true;
   });
-  if (match.length == 1) {
+
+  const matches = match.length;
+  match.splice(20);
+
+  Tab.innerHTML = "";
+  for (let i of match) {
+    const row = Tab.insertRow(-1);
+    for (let f of Fields)
+      row.insertCell(-1).innerText = i[f].toString();
+    row.onclick = () => viewImage(i);
+  }
+
+  if (matches == 1) {
     Info.textContent = "";
-    Img.src = Data_root+match[0].file;
+    viewImage(match[0]);
   } else {
-    Info.textContent = `${match.length} matching images`;
-    Img.src = "";
+    Info.textContent = `${matches} matching images`;
+    viewImage(null);
   }
 }
 
@@ -83,34 +109,32 @@ function init(images: Image[]) {
   Images = images;
   let f: Field;
   Selects = <any>{};
-  const seldiv = document.getElementById("filter");
-  var html = "";
-  for (f in Field_descriptions) {
-    html += `
-      <span id="filter-${f}">
-        <label title="${Field_descriptions[f]}">
-          ${f}
-          <select name="${f}" multiple></select>
-        </label>
-      </span>
-    `;
-  }
-  seldiv.innerHTML = html;
-
-  for (f in Field_descriptions) {
-    const sel = <HTMLSelectElement>document.getElementsByName(f)[0];
-    Selects[f] = sel;
+  const table = <HTMLTableElement>document.getElementById("table");
+  table.innerHTML = "";
+  const thead = table.createTHead();
+  const namerow = thead.insertRow(-1);
+  const selrow = thead.insertRow(-1);
+  for (f of Fields) {
+    const name = namerow.insertCell(-1);
+    name.innerText = f;
+    name.title = Field_descriptions[f];
+    const sel = document.createElement("select");
+    sel.name = f;
+    sel.multiple = true;
+    selrow.insertCell(-1).append(sel);
     sel.onchange = select;
-
     const vals = new Set();
     for (let i of Images)
       vals.add(i[f]);
     for (let v of Array.from(vals).sort(genericCompare))
       sel.options.add(new Option(v.toString(), <string>v));
+    Selects[f] = sel;
   }
 
+  Tab = table.createTBody();
+  Info = table.createTFoot().insertRow(-1).insertCell(-1);
+  Info.colSpan = Fields.length;
   Img = <HTMLImageElement>document.getElementById("img");
-  Info = <HTMLSpanElement>document.getElementById("info");
 }
 
 function loadMetadata() {
