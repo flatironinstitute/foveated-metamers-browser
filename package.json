@@ -13,6 +13,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "compression-webpack-plugin": "^7.0.1",
+    "copy-webpack-plugin": "^10.2.4",
     "css-loader": "^6.6.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
@@ -28,6 +29,5 @@
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.7.4",
     "webpack-merge": "^5.8.0"
-  },
-  "dependencies": {}
+  }
 }
