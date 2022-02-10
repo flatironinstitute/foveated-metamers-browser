@@ -110,7 +110,7 @@ function populate(changed: Field=undefined) {
     const row = Tab.insertRow(-1);
     row.classList.add('border', 'border-slate-200','p-4');
     for (let f of Fields)
-      let celly = row.insertCell(-1);
+      var celly = row.insertCell(-1);
       celly.innerText = i[f].toString();
       celly.classList.add('p-4', 'text-xs');
     row.onclick = () => viewImage(i);
