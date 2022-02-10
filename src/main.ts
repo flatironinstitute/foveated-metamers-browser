@@ -17,6 +17,11 @@ type Image = Metadata & {
   file: string;
 };
 
+type MetadataJson = {
+  metamers: Image[];
+  natural_images: Image[];
+};
+
 type FieldMap<T> = {
   [Property in keyof Metadata]: T;
 };
@@ -105,8 +110,8 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function init(images: Image[]) {
-  Images = images;
+function init(metadata: MetadataJson) {
+  Images = metadata.metamers;
   Selects = <any>{};
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
