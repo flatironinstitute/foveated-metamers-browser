@@ -161,6 +161,7 @@ function init(metadata: MetadataJson) {
   Tab = table.createTBody();
   Info = table.createTFoot().insertRow(-1).insertCell(-1);
   Info.colSpan = Fields.length;
+  Info.classList.add('p-4', 'text-pink');
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
