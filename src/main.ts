@@ -19,15 +19,22 @@ type Image = Metadata & {
   file: string;
 };
 
+type MetadataJson = {
+  metamers: Image[];
+  natural_images: Image[];
+};
+
 type FieldMap<T> = {
   [Property in keyof Metadata]: T;
 };
 
 var Images: Image[];
+var NaturalImages: Image[];
 var Selects: FieldMap<HTMLSelectElement>;
 var Tab: HTMLTableSectionElement;
 var Info: HTMLTableCellElement;
 var Img: HTMLImageElement;
+var NatImg: HTMLImageElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -54,11 +61,23 @@ function select(ev: Event) {
   populate(<Field>(<HTMLSelectElement>ev.target).name);
 }
 
-function viewImage(img: null|Image) {
-  if (img)
-    Img.src = Data_root+img.file;
-  else
-    Img.src = "";
+function getNaturalImage(img: Image): undefined|Image {
+  return NaturalImages.find(i => {
+    let f: Field;
+    for (f of Fields)
+      if (f in i && i[f] != img[f])
+        return false;
+    return true
+  });
+}
+
+function setImgSrc(img: HTMLImageElement, src: undefined|Image) {
+  img.src = src ? Data_root+src.file : "";
+}
+
+function viewImage(img: undefined|Image) {
+  setImgSrc(Img, img);
+  setImgSrc(NatImg, img && getNaturalImage(img));
 }
 
 function populate(changed: Field=undefined) {
@@ -107,8 +126,9 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function init(images: Image[]) {
-  Images = images;
+function init(metadata: MetadataJson) {
+  Images = metadata.metamers;
+  NaturalImages = metadata.natural_images;
   Selects = <any>{};
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
@@ -136,6 +156,7 @@ function init(images: Image[]) {
   Info = table.createTFoot().insertRow(-1).insertCell(-1);
   Info.colSpan = Fields.length;
   Img = <HTMLImageElement>document.getElementById("img");
+  NatImg = <HTMLImageElement>document.getElementById("natimg");
 
   populate();
 }
