@@ -108,7 +108,7 @@ function populate(changed: Field=undefined) {
   Tab.innerHTML = "";
   for (let i of match) {
     const row = Tab.insertRow(-1);
-    row.classList.add('border', 'border-slate-200','p-1');
+    row.classList.add('border', 'border-slate-200','p-4');
     for (let f of Fields)
       row.insertCell(-1).innerText = i[f].toString();
     row.onclick = () => viewImage(i);
@@ -119,6 +119,7 @@ function populate(changed: Field=undefined) {
     viewImage(match[0]);
   } else {
     Info.textContent = `${matches} matching images`;
+    Info.classList.add('border', 'font-semibold', 'border-slate-200','p-4');
     viewImage(null);
   }
 }
@@ -135,15 +136,17 @@ function init(metadata: MetadataJson) {
   table.innerHTML = "";
   const thead = table.createTHead();
   const namerow = thead.insertRow(-1);
-  namerow.classList.add('border', 'border-slate-300', 'p-1');
+  namerow.classList.add('border', 'border-slate-300', 'p-4');
   const selrow = thead.insertRow(-1);
-  selrow.classList.add('border', 'border-slate-300', 'p-1');
+  selrow.classList.add('border', 'border-slate-300', 'p-4');
   for (let f of Fields) {
     const name = namerow.insertCell(-1);
     name.innerText = f;
     name.title = Field_descriptions[f];
+    name.classList.add('p-4', 'font-semibold')
     const sel = document.createElement("select");
     sel.name = f;
+    sel.classList.add('p-4', 'font-semibold')
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
     sel.onchange = select;
