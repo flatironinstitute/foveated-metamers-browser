@@ -16,6 +16,11 @@ module.exports = {
         use: ["babel-loader"],
       },
       {
+        test: /\.s[ac]ss$/i,
+        include: path.resolve(__dirname, "src"),
+        use: ["style-loader", "css-loader", "postcss-loader"],
+      },
+      {
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         use: ["ts-loader"],

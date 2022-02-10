@@ -1,22 +1,33 @@
-<html>
+<html lang="en" class="dark js-focus-visible">
   <head>
-    <script type="text/javascript" src="bundle.js"></script>
-    <link rel="stylesheet" href="/assets/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="https://rsms.me/inter/inter.css"> -->
   </head>
-  <body class="bg-gray-900 text-white font-brandon transition-colors duration-100 ease-in-out">
-    <div class="container">
-      <h1 class="text-blue-400">Foveated Metamers Browser</h1>
-      <h4>Not Fauve-ated</h4>
-      <img src="./assets/matisse.jpg"/>
-      <label><i>Le bonheur de vivre</i>, Oil on canvas, 176.5 x 240.7 cm (69 1/2 x 94 3/4 in.). In the collection of the Barnes Foundation.</label>
-      <table id="table">
-      </table>
-      <div id="view">
-        <img id="img">
-      </div>
+  <body class="bg-slate-900 text-white font-brandon transition-colors duration-100 ease-in-out">
+    <div class="p-5 flex flex-col min-h-screen">
+      <main class="flex-grow flex flex-col justify-center">
+        <header class="min-h-[60vh] lg:pb-24 sm:pb-16 pb-8 lg:pt-16 sm:pt-8 pt-0 flex items-center justify-center">
+          <div class="max-w-[900px] mx-auto w-full flex sm:flex-row flex-col-reverse items-center">
+            <h1 class="font-din lg:text-7xl text-6xl uppercase">Foveated <br>Metamers<br> Browser</h1>
+          </div>
+          <div class="max-w-[550px] sm:mx-0 -mx-5">
+            <img alt="foveated metamers browser" src="assets/eye.svg" />
+          </div>
+        </header>
+        <img src="./assets/matisse.jpg"/>
+        <label><i>Le bonheur de vivre</i>, Oil on canvas, 176.5 x 240.7 cm (69 1/2 x 94 3/4 in.). In the collection of the Barnes Foundation.</label>
+        <table id="table">
+        </table>
+        <div id="view">
+          <img id="img">
+        </div>
+      </main>
     </div>
+    <script type="text/javascript" src="bundle.js"></script>
     <script>
       load();
     </script>
   </body>
 </html>
+ 

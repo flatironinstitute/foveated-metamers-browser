@@ -1,3 +1,5 @@
+import './style.css';
+
 const Data_root = "data/";
 
 interface Metadata {
