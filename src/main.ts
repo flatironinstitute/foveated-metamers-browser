@@ -35,6 +35,7 @@ var Tab: HTMLTableSectionElement;
 var Info: HTMLTableCellElement;
 var Img: HTMLImageElement;
 var NatImg: HTMLImageElement;
+var SelectedRow: undefined|HTMLTableRowElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -46,6 +47,7 @@ const Field_descriptions: FieldMap<string> = {
   random_seed: "The number used to set pytorch and numpy's random number generators for synthesis.",
   gamma_corrected: "Whether this image has been gamma corrected (to 2.2?)."
 };
+/* TODO: filter left-to-right */
 
 const Fields: Field[] = Object.keys(Field_descriptions) as Field[];
 
@@ -75,9 +77,13 @@ function setImgSrc(img: HTMLImageElement, src: undefined|Image) {
   img.src = src ? Data_root+src.file : "";
 }
 
-function viewImage(img: undefined|Image) {
+function selectImage(row: undefined|HTMLTableRowElement, img: undefined|Image) {
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
+  if (SelectedRow)
+    SelectedRow.classList.remove("bg-teal-100");
+  if (SelectedRow = row)
+    row.classList.add("bg-teal-100");
 }
 
 function populate(changed: Field=undefined) {
@@ -111,16 +117,17 @@ function populate(changed: Field=undefined) {
     row.classList.add('border', 'border-slate-200','p-4');
     for (let f of Fields)
       row.insertCell(-1).innerText = i[f].toString();
-    row.onclick = () => viewImage(i);
+    row.onclick = () => selectImage(row, i);
   }
+
+  SelectedRow = undefined;
+  selectImage(Tab.rows[0], match[0]);
 
   if (matches == 1) {
     Info.textContent = "";
-    viewImage(match[0]);
   } else {
     Info.textContent = `${matches} matching images`;
     Info.classList.add('border', 'font-semibold', 'border-slate-200','p-4');
-    viewImage(null);
   }
 }
 
