@@ -47,7 +47,6 @@ const Field_descriptions: FieldMap<string> = {
   random_seed: "The number used to set pytorch and numpy's random number generators for synthesis.",
   gamma_corrected: "Whether this image has been gamma corrected (to 2.2?)."
 };
-/* TODO: filter left-to-right */
 
 const Fields: Field[] = Object.keys(Field_descriptions) as Field[];
 
@@ -57,10 +56,6 @@ function fieldMap<T>(g: (field: Field) => T): FieldMap<T> {
   for (f of Fields)
     r[f] = g(f);
   return r;
-}
-
-function select(ev: Event) {
-  populate(<Field>(<HTMLSelectElement>ev.target).name);
 }
 
 function getNaturalImage(img: Image): undefined|Image {
@@ -86,36 +81,50 @@ function selectImage(row: undefined|HTMLTableRowElement, img: undefined|Image) {
     row.classList.add("bg-teal-100");
 }
 
-function populate(changed: Field=undefined) {
+function populate(retry: boolean=false): undefined {
   const filter: {
     [Property in keyof Metadata]?: Set<string>;
   } = {};
-  for (let f of Fields) {
+  let f: Field;
+  for (f of Fields) {
     const sel = Selects[f];
     const opts: Set<string> = new Set();
     for (let o of sel.options)
-      if (o.selected)
+      if (o.selected && !o.classList.contains('hidden'))
         opts.add(o.value);
     if (opts.size)
       filter[f] = opts;
   }
 
+  const vals = fieldMap(() => new Set());
   const match = Images.filter(i => {
-    let f: Field;
-    for (f in filter)
-      if (!filter[f].has(i[f].toString()))
+    for (let f of Fields) {
+      const s = i[f].toString();
+      vals[f].add(s);
+      if (filter[f] && !filter[f].has(s))
         return false;
+    }
     return true;
   });
 
-  const matches = match.length;
-  match.splice(20);
+  for (f in Selects) {
+    const sel = Selects[f];
+    for (let o of sel.options)
+      o.classList.toggle('hidden', !vals[f].has(o.value))
+  }
 
+  const matches = match.length;
+  if (matches == 0 && !retry)
+    /* should only happen when leftward selections have invalidated rightward ones; retry taking into account hidden options */
+    return populate(true);
+
+  /* only show first 20 matches */
+  match.splice(20);
   Tab.innerHTML = "";
   for (let i of match) {
     const row = Tab.insertRow(-1);
     row.classList.add('border', 'border-slate-200','p-4');
-    for (let f of Fields)
+    for (f of Fields)
       row.insertCell(-1).innerText = i[f].toString();
     row.onclick = () => selectImage(row, i);
   }
@@ -156,7 +165,7 @@ function init(metadata: MetadataJson) {
     sel.classList.add('p-4', 'font-semibold')
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
-    sel.onchange = select;
+    sel.onchange = () => populate();
     const vals = new Set();
     for (let i of Images)
       vals.add(i[f]);
