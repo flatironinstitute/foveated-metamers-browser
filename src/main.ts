@@ -159,10 +159,10 @@ function init(metadata: MetadataJson) {
     const name = namerow.insertCell(-1);
     name.innerText = f;
     name.title = Field_descriptions[f];
-    name.classList.add('p-4', 'font-semibold')
+    name.classList.add(f, 'p-4', 'font-semibold')
     const sel = document.createElement("select");
     sel.name = f;
-    sel.classList.add('p-4', 'font-semibold')
+    sel.classList.add(f, 'p-4', 'font-semibold')
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
     sel.onchange = () => populate();
