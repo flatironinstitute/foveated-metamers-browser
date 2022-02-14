@@ -1,3 +1,5 @@
+import './style.css';
+
 const Data_root = "data/";
 
 interface Metadata {
@@ -17,15 +19,23 @@ type Image = Metadata & {
   file: string;
 };
 
+type MetadataJson = {
+  metamers: Image[];
+  natural_images: Image[];
+};
+
 type FieldMap<T> = {
   [Property in keyof Metadata]: T;
 };
 
 var Images: Image[];
+var NaturalImages: Image[];
 var Selects: FieldMap<HTMLSelectElement>;
 var Tab: HTMLTableSectionElement;
 var Info: HTMLTableCellElement;
 var Img: HTMLImageElement;
+var NatImg: HTMLImageElement;
+var SelectedRow: undefined|HTMLTableRowElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -48,56 +58,85 @@ function fieldMap<T>(g: (field: Field) => T): FieldMap<T> {
   return r;
 }
 
-function select(ev: Event) {
-  populate(<Field>(<HTMLSelectElement>ev.target).name);
+function getNaturalImage(img: Image): undefined|Image {
+  return NaturalImages.find(i => {
+    let f: Field;
+    for (f of Fields)
+      if (f in i && i[f] != img[f])
+        return false;
+    return true
+  });
 }
 
-function viewImage(img: null|Image) {
-  if (img)
-    Img.src = Data_root+img.file;
-  else
-    Img.src = "";
+function setImgSrc(img: HTMLImageElement, src: undefined|Image) {
+  img.src = src ? Data_root+src.file : "";
 }
 
-function populate(changed: Field=undefined) {
+function selectImage(row: undefined|HTMLTableRowElement, img: undefined|Image) {
+  setImgSrc(Img, img);
+  setImgSrc(NatImg, img && getNaturalImage(img));
+  if (SelectedRow)
+    SelectedRow.classList.remove("bg-teal-100");
+  if (SelectedRow = row)
+    row.classList.add("bg-teal-100");
+}
+
+function populate(retry: boolean=false): undefined {
   const filter: {
     [Property in keyof Metadata]?: Set<string>;
   } = {};
-  for (let f of Fields) {
+  let f: Field;
+  for (f of Fields) {
     const sel = Selects[f];
     const opts: Set<string> = new Set();
     for (let o of sel.options)
-      if (o.selected)
+      if (o.selected && !o.classList.contains('hidden'))
         opts.add(o.value);
     if (opts.size)
       filter[f] = opts;
   }
 
+  const vals = fieldMap(() => new Set());
   const match = Images.filter(i => {
-    let f: Field;
-    for (f in filter)
-      if (!filter[f].has(i[f].toString()))
+    for (let f of Fields) {
+      const s = i[f].toString();
+      vals[f].add(s);
+      if (filter[f] && !filter[f].has(s))
         return false;
+    }
     return true;
   });
 
-  const matches = match.length;
-  match.splice(20);
+  for (f in Selects) {
+    const sel = Selects[f];
+    for (let o of sel.options)
+      o.classList.toggle('hidden', !vals[f].has(o.value))
+  }
 
+  const matches = match.length;
+  if (matches == 0 && !retry)
+    /* should only happen when leftward selections have invalidated rightward ones; retry taking into account hidden options */
+    return populate(true);
+
+  /* only show first 20 matches */
+  match.splice(20);
   Tab.innerHTML = "";
   for (let i of match) {
     const row = Tab.insertRow(-1);
-    for (let f of Fields)
+    row.classList.add('border', 'border-slate-200','p-4');
+    for (f of Fields)
       row.insertCell(-1).innerText = i[f].toString();
-    row.onclick = () => viewImage(i);
+    row.onclick = () => selectImage(row, i);
   }
+
+  SelectedRow = undefined;
+  selectImage(Tab.rows[0], match[0]);
 
   if (matches == 1) {
     Info.textContent = "";
-    viewImage(match[0]);
   } else {
     Info.textContent = `${matches} matching images`;
-    viewImage(null);
+    Info.classList.add('border', 'font-semibold', 'border-slate-200','p-4');
   }
 }
 
@@ -105,23 +144,28 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function init(images: Image[]) {
-  Images = images;
+function init(metadata: MetadataJson) {
+  Images = metadata.metamers;
+  NaturalImages = metadata.natural_images;
   Selects = <any>{};
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
   const namerow = thead.insertRow(-1);
+  namerow.classList.add('border', 'border-slate-300', 'p-4');
   const selrow = thead.insertRow(-1);
+  selrow.classList.add('border', 'border-slate-300', 'p-4');
   for (let f of Fields) {
     const name = namerow.insertCell(-1);
     name.innerText = f;
     name.title = Field_descriptions[f];
+    name.classList.add(f, 'p-4', 'font-semibold')
     const sel = document.createElement("select");
     sel.name = f;
+    sel.classList.add(f, 'p-4', 'font-semibold')
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
-    sel.onchange = select;
+    sel.onchange = () => populate();
     const vals = new Set();
     for (let i of Images)
       vals.add(i[f]);
@@ -133,7 +177,10 @@ function init(images: Image[]) {
   Tab = table.createTBody();
   Info = table.createTFoot().insertRow(-1).insertCell(-1);
   Info.colSpan = Fields.length;
+  Info.classList.add('p-4', 'text-pink');
+  console.log("🪅", Info);
   Img = <HTMLImageElement>document.getElementById("img");
+  NatImg = <HTMLImageElement>document.getElementById("natimg");
 
   populate();
 }
