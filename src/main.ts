@@ -116,6 +116,7 @@ function populate(changed: Field=undefined) {
 
   if (matches == 1) {
     Info.textContent = "";
+    Info.classList.add('border', 'font-semibold', 'border-slate-200','p-4');
     viewImage(match[0]);
   } else {
     Info.textContent = `${matches} matching images`;
@@ -162,7 +163,6 @@ function init(metadata: MetadataJson) {
   Info = table.createTFoot().insertRow(-1).insertCell(-1);
   Info.colSpan = Fields.length;
   Info.classList.add('p-4', 'text-pink');
-  console.log("🪅", Info);
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
