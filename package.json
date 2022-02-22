@@ -7,7 +7,8 @@
     "compile": "tsc",
     "build-dev": "webpack --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
-    "serve": "webpack serve --static . --config webpack.dev.js"
+    "serve": "webpack serve --static . --config webpack.dev.js",
+    "start": "npm run serve"
   },
   "author": "Flatiron Institute",
   "license": "Apache-2.0",

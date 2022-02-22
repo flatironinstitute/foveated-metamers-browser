@@ -11,19 +11,11 @@ module.exports = {
   module: {
     rules: [
       {
-<<<<<<< HEAD
-=======
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: ["babel-loader"],
-      },
-      {
         test: /\.css$/i,
         include: path.resolve(__dirname, "src"),
         use: ["style-loader", "css-loader", "postcss-loader"],
       },
       {
->>>>>>> da40f3317dd5a608c9ce005d8b0978c6d7179e0b
         test: /\.(ts|tsx)$/,
         exclude: /node_modules/,
         use: ["ts-loader"],
