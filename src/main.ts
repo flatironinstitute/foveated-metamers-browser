@@ -154,18 +154,18 @@ function init(metadata: MetadataJson) {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
+  thead.classList.add('bg-slate-50')
   const namerow = thead.insertRow(-1);
-  namerow.classList.add('border', 'border-slate-300', 'p-4');
   const selrow = thead.insertRow(-1);
-  selrow.classList.add('border', 'border-slate-300', 'p-4');
+  selrow.classList.add('border', 'border-red-300', 'p-4');
   for (let f of Fields) {
     const name = namerow.insertCell(-1);
     name.innerText = f;
     name.title = Field_descriptions[f];
-    name.classList.add(f, 'p-4', 'font-semibold')
+    name.classList.add(f, 'px-6', 'py-3', 'text-left', 'text-xs', 'font-medium', 'text-slate-500', 'uppercase', 'tracking-wider')
     const sel = document.createElement("select");
     sel.name = f;
-    sel.classList.add(f, 'p-4', 'font-semibold')
+    sel.classList.add(f, 'px-6', 'py-3', 'text-left', 'text-xs', 'text-red-500', 'uppercase', 'tracking-wider')
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
     sel.onchange = () => populate();
@@ -178,6 +178,7 @@ function init(metadata: MetadataJson) {
   }
 
   Tab = table.createTBody();
+  Tab.classList.add('bg-white', 'divide-y', 'divide-slate-200')
   Info = table.createTFoot().insertRow(-1).insertCell(-1);
   Info.colSpan = Fields.length;
   Info.classList.add('p-4', 'text-pink');
@@ -190,8 +191,8 @@ function init(metadata: MetadataJson) {
 async function loadMetadata() {
   const res = await fetch(Data_root+"metadata.json"); 
   if (res.ok) {
-    const body = await res.json();
-    console.table(body);
+    const body: MetadataJson = await res.json();
+    init(body);
   } else {
     errorMsg.textContent = "Unable to retrieve metadata."
     errorContainer.classList.remove('hidden');
