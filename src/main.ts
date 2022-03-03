@@ -190,9 +190,8 @@ function init(metadata: MetadataJson) {
 async function loadMetadata() {
   const res = await fetch(Data_root+"metadata.json"); 
   if (res.ok) {
-    console.log(res);
-    let metadata = res.json();
-    console.table(metadata);
+    const body = await res.json();
+    console.table(body);
   } else {
     errorMsg.textContent = "Unable to retrieve metadata."
     errorContainer.classList.remove('hidden');
