@@ -190,6 +190,7 @@ function init(metadata: MetadataJson) {
 async function loadMetadata() {
   const res = await fetch(Data_root+"metadata.json"); 
   if (res.ok) {
+    console.log(res);
     let metadata = res.json();
     console.table(metadata);
   } else {
