@@ -50,6 +50,9 @@ const Field_descriptions: FieldMap<string> = {
 
 const Fields: Field[] = Object.keys(Field_descriptions) as Field[];
 
+const errorContainer: HTMLElement = document.getElementById('errcon');
+const errorMsg: HTMLElement = document.getElementById('errmsg');
+
 function fieldMap<T>(g: (field: Field) => T): FieldMap<T> {
   const r: FieldMap<T> = <any>{};
   let f: Field;
@@ -184,10 +187,19 @@ function init(metadata: MetadataJson) {
   populate();
 }
 
-function loadMetadata() {
-  fetch(Data_root+"metadata.json")
-    .then(res => res.json())
-    .then(init);
+async function loadMetadata() {
+  const res = await fetch(Data_root+"metadata.json"); 
+  if (res.ok) {
+    let metadata = res.json();
+    console.table(metadata);
+  } else {
+    errorMsg.textContent = "Unable to retrieve metadata."
+    errorContainer.classList.remove('hidden');
+    console.error("Error retrieving metadata", res);
+  }
 }
 
-(<any>window).load = loadMetadata;
+document.addEventListener("DOMContentLoaded", function(event) { 
+ console.log('we ready baby 🎸');
+ loadMetadata();
+});
