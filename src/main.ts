@@ -84,7 +84,7 @@ function selectImage(row: undefined|HTMLTableRowElement, img: undefined|Image) {
     row.classList.add("bg-teal-100");
 }
 
-function populate(retry: boolean=false): undefined {
+function populateTable(retry: boolean=false): undefined {
   const filter: {
     [Property in keyof Metadata]?: Set<string>;
   } = {};
@@ -119,16 +119,20 @@ function populate(retry: boolean=false): undefined {
   const matches = match.length;
   if (matches == 0 && !retry)
     /* should only happen when leftward selections have invalidated rightward ones; retry taking into account hidden options */
-    return populate(true);
+    return populateTable(true);
 
   /* only show first 20 matches */
+  // Todo: Add paginate?
   match.splice(20);
   Tab.innerHTML = "";
   for (let i of match) {
     const row = Tab.insertRow(-1);
     row.classList.add('border', 'border-slate-200','p-4');
-    for (f of Fields)
-      row.insertCell(-1).innerText = i[f].toString();
+    for (f of Fields) {
+      let td = row.insertCell(-1);
+      td.innerText = i[f].toString();
+      td.classList.add('px-6', 'py-4', 'whitespace-nowrap', 'text-sm', 'text-gray-500');
+    }
     row.onclick = () => selectImage(row, i);
   }
 
@@ -147,28 +151,30 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function init(metadata: MetadataJson) {
-  Images = metadata.metamers;
-  NaturalImages = metadata.natural_images;
-  Selects = <any>{};
+function buildTable(){
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
   thead.classList.add('bg-slate-50')
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
+  // TODO: Replace with other key color
   selrow.classList.add('border', 'border-red-300', 'p-4');
+
   for (let f of Fields) {
+    // Title row
     const name = namerow.insertCell(-1);
     name.innerText = f;
     name.title = Field_descriptions[f];
-    name.classList.add(f, 'px-6', 'py-3', 'text-left', 'text-xs', 'font-medium', 'text-slate-500', 'uppercase', 'tracking-wider')
+    name.classList.add(f, 'px-6', 'py-3', 'text-left', 'text-xs', 'font-medium', 'text-slate-500', 'uppercase', 'tracking-wider');
+
+    // Selection Row
     const sel = document.createElement("select");
     sel.name = f;
     sel.classList.add(f, 'px-6', 'py-3', 'text-left', 'text-xs', 'text-red-500', 'uppercase', 'tracking-wider')
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
-    sel.onchange = () => populate();
+    sel.onchange = () => populateTable();
     const vals = new Set();
     for (let i of Images)
       vals.add(i[f]);
@@ -177,15 +183,29 @@ function init(metadata: MetadataJson) {
     Selects[f] = sel;
   }
 
+  // Create Table Body 
   Tab = table.createTBody();
-  Tab.classList.add('bg-white', 'divide-y', 'divide-slate-200')
-  Info = table.createTFoot().insertRow(-1).insertCell(-1);
-  Info.colSpan = Fields.length;
-  Info.classList.add('p-4', 'text-pink');
+  Tab.classList.add('bg-white', 'divide-y', 'divide-slate-200');
+
+  // Add Footer
+  const foot = table.createTFoot();
+  const footrow = foot.insertRow(-1);
+  footrow.classList.add('border-b', 'border-slate-200', 'bg-slate-50');
+  const footcel = footrow.insertCell(-1);
+  footcel.classList.add('px-6', 'py-3', 'text-left', 'text-xs', 'font-bold', 'text-slate-500', 'uppercase', 'tracking-wider');
+  footcel.colSpan = Fields.length;
+
+  populateTable();
+}
+
+function init(metadata: MetadataJson) {
+  Images = metadata.metamers;
+  NaturalImages = metadata.natural_images;
+  Selects = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
-  populate();
+  buildTable();
 }
 
 async function loadMetadata() {
