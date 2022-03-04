@@ -8,7 +8,7 @@ Browse foveated metamers in the Flatiron Institute.
 
 1.  **Start developing.**
 
-    Navigate to the Flatiron cluster, clone this repo in your `mnt/home/<username>`, and start it up. If you are not on the FI network, fire up that VPN. 
+    Navigate to the Flatiron cluster, clone this repo in your `mnt/home/<username>`, and start it up. If you are not on the FI network, fire up that VPN.
 
     ```zsh
     npm run serve
@@ -22,9 +22,8 @@ Browse foveated metamers in the Flatiron Institute.
 
 1. Make a production build
 
-    ```zsh
-    npm run serve
-    ```
+   ```zsh
+   npm run serve
+   ```
 
 ## Notes
-

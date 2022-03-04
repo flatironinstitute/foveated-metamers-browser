@@ -1,0 +1,156 @@
+<html lang="en" class="dark js-focus-visible">
+  <head>
+    <meta charset="UTF-8">
+    <title>Foveated Metamers Browser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <!-- Section -->
+    <section class="bg-white">
+      <div class="relative overflow-hidden">
+        <!-- Dot pattern -->
+        <div class="absolute inset-y-0 h-full w-full" aria-hidden="true">
+          <div class="relative h-full">
+            <svg class="absolute right-full transform translate-y-1/3 translate-x-1/4 md:translate-y-1/2 sm:translate-x-1/2 lg:translate-x-full" width="404" height="784" fill="none" viewBox="0 0 404 784">
+              o
+              <defs>
+                <pattern id="e229dbec-10e9-49ee-8ec3-0286ca089edf" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <rect x="0" y="0" width="4" height="4" class="text-slate-200" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="404" height="784" fill="url(#e229dbec-10e9-49ee-8ec3-0286ca089edf)" />
+            </svg>
+            <svg class="absolute left-full transform -translate-y-3/4 -translate-x-1/4 sm:-translate-x-1/2 md:-translate-y-1/2 lg:-translate-x-3/4" width="404" height="784" fill="none" viewBox="0 0 404 784">
+              <defs>
+                <pattern id="d2a68204-c383-44b1-b99f-42ccff4e5365" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <rect x="0" y="0" width="4" height="4" class="text-slate-200" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="404" height="784" fill="url(#d2a68204-c383-44b1-b99f-42ccff4e5365)" />
+            </svg>
+          </div>
+        </div>
+        <div class="relative pt-6 pb-16 sm:pb-24">
+          <div class="mt-16 mx-auto max-w-7xl px-4 sm:mt-24 sm:px-6">
+            <div class="text-center">
+              <h1 class="text-4xl tracking-tight font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
+                <span class="block">Foveated Metamers</span>
+                <span class="block text-indigo-600">Browser</span>
+              </h1>
+              <p class="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat fugiat aliqua.</p>
+              <p class="mt-3 max-w-md mx-auto text-base text-slate-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                Nam eget laoreet massa, a scelerisque sapien or <a href="#" class="text-indigo-600 hover:text-indigo-900"> link to a thing. </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+      <!-- Error box -->
+      <section id="errcon" class="py-8 xl:py-36 px-4 sm:px-6 lg:px-8 bg-slate-50 overflow-hidden hidden">
+        <div class="bg-red-50 border-l-4 border-red-400 p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <!-- Heroicon name: solid/x-circle -->
+            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700">
+              <b>Error</b>
+              <span id="errmsg" class="px-2">Unknown error.</span>
+              <a href="mailto:scicomp@flatironinstitute.org" class="font-medium underline text-red-700 hover:text-red-600"> Contact the site administrator</a>.
+            </p>
+          </div>
+        </div>
+      </div>  
+    </section>
+    <!-- Section Table-->
+    <section>
+      <div class="relative">
+        <div class="absolute inset-0 flex flex-col" aria-hidden="true">
+          <div class="flex-1"></div>
+          <div class="flex-1 w-full bg-slate-800"></div>
+        </div>
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6">
+          <div class="relative flex flex-col">
+            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                <div class="shadow overflow-hidden border-b border-slate-200 sm:rounded-lg">
+                  <table id="table" class="min-w-full divide-y divide-slate-200">
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Section Images -->
+    <section class="bg-slate-800">
+      <div class="max-w-screen-2xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div class="mt-8 grid grid-cols-2 gap-8 md:grid-cols-2 lg:grid-cols-2">
+          <div class="col-span-1 flex flex-col justify-center sm:col-span-2 md:col-span-2 lg:col-span-1">
+            <img class="py-2" id="img" alt="selected image" src="./assets/matisse.jpg">
+            <h2 class="text-center text-slate-400 text-sm font-semibold uppercase tracking-wide">Selected Image</h2>
+          </div>
+          <div class="col-span-1 flex flex-col justify-center md:col-span-2 lg:col-span-1">
+            <img class="py-2" id="natimg" alt="natural image" src="./assets/matisse.jpg">
+            <h2 class="text-center text-slate-400 text-sm font-semibold uppercase tracking-wide">Natural Image</h2>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- About-->
+    <section class="py-16 xl:py-36 px-4 sm:px-6 lg:px-8 bg-slate-50 overflow-hidden">
+      <div class="max-w-max lg:max-w-7xl mx-auto">
+        <div class="relative z-10 mb-8 md:mb-2 md:px-6">
+          <div class="text-base max-w-prose lg:max-w-none">
+            <h2 class="leading-6 text-indigo-600 font-semibold tracking-wide uppercase">About</h2>
+            <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-slate-900 sm:text-4xl">A space for info on the project</p>
+          </div>
+        </div>
+        <div class="relative">
+          <svg class="hidden md:block absolute top-0 right-0 -mt-20 -mr-20" width="404" height="384" fill="none" viewBox="0 0 404 384" aria-hidden="true">
+            <defs>
+              <pattern id="95e8f2de-6d30-4b7e-8159-f791729db21b" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect x="0" y="0" width="4" height="4" class="text-slate-200" fill="currentColor" />
+              </pattern>
+            </defs>
+            <rect width="404" height="384" fill="url(#95e8f2de-6d30-4b7e-8159-f791729db21b)" />
+          </svg>
+          <svg class="hidden md:block absolute bottom-0 left-0 -mb-20 -ml-20" width="404" height="384" fill="none" viewBox="0 0 404 384" aria-hidden="true">
+            <defs>
+              <pattern id="7a00fe67-0343-4a3c-8e81-c145097a3ce0" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect x="0" y="0" width="4" height="4" class="text-slate-200" fill="currentColor" />
+              </pattern>
+            </defs>
+            <rect width="404" height="384" fill="url(#7a00fe67-0343-4a3c-8e81-c145097a3ce0)" />
+          </svg>
+          <div class="relative md:bg-white md:p-6">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-6">
+              <div class="prose prose-indigo prose-lg text-slate-500 lg:max-w-none">
+                <p>Ultrices ultricies a in odio consequat egestas rutrum. Ut vitae aliquam in ipsum. Duis nullam placerat cursus risus ultrices nisi, vitae tellus in. Qui non fugiat aut minus aut rerum. Perspiciatis iusto mollitia iste minima soluta id.</p>
+                <p>Erat pellentesque dictumst ligula porttitor risus eget et eget. Ultricies tellus felis id dignissim eget. Est augue <a href="#">maecenas</a> risus nulla ultrices congue nunc tortor. Eu leo risus porta integer suspendisse sed sit ligula elit.</p>
+                <ol role="list">
+                  <li>Integer varius imperdiet sed interdum felis cras in nec nunc.</li>
+                  <li>Quam malesuada odio ut sit egestas. Elementum at porta vitae.</li>
+                </ol>
+                <p>Amet, eu nulla id molestie quis tortor. Auctor erat justo, sed pellentesque scelerisque interdum blandit lectus. Nec viverra amet ac facilisis vestibulum. Vestibulum purus nibh ac ultricies congue.</p>
+              </div>
+              <div class="mt-6 prose prose-indigo prose-lg text-slate-500 lg:mt-0">
+                <p>Erat pellentesque dictumst ligula porttitor risus eget et eget. Ultricies tellus felis id dignissim eget. Est augue maecenas risus nulla ultrices congue nunc tortor.</p>
+                <p>Eu leo risus porta integer suspendisse sed sit ligula elit. Elit egestas lacinia sagittis pellentesque neque dignissim vulputate sodales. Diam sed mauris felis risus, ultricies mauris netus tincidunt. Mauris sit eu ac tellus nibh non eget sed accumsan. Viverra ac sed venenatis pulvinar elit. Cras diam quis tincidunt lectus. Non mi vitae, scelerisque felis nisi, netus amet nisl.</p>
+                <p>Eu eu mauris bibendum scelerisque adipiscing et. Justo, elementum consectetur morbi eros, posuere ipsum tortor. Eget cursus massa sed velit feugiat sed ut. Faucibus eros mauris morbi aliquam nullam. Scelerisque elementum sit magna ullamcorper dignissim pretium.</p>
+              </div>
+            </div>
+            <div class="mt-8 inline-flex rounded-md shadow">
+              <a href="#" class="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"> Link to publication? </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <script type="text/javascript" src="bundle.js"></script>
+  </body>
+</html>
