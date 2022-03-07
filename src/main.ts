@@ -82,8 +82,12 @@ function selectImage(
 ) {
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
-  if (SelectedRow) SelectedRow.classList.remove("bg-teal-100");
-  if ((SelectedRow = row)) row.classList.add("bg-teal-100");
+  if (SelectedRow) {
+    SelectedRow.classList.remove("bg-teal-100");
+  }
+  if (SelectedRow == row) {
+    row.classList.add("bg-teal-100");
+  }
 }
 
 function populateTable(retry = false): undefined {
@@ -124,18 +128,18 @@ function populateTable(retry = false): undefined {
   }
 
   /* only show first 20 matches */
-  // Todo: Add paginate?
+  // TODO: Add paginate?
   match.splice(20);
   Tab.innerHTML = "";
   for (const i of match) {
     const row = Tab.insertRow(-1);
-    row.classList.add("border", "border-slate-200", "p-4");
+    row.classList.add("border", "border-gray-200", "p-4");
     for (f of Fields) {
       const td = row.insertCell(-1);
       td.innerText = i[f].toString();
       td.classList.add(
-        "px-6",
-        "py-4",
+        "px-4",
+        "py-2",
         "whitespace-nowrap",
         "text-sm",
         "text-gray-500"
@@ -151,7 +155,7 @@ function populateTable(retry = false): undefined {
     Info.textContent = "";
   } else {
     Info.textContent = `${matches} matching images`;
-    Info.classList.add("border", "font-semibold", "border-slate-200", "p-4");
+    Info.classList.add("border", "font-semibold", "border-gray-200", "p-4");
   }
 }
 
@@ -163,11 +167,11 @@ function buildTable() {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
-  thead.classList.add("bg-cyan-50");
+  thead.classList.add("bg-cyan-700");
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
   // TODO: Replace with other key color
-  selrow.classList.add("border", "border-cyan-300", "p-4");
+  selrow.classList.add("border", "p-4");
 
   for (const f of Fields) {
     // Title row
@@ -176,12 +180,12 @@ function buildTable() {
     name.title = Field_descriptions[f];
     name.classList.add(
       f,
-      "px-6",
-      "py-3",
+      "px-4",
+      "py-2",
       "text-left",
       "text-xs",
       "font-medium",
-      "text-slate-900",
+      "text-white",
       "uppercase",
       "tracking-wider"
     );
@@ -191,11 +195,11 @@ function buildTable() {
     sel.name = f;
     sel.classList.add(
       f,
-      "px-6",
-      "py-3",
+      "px-4",
+      "py-2",
       "text-left",
       "text-xs",
-      "text-red-500",
+      "text-gray-900",
       "uppercase",
       "tracking-wider"
     );
@@ -211,20 +215,20 @@ function buildTable() {
 
   // Create Table Body
   Tab = table.createTBody();
-  Tab.classList.add("bg-white", "divide-y", "divide-slate-200");
+  Tab.classList.add("bg-white", "divide-y", "divide-gray-200");
 
   // Add Footer
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
-  footrow.classList.add("border-b", "border-slate-200", "bg-slate-50");
+  footrow.classList.add("border-b", "border-gray-200", "bg-gray-50");
   const footcel = footrow.insertCell(-1);
   footcel.classList.add(
-    "px-6",
-    "py-3",
+    "px-4",
+    "py-2",
     "text-left",
     "text-xs",
     "font-bold",
-    "text-slate-500",
+    "text-gray-900",
     "uppercase",
     "tracking-wider"
   );
