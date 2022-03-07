@@ -163,16 +163,16 @@ function buildTable() {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
-  thead.classList.add("bg-slate-50");
+  thead.classList.add("bg-cyan-50");
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
   // TODO: Replace with other key color
-  selrow.classList.add("border", "border-red-300", "p-4");
+  selrow.classList.add("border", "border-cyan-300", "p-4");
 
   for (const f of Fields) {
     // Title row
     const name = namerow.insertCell(-1);
-    name.innerText = f;
+    name.innerText = f.replace("_", " ");
     name.title = Field_descriptions[f];
     name.classList.add(
       f,
@@ -181,7 +181,7 @@ function buildTable() {
       "text-left",
       "text-xs",
       "font-medium",
-      "text-slate-500",
+      "text-slate-900",
       "uppercase",
       "tracking-wider"
     );
