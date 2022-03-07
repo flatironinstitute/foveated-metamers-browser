@@ -44,5 +44,8 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.0"
   }
 }
