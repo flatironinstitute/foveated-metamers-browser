@@ -9,8 +9,9 @@
   </head>
   <body>
     <div class="bg-gray-50">
-      <!-- Dot pattern -->
+      <!-- overlapped sections -->
       <div class="relative overflow-hidden">
+        <!-- dot pattern -->
         <div class="absolute inset-y-0 h-full w-full" aria-hidden="true">
           <div class="relative h-full">
             <svg
@@ -78,7 +79,8 @@
                 />
             </svg>
           </div>
-        </div>
+        </div> <!-- end dot pattern -->
+        <!-- heading -->
         <div class="relative pt-6 pb-16 sm:pb-24">
           <div class="max-w-7xl mx-auto px-4 sm:px-6">
             <nav
@@ -132,50 +134,47 @@
               </p>
             </div>
           </div>
-        </div>
+        </div> <!-- end heading -->
+        <!-- table -->
         <div class="relative">
           <div class="absolute inset-0 flex flex-col" aria-hidden="true">
             <div class="flex-1"></div>
             <div class="flex-1 w-full bg-gray-800"></div>
           </div>
           <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <img
-              class="relative rounded-lg shadow-lg"
-              src="https://tailwindui.com/img/component-images/top-nav-with-multi-column-layout-screenshot.jpg"
-              alt="App screenshot"
-              />
+            <div class="relative flex flex-col bg-orange-100">
+              <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8 bg-green-300">
+                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8 bg-red-500">
+                  <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg bg-indigo-600">
+                    <table id="table" class="min-w-full divide-y divide-gray-200">
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </div> <!-- end table -->
+      </div> <!-- end overlapped sections -->
+      <!-- images -->
       <div class="bg-gray-800">
         <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
-          <h2 class="text-center text-gray-400 text-sm font-semibold uppercase tracking-wide">
-            Selected Image
-          </h2>
-          <h2 class="text-center text-gray-400 text-sm font-semibold uppercase tracking-wide" >
-            Natural Image
-          </h2>
           <div class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-            <div class="col-span-1 flex justify-center">
-              <img
-                class="h-12"
-                src="https://tailwindui.com/img/logos/statickit-logo-gray-400.svg"
-                alt="StaticKit"
-                />
+            <div class="col-span-1 flex flex-col justify-center">
+              <img class="py-2" id="img" alt="selected image" src="./assets/richter1.jpg">
+              <h2 class="text-center text-gray-400 text-sm font-semibold uppercase tracking-wide">
+                Selected Image
+              </h2>
             </div>
-            <div
-              class="col-span-1 flex justify-center"
-              >
-              <img
-                class="h-12"
-                src="https://tailwindui.com/img/logos/transistor-logo-gray-400.svg"
-                alt="Transistor"
-                />
+            <div class="col-span-1 flex flex-col justify-center" >
+              <img class="py-2" id="natimg" alt="natural image" src="./assets/richter2.jpg">
+              <h2 class="text-center text-gray-400 text-sm font-semibold uppercase tracking-wide" >
+                Natural Image
+              </h2>
             </div>
           </div>
         </div>
-      </div>
-      <!-- About -->
+      </div> <!-- end images -->
+      <!-- about -->
       <div class="py-16 xl:py-36 px-4 sm:px-6 lg:px-8 bg-slate-50 overflow-hidden">
         <div class="max-w-max lg:max-w-7xl mx-auto">
           <div class="relative z-10 mb-8 md:mb-2 md:px-6">
@@ -233,10 +232,8 @@
             </div>
           </div>
         </div>
-      </div>
-      <!-- End About -->
-    </div>
-    <!-- End Background Wrapper -->
+      </div> <!-- end about -->
+    </div> <!-- end background wrapper -->
     <script type="text/javascript" src="bundle.js"></script>
   </body>
 </html>
