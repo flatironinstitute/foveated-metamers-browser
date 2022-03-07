@@ -36,6 +36,7 @@ let Info: HTMLTableCellElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
+let FootCel: HTMLTableCellElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -152,10 +153,10 @@ function populateTable(retry = false): undefined {
   selectImage(Tab.rows[0], match[0]);
 
   if (matches == 1) {
-    Info.textContent = "";
+    FootCel.textContent = "";
   } else {
-    Info.textContent = `${matches} matching images`;
-    Info.classList.add("border", "font-semibold", "border-gray-200", "p-4");
+    FootCel.textContent = `${matches} matching images`;
+    FootCel.classList.add("border", "font-semibold", "border-gray-200", "p-4");
   }
 }
 
@@ -221,8 +222,8 @@ function buildTable() {
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
   footrow.classList.add("border-b", "border-gray-200", "bg-gray-50");
-  const footcel = footrow.insertCell(-1);
-  footcel.classList.add(
+  FootCel = footrow.insertCell(-1);
+  FootCel.classList.add(
     "px-4",
     "py-2",
     "text-left",
@@ -232,7 +233,7 @@ function buildTable() {
     "uppercase",
     "tracking-wider"
   );
-  footcel.colSpan = Fields.length;
+  FootCel.colSpan = Fields.length;
 
   populateTable();
 }
