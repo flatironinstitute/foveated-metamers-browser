@@ -7,17 +7,27 @@
     "compile": "tsc",
     "build-dev": "webpack --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
-    "serve": "webpack serve --static . --config webpack.dev.js"
+    "serve": "webpack serve --static . --config webpack.dev.js",
+    "start": "npm run serve",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "pretty": "npx prettier --list-different \"./**/*.{ts,js,json,md}\"",
+    "prepare": "husky install"
   },
   "author": "Flatiron Institute",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.2",
+    "@typescript-eslint/eslint-plugin": "^5.13.0",
+    "@typescript-eslint/parser": "^5.13.0",
     "autoprefixer": "^10.4.2",
     "compression-webpack-plugin": "^7.0.1",
     "copy-webpack-plugin": "^10.2.4",
     "css-loader": "^6.6.0",
+    "eslint": "^8.10.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.4",
     "mini-css-extract-plugin": "^2.5.3",
     "postcss": "^8.4.6",
     "postcss-loader": "^6.2.1",
@@ -26,10 +36,13 @@
     "tailwindcss": "^3.0.22",
     "terser-webpack-plugin": "^5.3.1",
     "ts-loader": "^9.2.6",
-    "typescript": "^4.5.2",
+    "typescript": "^4.6.2",
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^4.7.4",
     "webpack-merge": "^5.8.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
   }
 }
