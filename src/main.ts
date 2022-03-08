@@ -168,11 +168,10 @@ function buildTable() {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
-  thead.classList.add("bg-cyan-700");
+  thead.classList.add("bg-white");
   const namerow = thead.insertRow(-1);
-  const selrow = thead.insertRow(-1);
-  // TODO: Replace with other key color
-  selrow.classList.add("border", "p-4");
+  // const selrow = thead.insertRow(-1);
+  // selrow.classList.add("border", "p-4");
 
   for (const f of Fields) {
     // Title row
@@ -185,33 +184,33 @@ function buildTable() {
       "py-2",
       "text-left",
       "text-xs",
-      "font-medium",
-      "text-white",
+      "font-bold",
+      "text-gray-900",
       "uppercase",
       "tracking-wider"
     );
 
     // Selection Row
-    const sel = document.createElement("select");
-    sel.name = f;
-    sel.classList.add(
-      f,
-      "px-4",
-      "py-2",
-      "text-left",
-      "text-xs",
-      "text-gray-900",
-      "uppercase",
-      "tracking-wider"
-    );
-    sel.multiple = true;
-    selrow.insertCell(-1).append(sel);
-    sel.onchange = () => populateTable();
-    const vals = new Set();
-    for (const i of Images) vals.add(i[f]);
-    for (const v of Array.from(vals).sort(genericCompare))
-      sel.options.add(new Option(v.toString(), <string>v));
-    Selects[f] = sel;
+  //   const sel = document.createElement("select");
+  //   sel.name = f;
+  //   sel.classList.add(
+  //     f,
+  //     "px-4",
+  //     "py-2",
+  //     "text-left",
+  //     "text-xs",
+  //     "text-gray-900",
+  //     "uppercase",
+  //     "tracking-wider"
+  //   );
+  //   sel.multiple = true;
+  //   selrow.insertCell(-1).append(sel);
+  //   sel.onchange = () => populateTable();
+  //   const vals = new Set();
+  //   for (const i of Images) vals.add(i[f]);
+  //   for (const v of Array.from(vals).sort(genericCompare))
+  //     sel.options.add(new Option(v.toString(), <string>v));
+  //   Selects[f] = sel;
   }
 
   // Create Table Body
