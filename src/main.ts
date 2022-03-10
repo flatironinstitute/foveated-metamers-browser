@@ -303,6 +303,7 @@ function init(metadata: MetadataJson) {
   NaturalImages = metadata.natural_images;
   Selects = <any>{};
   Input = <HTMLInputElement>document.createElement('input');
+  Label = <HTMLLabelElement>document.createElement('label');
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
