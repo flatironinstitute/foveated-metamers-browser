@@ -176,7 +176,9 @@ function buildTable() {
   const filterform = <HTMLTableElement>document.getElementById("filterform");
   filterform.innerHTML = "";
 
+  let i = 0;
   for (const f of Fields) {
+    i++;
     // Title row
     const name = namerow.insertCell(-1);
     name.innerText = f.replace("_", " ");
@@ -197,16 +199,13 @@ function buildTable() {
     // Start with pb-6 class then add py-6 class
     const filtDiv = document.createElement("div");
     filtDiv.id = f;
-    const padding = f.indexOf;
-    console.log('padding', padding);
+    const padding = i > 1 ? 'py-6' : 'pb-6';
+    console.log('i is', i);
     filtDiv.classList.add(
       "border-b",
-      "border-gray-200"
+      "border-gray-200",
+      padding
     );
-
-
-
-
 
     // Selection Row
     const sel = document.createElement("select");
@@ -277,15 +276,18 @@ async function loadMetadata() {
   }
 }
 
-const plusminuses = Array.from(document.querySelectorAll('plusminus'));
-plusminuses.forEach(pm => {
-  pm.addEventListener('onclick', () => {
-    console.log(pm.innerHTML);
-  })
-})
-
-
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("we ready baby 🎸");
+  console.log("we ready baby 🎸 🎸");
   loadMetadata();
+
+  const buttons = Array.from(document.getElementsByName('plusminus'))
+
+  buttons.forEach((b,i) => {
+    b.addEventListener('click', () => {
+      const svgs = Array.from(b.lastElementChild.children);
+      svgs.forEach(sv => sv.classList.toggle('hidden'));
+      const fdropdown = document.getElementById(`filter-section-${i}`);
+      fdropdown.classList.toggle('hidden');
+    });
+  })
 });
