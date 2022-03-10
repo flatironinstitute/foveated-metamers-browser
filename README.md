@@ -27,3 +27,14 @@ Browse foveated metamers in the Flatiron Institute.
    ```
 
 ## Notes
+- Move images above table
+- Create test url
+- Change paper link to poster link
+- Add sortby on table column heads
+- Change to slider with catagorical variables
+- Display 24 per page 
+- Stack Images in a 2 x 2 detail grid
+- Add midgray background
+- Tie to the same gamma slider
+- Display filters on top row
+- Put copy back on main.

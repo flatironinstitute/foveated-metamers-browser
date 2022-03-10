@@ -239,7 +239,7 @@ function buildTable() {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
-  thead.classList.add("bg-gray-50");
+  thead.classList.add("bg-neutral-50");
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
   selrow.classList.add("border", "p-4");
