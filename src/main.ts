@@ -178,12 +178,11 @@ function buildTable() {
   const filterform = <HTMLTableElement>document.getElementById("filterform");
   filterform.innerHTML = "";
     filterform.addEventListener('change', function(event) {
-    console.log('Hi!', event);
+    console.log('Hi!', event.target);
     // todo populate table.
   });
 
-  let i = 0;
-  for (const f of Fields) {
+  Fields.forEach((f, i) => {
     // Title row
     const name = namerow.insertCell(-1);
     name.innerText = f.replace("_", " ");
@@ -203,7 +202,7 @@ function buildTable() {
 
     // Build Filter
     const vals = new Set();
-    for (const i of Images) vals.add(i[f]);
+    for (const im of Images) vals.add(im[f]);
 
     // TODO: Add tag to indicate hidden table attributes
     if (f !=='random_seed') {
@@ -216,7 +215,6 @@ function buildTable() {
         "border-gray-200",
         padding
       );
-      const displayName = f.replace("_", "&nbsp;")
       filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
         <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500"
         name="plusminus">
@@ -238,16 +236,21 @@ function buildTable() {
       const options = document.createElement('div');
       options.classList.add("space-y-4");
 
-       Array.from(vals).sort(genericCompare).forEach((v, i) => {
+       Array.from(vals).sort(genericCompare).forEach((v, c) => {
+        // Container flexbox
         const optFlex = document.createElement('div');
         optFlex.classList.add('flex', 'items-center');
-        const labelfor = `filter-${f.toString()}-${i}`;
+        const labelfor = `filter-${f.toString()}-${c}`;
+        // Checkbox
         const inpt = document.createElement('input');
         inpt.id = labelfor;
         inpt.setAttribute("type", "checkbox");
+        inpt.value = v.toString();
+        inpt.checked = true;
         inpt.classList.add(
           'h-4', 'w-4', 'border-gray-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
         );
+        // Label
         const lbl = document.createElement('label');
         lbl.setAttribute('for', labelfor);
         lbl.classList.add('ml-2', 'text-xs', 'text-gray-600');
@@ -261,30 +264,7 @@ function buildTable() {
       filtDiv.appendChild(optionsContainer);
       filterform.appendChild(filtDiv);
     }
-
-    // Selection Row
-    const sel = document.createElement("select");
-    sel.name = f;
-    sel.classList.add(
-      f,
-      "px-4",
-      "py-2",
-      "text-left",
-      "text-xs",
-      "text-gray-900",
-      "uppercase",
-      "tracking-wider"
-    );
-    sel.multiple = true;
-    selrow.insertCell(-1).append(sel);
-    sel.onchange = () => populateTable();
-    // const vals = new Set();
-    // for (const i of Images) vals.add(i[f]);
-    for (const v of Array.from(vals).sort(genericCompare))
-      sel.options.add(new Option(v.toString(), <string>v));
-    Selects[f] = sel;
-    i++;
-  }
+  });
 
   // Set Filter Toggles
   setFilterToggles();
