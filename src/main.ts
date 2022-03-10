@@ -173,9 +173,14 @@ function buildTable() {
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
   selrow.classList.add("border", "p-4");
+
   // Build Filter Form
   const filterform = <HTMLTableElement>document.getElementById("filterform");
   filterform.innerHTML = "";
+    filterform.addEventListener('change', function(event) {
+    console.log('Hi!', event);
+    // todo populate table.
+  });
 
   let i = 0;
   for (const f of Fields) {
@@ -199,11 +204,12 @@ function buildTable() {
     // Build Filter
     const vals = new Set();
     for (const i of Images) vals.add(i[f]);
-    console.log(vals);
-    // Start with pb-6 class then add py-6 class
+
+    // TODO: Add tag to indicate hidden table attributes
     if (f !=='random_seed') {
       const filtDiv = document.createElement("div");
       filtDiv.id = f;
+      // Start with pb-6 class then add py-6 class
       const padding = i > 0 ? 'py-6' : 'pb-6';
       filtDiv.classList.add(
         "border-b",
@@ -227,13 +233,12 @@ function buildTable() {
       </h3>`;
       const optionsContainer = document.createElement("div");
       optionsContainer.id = "filter-section-" + i;
-      //  TODO Fix this default for wonky closing on selection
+      //  TODO: Fix this default for wonky closing on selection
       optionsContainer.classList.add('pt-6');
       const options = document.createElement('div');
       options.classList.add("space-y-4");
 
        Array.from(vals).sort(genericCompare).forEach((v, i) => {
-        console.log(v, i);
         const optFlex = document.createElement('div');
         optFlex.classList.add('flex', 'items-center');
         const labelfor = `filter-${f.toString()}-${i}`;
@@ -243,9 +248,9 @@ function buildTable() {
         inpt.classList.add(
           'h-4', 'w-4', 'border-gray-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
         );
-        const lbl = document.createElement('Label');
+        const lbl = document.createElement('label');
         lbl.setAttribute('for', labelfor);
-        lbl.classList.add('ml-3', 'text-sm', 'text-gray-600');
+        lbl.classList.add('ml-2', 'text-xs', 'text-gray-600');
         lbl.innerHTML = v.toString();
         optFlex.appendChild(inpt);
         optFlex.appendChild(lbl);
@@ -329,18 +334,22 @@ async function loadMetadata() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("we ready baby 🎸 🎸");
-  loadMetadata();
-
-  const buttons = Array.from(document.getElementsByName('plusminus'))
-
+function setFilterToggles(){
+  const buttons = Array.from(document.getElementsByName('plusminus'));
+  console.log(buttons);
   buttons.forEach((b,i) => {
     b.addEventListener('click', () => {
+      console.log('buttonClick');
       const svgs = Array.from(b.lastElementChild.children);
       svgs.forEach(sv => sv.classList.toggle('hidden'));
       const fdropdown = document.getElementById(`filter-section-${i}`);
       fdropdown.classList.toggle('hidden');
     });
   })
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("we ready baby 🎸 🎸");
+  loadMetadata();
+  setFilterToggles();
 });
