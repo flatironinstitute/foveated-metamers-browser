@@ -336,8 +336,8 @@ async function loadMetadata() {
 
 function setFilterToggles(){
   const buttons = Array.from(document.getElementsByName('plusminus'));
-  console.log(buttons);
   buttons.forEach((b,i) => {
+    console.log(b, i);
     b.addEventListener('click', () => {
       console.log('buttonClick');
       const svgs = Array.from(b.lastElementChild.children);
