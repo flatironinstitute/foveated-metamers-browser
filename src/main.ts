@@ -30,7 +30,7 @@ type FieldMap<T> = {
 
 let Images: Image[];
 let NaturalImages: Image[];
-let Selects: FieldMap<HTMLInputElement>;
+let Selects: FieldMap<HTMLSelectElement>;
 let Input: HTMLInputElement;
 let Label: HTMLLabelElement;
 let Tab: HTMLTableSectionElement;
