@@ -168,7 +168,7 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function buildFilters(f, i, filterform){
+function buildFilters(f: Field, i: number, filterform: HTMLFormElement){
     // Build Filter
     const vals = new Set();
     for (const im of Images) vals.add(im[f]);
