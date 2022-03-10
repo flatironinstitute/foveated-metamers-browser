@@ -286,6 +286,9 @@ function buildTable() {
     i++;
   }
 
+  // Set Filter Toggles
+  setFilterToggles();
+
   // Create Table Body
   Tab = table.createTBody();
   Tab.classList.add("bg-white", "divide-y", "divide-gray-200");
@@ -351,5 +354,4 @@ function setFilterToggles(){
 document.addEventListener("DOMContentLoaded", function () {
   console.log("we ready baby 🎸 🎸");
   loadMetadata();
-  setFilterToggles();
 });
