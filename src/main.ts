@@ -244,6 +244,7 @@ function buildTable() {
       Label.innerHTML = v.toString();
       optFlex.appendChild(Label);
       options.appendChild(optFlex);
+      console.log("optflex", optFlex);
     }
 
     optionsContainer.appendChild(options);
