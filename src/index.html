@@ -257,7 +257,7 @@
     </div>
 
     <main class="max-w-auto mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="relative z-10 flex items-baseline justify-between pt-24 pb-6 border-b border-gray-200">
+      <div class="relative z-10 flex items-baseline justify-between pt-8 pb-6 border-b border-gray-200">
         <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">Foveated Metamers Browser</h1>
         <div class="flex items-center">
           <div class="relative inline-block text-left">
@@ -311,40 +311,18 @@
         </div>
       </div>
 
-      <section aria-labelledby="products-heading" class="pt-6 pb-24">
-        <h2 id="products-heading" class="sr-only">Products</h2>
+      <section aria-labelledby="data-table" class="pt-6 pb-24">
+        <h2 id="data-table" class="sr-only">Filter</h2>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-10">
           <!-- Filters -->
-          <form class="hidden lg:block">
-            <!-- <h3 class="sr-only">Categories</h3>
-            <ul role="list" class="text-sm font-medium text-gray-900 space-y-4 pb-6 border-b border-gray-200">
-              <li>
-                <a href="#"> Totes </a>
-              </li>
-
-              <li>
-                <a href="#"> Backpacks </a>
-              </li>
-
-              <li>
-                <a href="#"> Travel Bags </a>
-              </li>
-
-              <li>
-                <a href="#"> Hip Bags </a>
-              </li>
-
-              <li>
-                <a href="#"> Laptop Sleeves </a>
-              </li>
-            </ul> -->
-
+          <form class="hidden lg:block" id="filterform">
+            <!-- Filter 1 -->
             <div class="border-b border-gray-200 pb-6">
               <h3 class="-my-3 flow-root">
                 <!-- Expand/collapse section button -->
-                <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500" aria-controls="filter-section-0" aria-expanded="false">
-                  <span class="font-medium text-gray-900"> Color </span>
+                <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500 plusminus" aria-controls="filter-section-0" aria-expanded="false">
+                  <span class="font-medium text-gray-900"> Model Name </span>
                   <span class="ml-6 flex items-center">
                     <!--
                       Expand icon, show/hide based on section open state.
@@ -396,123 +374,6 @@
                   <div class="flex items-center">
                     <input id="filter-color-5" name="color[]" value="purple" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
                     <label for="filter-color-5" class="ml-3 text-sm text-gray-600"> Purple </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="border-b border-gray-200 py-6">
-              <h3 class="-my-3 flow-root">
-                <!-- Expand/collapse section button -->
-                <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500" aria-controls="filter-section-1" aria-expanded="false">
-                  <span class="font-medium text-gray-900"> Category </span>
-                  <span class="ml-6 flex items-center">
-                    <!--
-                      Expand icon, show/hide based on section open state.
-
-                      Heroicon name: solid/plus-sm
-                    -->
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    <!--
-                      Collapse icon, show/hide based on section open state.
-
-                      Heroicon name: solid/minus-sm
-                    -->
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
-                    </svg>
-                  </span>
-                </button>
-              </h3>
-              <!-- Filter section, show/hide based on section state. -->
-              <div class="pt-6" id="filter-section-1">
-                <div class="space-y-4">
-                  <div class="flex items-center">
-                    <input id="filter-category-0" name="category[]" value="new-arrivals" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-category-0" class="ml-3 text-sm text-gray-600"> New Arrivals </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-category-1" name="category[]" value="sale" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-category-1" class="ml-3 text-sm text-gray-600"> Sale </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-category-2" name="category[]" value="travel" type="checkbox" checked class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-category-2" class="ml-3 text-sm text-gray-600"> Travel </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-category-3" name="category[]" value="organization" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-category-3" class="ml-3 text-sm text-gray-600"> Organization </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-category-4" name="category[]" value="accessories" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-category-4" class="ml-3 text-sm text-gray-600"> Accessories </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="border-b border-gray-200 py-6">
-              <h3 class="-my-3 flow-root">
-                <!-- Expand/collapse section button -->
-                <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500" aria-controls="filter-section-2" aria-expanded="false">
-                  <span class="font-medium text-gray-900"> Size </span>
-                  <span class="ml-6 flex items-center">
-                    <!--
-                      Expand icon, show/hide based on section open state.
-
-                      Heroicon name: solid/plus-sm
-                    -->
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                    </svg>
-                    <!--
-                      Collapse icon, show/hide based on section open state.
-
-                      Heroicon name: solid/minus-sm
-                    -->
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
-                    </svg>
-                  </span>
-                </button>
-              </h3>
-              <!-- Filter section, show/hide based on section state. -->
-              <div class="pt-6" id="filter-section-2">
-                <div class="space-y-4">
-                  <div class="flex items-center">
-                    <input id="filter-size-0" name="size[]" value="2l" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-size-0" class="ml-3 text-sm text-gray-600"> 2L </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-size-1" name="size[]" value="6l" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-size-1" class="ml-3 text-sm text-gray-600"> 6L </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-size-2" name="size[]" value="12l" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-size-2" class="ml-3 text-sm text-gray-600"> 12L </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-size-3" name="size[]" value="18l" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-size-3" class="ml-3 text-sm text-gray-600"> 18L </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-size-4" name="size[]" value="20l" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-size-4" class="ml-3 text-sm text-gray-600"> 20L </label>
-                  </div>
-
-                  <div class="flex items-center">
-                    <input id="filter-size-5" name="size[]" value="40l" type="checkbox" checked class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500">
-                    <label for="filter-size-5" class="ml-3 text-sm text-gray-600"> 40L </label>
                   </div>
                 </div>
               </div>
@@ -573,11 +434,11 @@
                               <div class="hidden sm:block">
                                 <p class="text-sm text-gray-700">
                                   Showing
-                                  <span class="font-medium">1</span>
+                                  <span class="font-medium" name="lower">1</span>
                                   to
-                                  <span class="font-medium">10</span>
+                                  <span class="font-medium" name="higher">10</span>
                                   of
-                                  <span class="font-medium">20</span>
+                                  <span class="font-medium" name="total">20</span>
                                   results
                                 </p>
                               </div>

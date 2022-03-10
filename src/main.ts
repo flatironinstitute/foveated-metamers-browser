@@ -123,7 +123,7 @@ function populateTable(retry = false): undefined {
 
   const matches = match.length;
   if (matches == 0 && !retry) {
-    /* should only happen when leftward selections have invalidated rightward ones; 
+    /* should only happen when leftward selections have invalidated rightward ones;
         retry taking into account hidden options */
     return populateTable(true);
   }
@@ -172,6 +172,9 @@ function buildTable() {
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
   selrow.classList.add("border", "p-4");
+  // Build Filter Form
+  const filterform = <HTMLTableElement>document.getElementById("filterform");
+  filterform.innerHTML = "";
 
   for (const f of Fields) {
     // Title row
@@ -189,6 +192,21 @@ function buildTable() {
       "uppercase",
       "tracking-wider"
     );
+
+    // Build Filter
+    // Start with pb-6 class then add py-6 class
+    const filtDiv = document.createElement("div");
+    filtDiv.id = f;
+    const padding = f.indexOf;
+    console.log('padding', padding);
+    filtDiv.classList.add(
+      "border-b",
+      "border-gray-200"
+    );
+
+
+
+
 
     // Selection Row
     const sel = document.createElement("select");
@@ -259,7 +277,15 @@ async function loadMetadata() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function (event) {
+const plusminuses = Array.from(document.querySelectorAll('plusminus'));
+plusminuses.forEach(pm => {
+  pm.addEventListener('onclick', () => {
+    console.log(pm.innerHTML);
+  })
+})
+
+
+document.addEventListener("DOMContentLoaded", function () {
   console.log("we ready baby 🎸");
   loadMetadata();
 });
