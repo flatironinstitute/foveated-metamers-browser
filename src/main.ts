@@ -197,59 +197,63 @@ function buildTable() {
 
     // Build Filter
     // Start with pb-6 class then add py-6 class
-    const filtDiv = document.createElement("div");
-    filtDiv.id = f;
-    const padding = i > 0 ? 'py-6' : 'pb-6';
-    filtDiv.classList.add(
-      "border-b",
-      "border-gray-200",
-      padding
-    );
-    filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
-      <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500"
-      name="plusminus">
-        <span class="font-medium text-gray-900">${f.replace('_', " ").toUpperCase()}</span>
-        <span class="ml-6 flex items-center">
-          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-          </svg>
-          <svg class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
-          </svg>
-        </span>
-      </button>
-    </h3>`;
-    const optionsContainer = document.createElement("div");
-    optionsContainer.id = "filter-section-" + i;
-    //  TODO Fix this default for wonky closing on selection
-    optionsContainer.classList.add('pt-6', 'hidden');
-    const options = document.createElement('div');
-    options.classList.add("space-y-4");
-
-    const vals = new Set();
-    for (const i of Images) vals.add(i[f]);
-    console.log(vals);
-
-    for (const v of Array.from(vals).sort(genericCompare)) {
-      const optFlex = document.createElement('div');
-      const labelfor = `filter-${f.toString()}-${i.toString()}`;
-      Input.id = labelfor;
-      Input.type = "checkbox";
-      Input.classList.add(
-        'h-4', 'w-4', 'border-gray-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
+    if (f !=='random_seed') {
+      const filtDiv = document.createElement("div");
+      filtDiv.id = f;
+      const padding = i > 0 ? 'py-6' : 'pb-6';
+      filtDiv.classList.add(
+        "border-b",
+        "border-gray-200",
+        padding
       );
-      optFlex.appendChild(Input);
-      Label.setAttribute('for', labelfor);
-      Label.classList.add('ml-3', 'text-sm', 'text-gray-600');
-      Label.innerHTML = v.toString();
-      optFlex.appendChild(Label);
-      options.appendChild(optFlex);
-      console.log("optflex", optFlex);
-    }
+      filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
+        <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500"
+        name="plusminus">
+          <span class="font-medium text-gray-900">${f.replace("_", "&nbsp;")}</span>
+          <span class="ml-6 flex items-center">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            <svg class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+            </svg>
+          </span>
+        </button>
+      </h3>`;
+      const optionsContainer = document.createElement("div");
+      optionsContainer.id = "filter-section-" + i;
+      //  TODO Fix this default for wonky closing on selection
+      optionsContainer.classList.add('pt-6', 'hidden');
+      const options = document.createElement('div');
+      options.classList.add("space-y-4");
 
-    optionsContainer.appendChild(options);
-    filtDiv.appendChild(optionsContainer);
-    filterform.appendChild(filtDiv);
+      const vals = new Set();
+      for (const i of Images) vals.add(i[f]);
+      console.log(vals);
+
+      for (const v of Array.from(vals).sort(genericCompare)) {
+        console.log(v, v.toString());
+        const optFlex = document.createElement('div');
+        const labelfor = `filter-${f.toString()}-${i.toString()}`;
+        const inpt = document.createElement('input');
+        inpt.id = labelfor;
+        inpt.setAttribute("type", "checkbox");
+        inpt.classList.add(
+          'h-4', 'w-4', 'border-gray-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
+        );
+        optFlex.appendChild(inpt);
+        const lbl = document.createElement('label');
+        lbl.setAttribute('for', labelfor);
+        lbl.classList.add('ml-3', 'text-sm', 'text-gray-600');
+        lbl.innerHTML = v.toString();
+        optFlex.appendChild(Label);
+        options.appendChild(optFlex);
+      }
+
+      optionsContainer.appendChild(options);
+      filtDiv.appendChild(optionsContainer);
+      filterform.appendChild(filtDiv);
+    }
 
     // Selection Row
     const sel = document.createElement("select");
