@@ -302,7 +302,7 @@ function init(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
   Selects = <any>{};
-  Input = new HTMLInputElement;
+  Input = <HTMLInputElement>document.createElement('input');
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
