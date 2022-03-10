@@ -159,47 +159,16 @@ function populateTable(retry = false): undefined {
     FootCel.textContent = `${matches} matching images`;
     FootCel.classList.add("border", "font-semibold", "border-gray-200", "p-4");
   }
+
+  // Set Filter Toggles
+  setFilterListeners();
 }
 
 function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function buildTable() {
-  const table = <HTMLTableElement>document.getElementById("table");
-  table.innerHTML = "";
-  const thead = table.createTHead();
-  thead.classList.add("bg-gray-50");
-  const namerow = thead.insertRow(-1);
-  const selrow = thead.insertRow(-1);
-  selrow.classList.add("border", "p-4");
-
-  // Build Filter Form
-  const filterform = <HTMLTableElement>document.getElementById("filterform");
-  filterform.innerHTML = "";
-    filterform.addEventListener('change', function(event) {
-    console.log('Hi!', event.target);
-    // todo populate table.
-  });
-
-  Fields.forEach((f, i) => {
-    // Title row
-    const name = namerow.insertCell(-1);
-    name.innerText = f.replace("_", " ");
-    name.title = Field_descriptions[f];
-    name.classList.add(
-      f,
-      "px-4",
-      "py-2",
-      "text-left",
-      "text-xs",
-      "font-bold",
-      "text-gray-900",
-      "uppercase",
-      "tracking-wider"
-    );
-
-
+function buildFilters(f, i, filterform){
     // Build Filter
     const vals = new Set();
     for (const im of Images) vals.add(im[f]);
@@ -264,10 +233,44 @@ function buildTable() {
       filtDiv.appendChild(optionsContainer);
       filterform.appendChild(filtDiv);
     }
+
+}
+
+function buildTable() {
+  const table = <HTMLTableElement>document.getElementById("table");
+  table.innerHTML = "";
+  const thead = table.createTHead();
+  thead.classList.add("bg-gray-50");
+  const namerow = thead.insertRow(-1);
+
+  // Build Filter Form
+  const filterform = <HTMLFormElement>document.getElementById("filterform");
+  filterform.innerHTML = "";
+    filterform.addEventListener('change', function(event) {
+    console.log('Hi!', event.target);
+    // todo populate table.
   });
 
-  // Set Filter Toggles
-  setFilterToggles();
+  Fields.forEach((f, i) => {
+    // Title row
+    const name = namerow.insertCell(-1);
+    name.innerText = f.replace("_", " ");
+    name.title = Field_descriptions[f];
+    name.classList.add(
+      f,
+      "px-4",
+      "py-2",
+      "text-left",
+      "text-xs",
+      "font-bold",
+      "text-gray-900",
+      "uppercase",
+      "tracking-wider"
+    );
+
+    buildFilters(f, i, filterform);
+
+  });
 
   // Create Table Body
   Tab = table.createTBody();
@@ -317,12 +320,10 @@ async function loadMetadata() {
   }
 }
 
-function setFilterToggles(){
+function setFilterListeners(){
   const buttons = Array.from(document.getElementsByName('plusminus'));
   buttons.forEach((b,i) => {
-    console.log(b, i);
     b.addEventListener('click', () => {
-      console.log('buttonClick');
       const svgs = Array.from(b.lastElementChild.children);
       svgs.forEach(sv => sv.classList.toggle('hidden'));
       const fdropdown = document.getElementById(`filter-section-${i}`);
