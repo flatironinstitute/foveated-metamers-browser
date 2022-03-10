@@ -234,7 +234,7 @@ function buildTable() {
       const optionsContainer = document.createElement("div");
       optionsContainer.id = "filter-section-" + i;
       //  TODO: Fix this default for wonky closing on selection
-      optionsContainer.classList.add('pt-6');
+      optionsContainer.classList.add('pt-6', 'hidden');
       const options = document.createElement('div');
       options.classList.add("space-y-4");
 
