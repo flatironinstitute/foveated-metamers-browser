@@ -31,8 +31,7 @@ type FieldMap<T> = {
 let Images: Image[];
 let NaturalImages: Image[];
 let Selects: FieldMap<HTMLSelectElement>;
-let Input: HTMLInputElement;
-let Label: HTMLLabelElement;
+let Inputs: FieldMap<HTMLInputElement>;
 let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
@@ -242,6 +241,8 @@ function buildTable() {
   const thead = table.createTHead();
   thead.classList.add("bg-gray-50");
   const namerow = thead.insertRow(-1);
+  const selrow = thead.insertRow(-1);
+  selrow.classList.add("border", "p-4");
 
   // Build Filter Form
   const filterform = <HTMLFormElement>document.getElementById("filterform");
@@ -269,7 +270,29 @@ function buildTable() {
     );
 
     buildFilters(f, i, filterform);
-
+    
+    // Selection Row
+    const sel = document.createElement("select");
+    sel.name = f;
+    sel.classList.add(
+      f,
+      "px-4",
+      "py-2",
+      "text-left",
+      "text-xs",
+      "text-gray-900",
+      "uppercase",
+      "tracking-wider"
+    );
+    sel.multiple = true;
+    selrow.insertCell(-1).append(sel);
+    sel.onchange = () => populateTable();
+    const vals = new Set();
+    for (const i of Images) vals.add(i[f]);
+    for (const v of Array.from(vals).sort(genericCompare))
+      sel.options.add(new Option(v.toString(), <string>v));
+    Selects[f] = sel;
+    
   });
 
   // Create Table Body
