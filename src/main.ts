@@ -234,6 +234,7 @@ function buildTable() {
        Array.from(vals).sort(genericCompare).forEach((v, i) => {
         console.log(v, i);
         const optFlex = document.createElement('div');
+        optFlex.classList.add('flex', 'items-center');
         const labelfor = `filter-${f.toString()}-${i}`;
         const inpt = document.createElement('input');
         inpt.id = labelfor;
@@ -241,11 +242,11 @@ function buildTable() {
         inpt.classList.add(
           'h-4', 'w-4', 'border-gray-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
         );
-        optFlex.appendChild(inpt);
         const lbl = document.createElement('Label');
         lbl.setAttribute('for', labelfor);
         lbl.classList.add('ml-3', 'text-sm', 'text-gray-600');
         lbl.innerHTML = v.toString();
+        optFlex.appendChild(inpt);
         optFlex.appendChild(lbl);
         options.appendChild(optFlex);
       });
