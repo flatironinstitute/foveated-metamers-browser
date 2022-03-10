@@ -266,8 +266,8 @@ function buildTable() {
     sel.multiple = true;
     selrow.insertCell(-1).append(sel);
     sel.onchange = () => populateTable();
-    const vals = new Set();
-    for (const i of Images) vals.add(i[f]);
+    // const vals = new Set();
+    // for (const i of Images) vals.add(i[f]);
     for (const v of Array.from(vals).sort(genericCompare))
       sel.options.add(new Option(v.toString(), <string>v));
     Selects[f] = sel;
