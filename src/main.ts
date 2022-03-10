@@ -227,14 +227,14 @@ function buildTable() {
       const optionsContainer = document.createElement("div");
       optionsContainer.id = "filter-section-" + i;
       //  TODO Fix this default for wonky closing on selection
-      optionsContainer.classList.add('pt-6', 'hidden');
+      optionsContainer.classList.add('pt-6');
       const options = document.createElement('div');
       options.classList.add("space-y-4");
 
-      for (const v of Array.from(vals).sort(genericCompare)) {
-        console.log(v, v.toString());
+       Array.from(vals).sort(genericCompare).forEach((v, i) => {
+        console.log(v, i);
         const optFlex = document.createElement('div');
-        const labelfor = `filter-${f.toString()}-${i.toString()}`;
+        const labelfor = `filter-${f.toString()}-${i}`;
         const inpt = document.createElement('input');
         inpt.id = labelfor;
         inpt.setAttribute("type", "checkbox");
@@ -242,13 +242,13 @@ function buildTable() {
           'h-4', 'w-4', 'border-gray-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
         );
         optFlex.appendChild(inpt);
-        const lbl = document.createElement('label');
+        const lbl = document.createElement('Label');
         lbl.setAttribute('for', labelfor);
         lbl.classList.add('ml-3', 'text-sm', 'text-gray-600');
         lbl.innerHTML = v.toString();
-        optFlex.appendChild(Label);
+        optFlex.appendChild(lbl);
         options.appendChild(optFlex);
-      }
+      });
 
       optionsContainer.appendChild(options);
       filtDiv.appendChild(optionsContainer);
