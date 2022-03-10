@@ -195,7 +195,11 @@ function buildTable() {
       "tracking-wider"
     );
 
+
     // Build Filter
+    const vals = new Set();
+    for (const i of Images) vals.add(i[f]);
+    console.log(vals);
     // Start with pb-6 class then add py-6 class
     if (f !=='random_seed') {
       const filtDiv = document.createElement("div");
@@ -226,10 +230,6 @@ function buildTable() {
       optionsContainer.classList.add('pt-6', 'hidden');
       const options = document.createElement('div');
       options.classList.add("space-y-4");
-
-      const vals = new Set();
-      for (const i of Images) vals.add(i[f]);
-      console.log(vals);
 
       for (const v of Array.from(vals).sort(genericCompare)) {
         console.log(v, v.toString());
