@@ -67,12 +67,19 @@
             <h2 id="data-table" class="sr-only">Images</h2>
             <div class="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-6 gap-x-8 gap-y-10">
               <form class="lg:block md:col-span-1">
-                <div>
+                <div class="pb-6">
                   <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                   <div class="mt-1">
                     <input type="email" name="email" id="email" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="you@example.com" aria-describedby="email-description">
                   </div>
                   <p class="mt-2 text-sm text-gray-500" id="email-description">We'll only use this for spam.</p>
+                </div>
+                <div>
+                  <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                  <div class="mt-1 slide-container">
+                    <input type="range" min="1" max="100" value="50" class="slider" id="gamma">
+                  </div>
+                  <p class="mt-2 text-sm text-gray-500">Value: <span id="gamma-description"> </span></p>
                 </div>
               </form>
               <div class="bg-gray-200 rounded lg:col-span-5">

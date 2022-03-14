@@ -353,7 +353,22 @@ function setFilterListeners(){
   })
 }
 
+function setSlider(){
+  const slider = <HTMLFormElement>document.getElementById("gamma");
+  const output = <HTMLSpanElement>document.getElementById("gamma-description");
+  console.log('value: ', slider.value);
+  output.innerHTML = slider.value; // Display the default slider value
+
+  // Update the current slider value (each time you drag the slider handle)
+  slider.addEventListener('change', function(){
+    console.log('tests input');
+    output.innerHTML = slider.value;
+  });
+  
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   console.log("we ready baby 🎸 🎸");
   loadMetadata();
+  setSlider();
 });
