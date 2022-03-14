@@ -353,6 +353,17 @@ function setFilterListeners(){
   })
 }
 
+function setZoom(){
+  const zoomselect = <HTMLSelectElement>document.getElementById('zoom');
+  zoomselect.addEventListener('change', function(e) {
+    const selected = zoomselect.options[zoomselect.selectedIndex].value;
+    const zoom = parseInt(selected);
+    console.log("Set Zoom to: ", zoom);
+    // TODO: Set Zoom
+    // set_position(last_position);
+});
+}
+
 function setSlider(){
   const slider = <HTMLFormElement>document.getElementById("gamma");
   const output = <HTMLSpanElement>document.getElementById("gamma-description");
@@ -360,8 +371,8 @@ function setSlider(){
   output.innerHTML = slider.value; // Display the default slider value
 
   // Update the current slider value (each time you drag the slider handle)
-  slider.addEventListener('change', function(){
-    console.log('tests input');
+  slider.addEventListener('change', function(e){
+    console.log('tests input', e);
     output.innerHTML = slider.value;
   });
   
@@ -371,4 +382,5 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("we ready baby 🎸 🎸");
   loadMetadata();
   setSlider();
+  setZoom();
 });
