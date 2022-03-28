@@ -32,3 +32,4 @@ Browse foveated metamers in the Flatiron Institute.
 - Change to slider with catagorical variables
 - Display 24 per page 
 - Display filters on top row
+- Top right button
