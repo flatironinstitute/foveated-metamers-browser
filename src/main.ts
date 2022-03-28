@@ -142,7 +142,7 @@ function populateTable(retry = false): undefined {
         "px-4",
         "py-2",
         "whitespace-nowrap",
-        "text-sm",
+        "text-xs",
         "text-gray-500"
       );
     }
