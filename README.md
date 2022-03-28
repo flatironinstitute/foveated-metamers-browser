@@ -28,7 +28,7 @@ Browse foveated metamers in the Flatiron Institute.
 
 ## Notes
 - Create test url
-
+- Change selection on click.
 - Add sortby on table column heads
 - Change to slider with catagorical variables
 - Display 24 per page 
