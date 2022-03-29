@@ -182,10 +182,11 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
     "border-slate-200",
     padding
   );
+  const filtName = f == 'psychophysics_comparison' ? 'psychophysics<br/>comparison' : f.replace("_", "&nbsp;");
   filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
     <button type="button" data-filter=${f} class="py-3 bg-white w-full flex items-center justify-between text-sm text-slate-400 hover:text-slate-500"
     name="plusminus">
-      <span class="font-medium text-xs text-slate-900 uppercase">${f.replace("_", "&nbsp;")}</span>
+      <span class="font-medium text-xs text-slate-900 uppercase">${filtName}</span>
       <span class="ml-6 flex items-center">
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
