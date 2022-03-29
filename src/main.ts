@@ -100,11 +100,16 @@ function populateTable(retry = false): undefined {
   for (f of Fields) {
     const sel = Checks[f];
     const opts: Set<string> = new Set();
-    sel.forEach((o) => {
-      if (o.checked && !o.classList.contains("hidden")) {
-        opts.add(o.value);
-      }
-    });
+    if (sel) {  
+      sel.forEach((o) => {
+        if (o.checked && !o.classList.contains("hidden")) {
+          opts.add(o.value);
+        }
+      });
+    } else {
+      console.log('no f', f);
+    }
+
     if (opts.size) {
       filter[f] = opts;
     }
