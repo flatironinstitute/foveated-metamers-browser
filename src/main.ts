@@ -267,6 +267,7 @@ function buildTable() {
       "tracking-wider"
     );
 
+    console.log('f: ' , f);
     if (f !== 'random_seed') {
       buildFilters(f, i, filterform);
     }
