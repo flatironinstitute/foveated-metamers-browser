@@ -247,9 +247,9 @@ function buildTable() {
   // Build Filter Form
   const filterform = <HTMLFormElement>document.getElementById("filterform");
   filterform.innerHTML = "";
-    filterform.addEventListener('change', function(event) {
-    console.log('Hi!', event.target);
-    // todo populate table.
+  filterform.addEventListener('change', function(event) {
+    console.log('FilterForm Change!', event.target);
+  // todo populate table.
   });
 
   Fields.forEach((f, i) => {
@@ -319,7 +319,7 @@ function buildTable() {
   populateTable();
 }
 
-function init(metadata: MetadataJson) {
+function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
   Selects = <any>{};
@@ -333,7 +333,7 @@ async function loadMetadata() {
   const res = await fetch(Data_root + "metadata.json");
   if (res.ok) {
     const body: MetadataJson = await res.json();
-    init(body);
+    initPage(body);
   } else {
     errorMsg.textContent = "Unable to retrieve metadata.";
     errorContainer.classList.remove("hidden");

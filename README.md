@@ -2,7 +2,7 @@
   Foveated Metamers Browser 
 </h1>
 
-Browse foveated metamers hosted on the Flatiron Institute compute cluster.
+Browse natural and simulated foveated metamer images hosted on the Flatiron Institute compute cluster.
 
 ## Quick start
 
