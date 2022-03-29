@@ -173,7 +173,6 @@ function buildFilters(f: Field, i: number, filterform: HTMLFormElement){
     for (const im of Images) vals.add(im[f]);
 
     // TODO: Add tag to indicate hidden table attributes
-    if (f !=='random_seed') {
       const filtDiv = document.createElement("div");
       filtDiv.id = f;
       // Start with pb-6 class then add py-6 class
@@ -231,7 +230,6 @@ function buildFilters(f: Field, i: number, filterform: HTMLFormElement){
       optionsContainer.appendChild(options);
       filtDiv.appendChild(optionsContainer);
       filterform.appendChild(filtDiv);
-    }
 
 }
 
@@ -269,8 +267,10 @@ function buildTable() {
       "tracking-wider"
     );
 
-    buildFilters(f, i, filterform);
-    
+    if (f !== 'random_seed') {
+      buildFilters(f, i, filterform);
+    }
+ 
     // Selection Row
     const sel = document.createElement("select");
     sel.name = f;
