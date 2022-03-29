@@ -98,10 +98,12 @@ function populateTable(retry = false): undefined {
   } = {};
   let f: Field;
   for (f of Fields) {
-    const sel = Selects[f];
+    const sel = Checks[f];
     const opts: Set<string> = new Set();
-    for (const o of sel.options) {
-      if (o.selected && !o.classList.contains("hidden")) opts.add(o.value);
+    for (const o of sel) {
+      if (o.checked && !o.classList.contains("hidden")) {
+        opts.add(o.value);
+      }
     }
     if (opts.size) {
       filter[f] = opts;
@@ -118,12 +120,12 @@ function populateTable(retry = false): undefined {
     return true;
   });
 
-  for (f in Selects) {
-    const sel = Selects[f];
-    for (const o of sel.options) {
-      o.classList.toggle("hidden", !vals[f].has(o.value));
-    }
-  }
+  // for (f in Selects) {
+  //   const sel = Selects[f];
+  //   for (const o of sel.options) {
+  //     o.classList.toggle("hidden", !vals[f].has(o.value));
+  //   }
+  // }
 
   const matches = match.length;
   if (matches == 0 && !retry) {
@@ -236,8 +238,7 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
 
     return inpt;
   })
-
-  console.log(checkboxes);
+  Checks[f] = checkboxes;
 
   optionsContainer.appendChild(options);
   filtDiv.appendChild(optionsContainer);
@@ -304,7 +305,7 @@ function buildTable() {
     for (const i of Images) {
       vals.add(i[f]);
     }
-    console.log('vals from filter', vals);
+
     for (const v of Array.from(vals).sort(genericCompare)) {
       sel.options.add(new Option(v.toString(), <string>v));
     }
@@ -340,6 +341,7 @@ function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
   Selects = <any>{};
+  Checks = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
