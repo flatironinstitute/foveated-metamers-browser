@@ -258,11 +258,11 @@ function buildTable() {
   // Build Filter Form
   const filterform = <HTMLFormElement>document.getElementById("filterform");
   filterform.innerHTML = "";
-  filterform.addEventListener('change', function(event) {
-    console.log('FilterForm Change!', event.target);
-    // todo populate table.
-    // populateTable();
-  });
+  // filterform.addEventListener('change', function(event) {
+  //   console.log('FilterForm Change!', event.target);
+  //   // todo populate table.
+  //   // populateTable();
+  // });
 
   Fields.forEach((f, i) => {
     // Title row

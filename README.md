@@ -39,7 +39,7 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 ## Notes
 
-- Table: work with side selection, metadata hovers or in side bit?
+- Table: metadata definiation on hover or in filter area?
 - Change selection on click.
 - Add sortby on table column heads
 - Change to slider with catagorical variables
@@ -50,4 +50,5 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 - Fix slate to gray? 
 - Top right button
 - Favicon
+- Select all / deselect all
 - Create test url
