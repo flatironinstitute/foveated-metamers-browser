@@ -170,7 +170,9 @@ function genericCompare(a: any, b: any) {
 function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
   // Build Filter
   const vals = new Set();
-  for (const im of Images) vals.add(im[f]);
+  for (const im of Images) {
+    vals.add(im[f]);
+  } 
 
   // TODO: Add tag to indicate hidden table attributes
   const filtDiv = document.createElement("div");
@@ -186,7 +188,7 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
   filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
     <button type="button" data-filter=${f} class="py-3 bg-white w-full flex items-center justify-between text-sm text-slate-400 hover:text-slate-500"
     name="plusminus">
-      <span class="font-medium text-xs text-slate-900 uppercase">${filtName}</span>
+      <span class="font-medium text-xs text-slate-900 uppercase text-left">${filtName}</span>
       <span class="ml-6 flex items-center">
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
@@ -248,7 +250,8 @@ function buildTable() {
   filterform.innerHTML = "";
   filterform.addEventListener('change', function(event) {
     console.log('FilterForm Change!', event.target);
-  // todo populate table.
+    // todo populate table.
+    // populateTable();
   });
 
   Fields.forEach((f, i) => {
@@ -289,11 +292,15 @@ function buildTable() {
     selrow.insertCell(-1).append(sel);
     sel.onchange = () => populateTable();
     const vals = new Set();
-    for (const i of Images) vals.add(i[f]);
-    for (const v of Array.from(vals).sort(genericCompare))
+    for (const i of Images) {
+      vals.add(i[f]);
+    }
+    console.log('vals from filter', vals);
+    for (const v of Array.from(vals).sort(genericCompare)) {
       sel.options.add(new Option(v.toString(), <string>v));
+    }
     Selects[f] = sel;
-    
+    console.log("Selects and sel", Selects, sel);
   });
 
   // Create Table Body
