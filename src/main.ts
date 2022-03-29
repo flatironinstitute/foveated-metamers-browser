@@ -167,69 +167,69 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function buildFilters(f: Field, i: number, filterform: HTMLFormElement){
-    // Build Filter
-    const vals = new Set();
-    for (const im of Images) vals.add(im[f]);
+function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
+  // Build Filter
+  const vals = new Set();
+  for (const im of Images) vals.add(im[f]);
 
-    // TODO: Add tag to indicate hidden table attributes
-      const filtDiv = document.createElement("div");
-      filtDiv.id = f;
-      // Start with pb-6 class then add py-6 class
-      const padding = i > 0 ? 'py-6' : 'pb-6';
-      filtDiv.classList.add(
-        "border-b",
-        "border-slate-200",
-        padding
-      );
-      filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
-        <button type="button" class="py-3 bg-white w-full flex items-center justify-between text-sm text-slate-400 hover:text-slate-500"
-        name="plusminus">
-          <span class="font-medium text-xs text-slate-900 uppercase">${f.replace("_", "&nbsp;")}</span>
-          <span class="ml-6 flex items-center">
-            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            <svg class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
-            </svg>
-          </span>
-        </button>
-      </h3>`;
-      const optionsContainer = document.createElement("div");
-      optionsContainer.id = "filter-section-" + i;
-      //  TODO: Fix this default for wonky closing on selection
-      optionsContainer.classList.add('pt-6', 'hidden');
-      const options = document.createElement('div');
-      options.classList.add("space-y-4");
+  // TODO: Add tag to indicate hidden table attributes
+  const filtDiv = document.createElement("div");
+  filtDiv.id = f;
+  // Start with pb-6 class then add py-6 class
+  const padding = first ?  'pb-6' : 'py-6';
+  filtDiv.classList.add(
+    "border-b",
+    "border-slate-200",
+    padding
+  );
+  filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
+    <button type="button" data-filter=${f} class="py-3 bg-white w-full flex items-center justify-between text-sm text-slate-400 hover:text-slate-500"
+    name="plusminus">
+      <span class="font-medium text-xs text-slate-900 uppercase">${f.replace("_", "&nbsp;")}</span>
+      <span class="ml-6 flex items-center">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        <svg class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+  </h3>`;
+  const optionsContainer = document.createElement("div");
+  optionsContainer.id = "filter-section-" + f;
+  //  TODO: Fix this default for wonky closing on selection
+  optionsContainer.classList.add('pt-6', 'hidden');
+  const options = document.createElement('div');
+  options.classList.add("space-y-4");
 
-       Array.from(vals).sort(genericCompare).forEach((v, c) => {
-        // Container flexbox
-        const optFlex = document.createElement('div');
-        optFlex.classList.add('flex', 'items-center');
-        const labelfor = `filter-${f.toString()}-${c}`;
-        // Checkbox
-        const inpt = document.createElement('input');
-        inpt.id = labelfor;
-        inpt.setAttribute("type", "checkbox");
-        inpt.value = v.toString();
-        inpt.checked = true;
-        inpt.classList.add(
-          'h-4', 'w-4', 'border-slate-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
-        );
-        // Label
-        const lbl = document.createElement('label');
-        lbl.setAttribute('for', labelfor);
-        lbl.classList.add('ml-2', 'text-xs', 'text-slate-600');
-        lbl.innerHTML = v.toString();
-        optFlex.appendChild(inpt);
-        optFlex.appendChild(lbl);
-        options.appendChild(optFlex);
-      });
+  Array.from(vals).sort(genericCompare).forEach((v, c) => {
+    // Container flexbox
+    const optFlex = document.createElement('div');
+    optFlex.classList.add('flex', 'items-center');
+    const labelfor = `filter-${f.toString()}-${c}`;
+    // Checkbox
+    const inpt = document.createElement('input');
+    inpt.id = labelfor;
+    inpt.setAttribute("type", "checkbox");
+    inpt.value = v.toString();
+    inpt.checked = true;
+    inpt.classList.add(
+      'h-4', 'w-4', 'border-slate-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
+    );
+    // Label
+    const lbl = document.createElement('label');
+    lbl.setAttribute('for', labelfor);
+    lbl.classList.add('ml-2', 'text-xs', 'text-slate-600');
+    lbl.innerHTML = v.toString();
+    optFlex.appendChild(inpt);
+    optFlex.appendChild(lbl);
+    options.appendChild(optFlex);
+  });
 
-      optionsContainer.appendChild(options);
-      filtDiv.appendChild(optionsContainer);
-      filterform.appendChild(filtDiv);
+  optionsContainer.appendChild(options);
+  filtDiv.appendChild(optionsContainer);
+  filterform.appendChild(filtDiv);
 
 }
 
@@ -267,9 +267,8 @@ function buildTable() {
       "tracking-wider"
     );
 
-    console.log('f: ' , f);
     if (f !== 'random_seed') {
-      buildFilters(f, i, filterform);
+      buildFilters(f, i < 1, filterform);
     }
  
     // Selection Row
@@ -344,12 +343,11 @@ async function loadMetadata() {
 
 function setFilterListeners(){
   const buttons = Array.from(document.getElementsByName('plusminus'));
-  buttons.forEach((b,i) => {
+  buttons.forEach(b => {
     b.addEventListener('click', () => {
       const svgs = Array.from(b.lastElementChild.children);
       svgs.forEach(sv => sv.classList.toggle('hidden'));
-      console.log("b plus minus: ", b);
-      const fdropdown = document.getElementById(`filter-section-${i}`);
+      const fdropdown = document.getElementById(`filter-section-${b.dataset.filter}`);
       fdropdown.classList.toggle('hidden');
     });
   })
