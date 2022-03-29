@@ -347,6 +347,7 @@ function setFilterListeners(){
     b.addEventListener('click', () => {
       const svgs = Array.from(b.lastElementChild.children);
       svgs.forEach(sv => sv.classList.toggle('hidden'));
+      console.log("b plus minus: ", b);
       const fdropdown = document.getElementById(`filter-section-${i}`);
       fdropdown.classList.toggle('hidden');
     });
@@ -367,7 +368,7 @@ function setZoom(){
 function setSlider(){
   const slider = <HTMLFormElement>document.getElementById("gamma");
   const output = <HTMLSpanElement>document.getElementById("gamma-description");
-  console.log('value: ', slider.value);
+  console.log('slider value: ', slider.value);
   output.innerHTML = slider.value; // Display the default slider value
 
   // Update the current slider value (each time you drag the slider handle)
