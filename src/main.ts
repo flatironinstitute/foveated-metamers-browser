@@ -136,7 +136,7 @@ function populateTable(retry = false): undefined {
 
   /* only show first 20 matches */
   // TODO: Add paginate?
-  match.splice(20);
+  match.splice(24);
   Tab.innerHTML = "";
   for (const i of match) {
     const row = Tab.insertRow(-1);

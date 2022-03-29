@@ -38,15 +38,14 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 
 ## Notes
-
-- Table: metadata definiation on hover or in filter area?
-- Change selection on click.
+- Image hover and zoom in
+- Paginate https://stackoverflow.com/questions/42761068/paginate-javascript-array
 - Add sortby on table column heads
 - Change to slider with catagorical variables
 - Display 24 per page 
 - Display filters on top row
 - Top Row display name of the image selected
-- Image hover and zoom in
+- Table: metadata definiation on hover or in filter area?
 - Fix slate to gray? 
 - Top right button
 - Favicon
