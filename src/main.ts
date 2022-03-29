@@ -85,10 +85,10 @@ function selectImage(
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
   if (SelectedRow) {
-    SelectedRow.classList.remove("bg-teal-100");
-  }
-  if (SelectedRow == row) {
-    row.classList.add("bg-teal-100");
+    SelectedRow.classList.remove("bg-indigo-100");
+  } else {
+    SelectedRow = row;
+    row.classList.add("bg-indigo-100");
   }
 }
 
@@ -120,17 +120,12 @@ function populateTable(retry = false): undefined {
     for (const f of Fields) {
       const s = i[f].toString();
       vals[f].add(s);
-      if (filter[f] && !filter[f].has(s)) return false;
+      if (filter[f] && !filter[f].has(s)) {
+        return false;
+      }
     }
     return true;
   });
-
-  // for (f in Selects) {
-  //   const sel = Selects[f];
-  //   for (const o of sel.options) {
-  //     o.classList.toggle("hidden", !vals[f].has(o.value));
-  //   }
-  // }
 
   const matches = match.length;
   if (matches == 0 && !retry) {
@@ -291,30 +286,30 @@ function buildTable() {
     }
  
     // Selection Row
-    const sel = document.createElement("select");
-    sel.name = f;
-    sel.classList.add(
-      f,
-      "px-4",
-      "py-2",
-      "text-left",
-      "text-xs",
-      "text-slate-900",
-      "uppercase",
-      "tracking-wider"
-    );
-    sel.multiple = true;
-    selrow.insertCell(-1).append(sel);
-    sel.onchange = () => populateTable();
-    const vals = new Set();
-    for (const i of Images) {
-      vals.add(i[f]);
-    }
+    // const sel = document.createElement("select");
+    // sel.name = f;
+    // sel.classList.add(
+    //   f,
+    //   "px-4",
+    //   "py-2",
+    //   "text-left",
+    //   "text-xs",
+    //   "text-slate-900",
+    //   "uppercase",
+    //   "tracking-wider"
+    // );
+    // sel.multiple = true;
+    // selrow.insertCell(-1).append(sel);
+    // sel.onchange = () => populateTable();
+    // const vals = new Set();
+    // for (const i of Images) {
+    //   vals.add(i[f]);
+    // }
 
-    for (const v of Array.from(vals).sort(genericCompare)) {
-      sel.options.add(new Option(v.toString(), <string>v));
-    }
-    Selects[f] = sel;
+    // for (const v of Array.from(vals).sort(genericCompare)) {
+    //   sel.options.add(new Option(v.toString(), <string>v));
+    // }
+    // Selects[f] = sel;
     // console.log("Selects and sel", Selects, sel);
   });
 
