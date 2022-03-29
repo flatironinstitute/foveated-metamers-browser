@@ -31,6 +31,7 @@ type FieldMap<T> = {
 let Images: Image[];
 let NaturalImages: Image[];
 let Selects: FieldMap<HTMLSelectElement>;
+let Checks: FieldMap<Array<HTMLInputElement>>;
 let Inputs: FieldMap<HTMLInputElement>;
 let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
@@ -99,9 +100,12 @@ function populateTable(retry = false): undefined {
   for (f of Fields) {
     const sel = Selects[f];
     const opts: Set<string> = new Set();
-    for (const o of sel.options)
+    for (const o of sel.options) {
       if (o.selected && !o.classList.contains("hidden")) opts.add(o.value);
-    if (opts.size) filter[f] = opts;
+    }
+    if (opts.size) {
+      filter[f] = opts;
+    }
   }
 
   const vals = fieldMap(() => new Set());
@@ -206,7 +210,7 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
   const options = document.createElement('div');
   options.classList.add("space-y-4");
 
-  Array.from(vals).sort(genericCompare).forEach((v, c) => {
+  const checkboxes = Array.from(vals).sort(genericCompare).map((v, c) => {
     // Container flexbox
     const optFlex = document.createElement('div');
     optFlex.classList.add('flex', 'items-center');
@@ -220,6 +224,7 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
     inpt.classList.add(
       'h-4', 'w-4', 'border-slate-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
     );
+    inpt.onchange = () => populateTable();
     // Label
     const lbl = document.createElement('label');
     lbl.setAttribute('for', labelfor);
@@ -228,7 +233,11 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
     optFlex.appendChild(inpt);
     optFlex.appendChild(lbl);
     options.appendChild(optFlex);
-  });
+
+    return inpt;
+  })
+
+  console.log(checkboxes);
 
   optionsContainer.appendChild(options);
   filtDiv.appendChild(optionsContainer);
@@ -300,7 +309,7 @@ function buildTable() {
       sel.options.add(new Option(v.toString(), <string>v));
     }
     Selects[f] = sel;
-    console.log("Selects and sel", Selects, sel);
+    // console.log("Selects and sel", Selects, sel);
   });
 
   // Create Table Body
