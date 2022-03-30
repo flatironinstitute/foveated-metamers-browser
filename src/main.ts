@@ -38,6 +38,7 @@ let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
 let FootCel: HTMLTableCellElement;
+let Filename: HTMLElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -98,6 +99,17 @@ function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
   // bottom_detail.sync_with(top_detail);
 }
 
+function setFilename(src: undefined | Image) {
+  const filename = <HTMLTableElement>document.getElementById("filename");
+  filename.innerHTML = "";
+  if (src.file) {
+    filename.innerText = src.file;
+  } else {
+    filename.innerText = "Error: please select an alternate image.";
+  }
+
+}
+
 function selectImage(
   row: undefined | HTMLTableRowElement,
   img: undefined | Image
@@ -105,6 +117,7 @@ function selectImage(
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
   setImgDetail(Img, NatImg);
+  setFilename(img);
   if (SelectedRow) {
     SelectedRow.classList.remove("bg-indigo-100");
   } else {
@@ -279,11 +292,6 @@ function buildTable() {
   // Build Filter Form
   const filterform = <HTMLFormElement>document.getElementById("filterform");
   filterform.innerHTML = "";
-  // filterform.addEventListener('change', function(event) {
-  //   console.log('FilterForm Change!', event.target);
-  //   // todo populate table.
-  //   // populateTable();
-  // });
 
   Fields.forEach((f, i) => {
     // Title row
