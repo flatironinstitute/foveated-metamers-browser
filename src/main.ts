@@ -104,7 +104,7 @@ function selectImage(
 ) {
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
-  setImgDetail(options, Img, NatImg);
+  setImgDetail(Img, NatImg);
   if (SelectedRow) {
     SelectedRow.classList.remove("bg-indigo-100");
   } else {
