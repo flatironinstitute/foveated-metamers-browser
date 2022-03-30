@@ -78,12 +78,33 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
   img.src = src ? Data_root + src.file : "";
 }
 
+function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
+  // Options for canvas_image_detail objects.
+  const options = {
+    panel_width_factor: 0.4,
+    screen_min: 400,
+  }
+  // Create the detail image views using the canvas_image_detail jQueryUI plugin.
+  console.log(options, Img, NatImg);
+  // const top_detail = top_display.canvas_image_detail(options);
+  // const bottom_detail = bottom_display.canvas_image_detail(options);
+
+  // // Load the image URL into the image detail views.
+  // top_detail.load_image_url(url);
+  // bottom_detail.load_image_url(url);
+
+  // // Synchronize zoom and pan.
+  // top_detail.sync_with(bottom_detail);
+  // bottom_detail.sync_with(top_detail);
+}
+
 function selectImage(
   row: undefined | HTMLTableRowElement,
   img: undefined | Image
 ) {
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
+  setImgDetail(options, Img, NatImg);
   if (SelectedRow) {
     SelectedRow.classList.remove("bg-indigo-100");
   } else {
@@ -100,7 +121,7 @@ function populateTable(retry = false): undefined {
   for (f of Fields) {
     const sel = Checks[f];
     const opts: Set<string> = new Set();
-    if (sel) {  
+    if (sel) {
       sel.forEach((o) => {
         if (o.checked && !o.classList.contains("hidden")) {
           opts.add(o.value);
@@ -178,7 +199,7 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
   const vals = new Set();
   for (const im of Images) {
     vals.add(im[f]);
-  } 
+  }
 
   // TODO: Add tag to indicate hidden table attributes
   const filtDiv = document.createElement("div");
@@ -284,7 +305,7 @@ function buildTable() {
     if (f !== 'random_seed') {
       buildFilters(f, i < 1, filterform);
     }
- 
+
     // Selection Row
     // const sel = document.createElement("select");
     // sel.name = f;
@@ -394,7 +415,7 @@ function setSlider(){
     console.log('tests input', e);
     output.innerHTML = slider.value;
   });
-  
+
 }
 
 document.addEventListener("DOMContentLoaded", function () {
