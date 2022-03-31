@@ -50,4 +50,4 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 - Top right button
 - Favicon
 - Select all / deselect all
-- Create test url
+- Create test urlcdssh 
