@@ -31,12 +31,14 @@ type FieldMap<T> = {
 let Images: Image[];
 let NaturalImages: Image[];
 let Selects: FieldMap<HTMLSelectElement>;
+let Checks: FieldMap<Array<HTMLInputElement>>;
+let Inputs: FieldMap<HTMLInputElement>;
 let Tab: HTMLTableSectionElement;
-let Info: HTMLTableCellElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
 let FootCel: HTMLTableCellElement;
+let Filename: HTMLElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -77,17 +79,50 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
   img.src = src ? Data_root + src.file : "";
 }
 
+function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
+  // Options for canvas_image_detail objects.
+  const options = {
+    panel_width_factor: 0.4,
+    screen_min: 400,
+  }
+  // Create the detail image views using the canvas_image_detail jQueryUI plugin.
+  console.log(options, Img, NatImg);
+  // const top_detail = top_display.canvas_image_detail(options);
+  // const bottom_detail = bottom_display.canvas_image_detail(options);
+
+  // // Load the image URL into the image detail views.
+  // top_detail.load_image_url(url);
+  // bottom_detail.load_image_url(url);
+
+  // // Synchronize zoom and pan.
+  // top_detail.sync_with(bottom_detail);
+  // bottom_detail.sync_with(top_detail);
+}
+
+function setFilename(src: undefined | Image) {
+  const filename = <HTMLTableElement>document.getElementById("filename");
+  filename.innerHTML = "";
+  if (src.file) {
+    filename.innerText = src.file;
+  } else {
+    filename.innerText = "Error: please select an alternate image.";
+  }
+
+}
+
 function selectImage(
   row: undefined | HTMLTableRowElement,
   img: undefined | Image
 ) {
   setImgSrc(Img, img);
   setImgSrc(NatImg, img && getNaturalImage(img));
+  setImgDetail(Img, NatImg);
+  setFilename(img);
   if (SelectedRow) {
-    SelectedRow.classList.remove("bg-teal-100");
-  }
-  if (SelectedRow == row) {
-    row.classList.add("bg-teal-100");
+    SelectedRow.classList.remove("bg-indigo-100");
+  } else {
+    SelectedRow = row;
+    row.classList.add("bg-indigo-100");
   }
 }
 
@@ -97,11 +132,21 @@ function populateTable(retry = false): undefined {
   } = {};
   let f: Field;
   for (f of Fields) {
-    const sel = Selects[f];
+    const sel = Checks[f];
     const opts: Set<string> = new Set();
-    for (const o of sel.options)
-      if (o.selected && !o.classList.contains("hidden")) opts.add(o.value);
-    if (opts.size) filter[f] = opts;
+    if (sel) {
+      sel.forEach((o) => {
+        if (o.checked && !o.classList.contains("hidden")) {
+          opts.add(o.value);
+        }
+      });
+    } else {
+      console.log('no f', f);
+    }
+
+    if (opts.size) {
+      filter[f] = opts;
+    }
   }
 
   const vals = fieldMap(() => new Set());
@@ -109,32 +154,27 @@ function populateTable(retry = false): undefined {
     for (const f of Fields) {
       const s = i[f].toString();
       vals[f].add(s);
-      if (filter[f] && !filter[f].has(s)) return false;
+      if (filter[f] && !filter[f].has(s)) {
+        return false;
+      }
     }
     return true;
   });
 
-  for (f in Selects) {
-    const sel = Selects[f];
-    for (const o of sel.options) {
-      o.classList.toggle("hidden", !vals[f].has(o.value));
-    }
-  }
-
   const matches = match.length;
   if (matches == 0 && !retry) {
-    /* should only happen when leftward selections have invalidated rightward ones; 
+    /* should only happen when leftward selections have invalidated rightward ones;
         retry taking into account hidden options */
     return populateTable(true);
   }
 
   /* only show first 20 matches */
   // TODO: Add paginate?
-  match.splice(20);
+  match.splice(24);
   Tab.innerHTML = "";
   for (const i of match) {
     const row = Tab.insertRow(-1);
-    row.classList.add("border", "border-gray-200", "p-4");
+    row.classList.add("border", "border-slate-200", "p-4");
     for (f of Fields) {
       const td = row.insertCell(-1);
       td.innerText = i[f].toString();
@@ -142,8 +182,8 @@ function populateTable(retry = false): undefined {
         "px-4",
         "py-2",
         "whitespace-nowrap",
-        "text-sm",
-        "text-gray-500"
+        "text-xs",
+        "text-slate-500"
       );
     }
     row.onclick = () => selectImage(row, i);
@@ -156,25 +196,104 @@ function populateTable(retry = false): undefined {
     FootCel.textContent = "";
   } else {
     FootCel.textContent = `${matches} matching images`;
-    FootCel.classList.add("border", "font-semibold", "border-gray-200", "p-4");
+    FootCel.classList.add("border", "font-semibold", "border-slate-200", "p-4");
   }
+
+  // Set Filter Toggles
+  setFilterListeners();
 }
 
 function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
+function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
+  // Build Filter
+  const vals = new Set();
+  for (const im of Images) {
+    vals.add(im[f]);
+  }
+
+  // TODO: Add tag to indicate hidden table attributes
+  const filtDiv = document.createElement("div");
+  filtDiv.id = f;
+  // Start with pb-6 class then add py-6 class
+  const padding = first ?  'pb-6' : 'py-6';
+  filtDiv.classList.add(
+    "border-b",
+    "border-slate-200",
+    padding
+  );
+  const filtName = f == 'psychophysics_comparison' ? 'psychophysics<br/>comparison' : f.replace("_", "&nbsp;");
+  filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
+    <button type="button" data-filter=${f} class="py-3 bg-white w-full flex items-center justify-between text-sm text-slate-400 hover:text-slate-500"
+    name="plusminus">
+      <span class="font-medium text-xs text-slate-900 uppercase text-left">${filtName}</span>
+      <span class="ml-6 flex items-center">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        <svg class="h-5 w-5 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" />
+        </svg>
+      </span>
+    </button>
+  </h3>`;
+  const optionsContainer = document.createElement("div");
+  optionsContainer.id = "filter-section-" + f;
+  //  TODO: Fix this default for wonky closing on selection
+  optionsContainer.classList.add('pt-6', 'hidden');
+  const options = document.createElement('div');
+  options.classList.add("space-y-4");
+
+  const checkboxes = Array.from(vals).sort(genericCompare).map((v, c) => {
+    // Container flexbox
+    const optFlex = document.createElement('div');
+    optFlex.classList.add('flex', 'items-center');
+    const labelfor = `filter-${f.toString()}-${c}`;
+    // Checkbox
+    const inpt = document.createElement('input');
+    inpt.id = labelfor;
+    inpt.setAttribute("type", "checkbox");
+    inpt.value = v.toString();
+    inpt.checked = true;
+    inpt.classList.add(
+      'h-4', 'w-4', 'border-slate-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
+    );
+    inpt.onchange = () => populateTable();
+    // Label
+    const lbl = document.createElement('label');
+    lbl.setAttribute('for', labelfor);
+    lbl.classList.add('ml-2', 'text-xs', 'text-slate-600');
+    lbl.innerHTML = v.toString();
+    optFlex.appendChild(inpt);
+    optFlex.appendChild(lbl);
+    options.appendChild(optFlex);
+
+    return inpt;
+  })
+  Checks[f] = checkboxes;
+
+  optionsContainer.appendChild(options);
+  filtDiv.appendChild(optionsContainer);
+  filterform.appendChild(filtDiv);
+
+}
+
 function buildTable() {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
-  thead.classList.add("bg-cyan-700");
+  thead.classList.add("bg-slate-50");
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
-  // TODO: Replace with other key color
   selrow.classList.add("border", "p-4");
 
-  for (const f of Fields) {
+  // Build Filter Form
+  const filterform = <HTMLFormElement>document.getElementById("filterform");
+  filterform.innerHTML = "";
+
+  Fields.forEach((f, i) => {
     // Title row
     const name = namerow.insertCell(-1);
     name.innerText = f.replace("_", " ");
@@ -185,43 +304,52 @@ function buildTable() {
       "py-2",
       "text-left",
       "text-xs",
-      "font-medium",
-      "text-white",
+      "font-bold",
+      "text-slate-900",
       "uppercase",
       "tracking-wider"
     );
 
+    if (f !== 'random_seed') {
+      buildFilters(f, i < 1, filterform);
+    }
+
     // Selection Row
-    const sel = document.createElement("select");
-    sel.name = f;
-    sel.classList.add(
-      f,
-      "px-4",
-      "py-2",
-      "text-left",
-      "text-xs",
-      "text-gray-900",
-      "uppercase",
-      "tracking-wider"
-    );
-    sel.multiple = true;
-    selrow.insertCell(-1).append(sel);
-    sel.onchange = () => populateTable();
-    const vals = new Set();
-    for (const i of Images) vals.add(i[f]);
-    for (const v of Array.from(vals).sort(genericCompare))
-      sel.options.add(new Option(v.toString(), <string>v));
-    Selects[f] = sel;
-  }
+    // const sel = document.createElement("select");
+    // sel.name = f;
+    // sel.classList.add(
+    //   f,
+    //   "px-4",
+    //   "py-2",
+    //   "text-left",
+    //   "text-xs",
+    //   "text-slate-900",
+    //   "uppercase",
+    //   "tracking-wider"
+    // );
+    // sel.multiple = true;
+    // selrow.insertCell(-1).append(sel);
+    // sel.onchange = () => populateTable();
+    // const vals = new Set();
+    // for (const i of Images) {
+    //   vals.add(i[f]);
+    // }
+
+    // for (const v of Array.from(vals).sort(genericCompare)) {
+    //   sel.options.add(new Option(v.toString(), <string>v));
+    // }
+    // Selects[f] = sel;
+    // console.log("Selects and sel", Selects, sel);
+  });
 
   // Create Table Body
   Tab = table.createTBody();
-  Tab.classList.add("bg-white", "divide-y", "divide-gray-200");
+  Tab.classList.add("bg-white", "divide-y", "divide-slate-200");
 
   // Add Footer
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
-  footrow.classList.add("border-b", "border-gray-200", "bg-gray-50");
+  footrow.classList.add("border-b", "border-slate-200", "bg-slate-50");
   FootCel = footrow.insertCell(-1);
   FootCel.classList.add(
     "px-4",
@@ -229,7 +357,7 @@ function buildTable() {
     "text-left",
     "text-xs",
     "font-bold",
-    "text-gray-900",
+    "text-slate-900",
     "uppercase",
     "tracking-wider"
   );
@@ -238,10 +366,11 @@ function buildTable() {
   populateTable();
 }
 
-function init(metadata: MetadataJson) {
+function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
   Selects = <any>{};
+  Checks = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
 
@@ -252,7 +381,7 @@ async function loadMetadata() {
   const res = await fetch(Data_root + "metadata.json");
   if (res.ok) {
     const body: MetadataJson = await res.json();
-    init(body);
+    initPage(body);
   } else {
     errorMsg.textContent = "Unable to retrieve metadata.";
     errorContainer.classList.remove("hidden");
@@ -260,7 +389,46 @@ async function loadMetadata() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function (event) {
-  console.log("we ready baby 🎸");
+function setFilterListeners(){
+  const buttons = Array.from(document.getElementsByName('plusminus'));
+  buttons.forEach(b => {
+    b.addEventListener('click', () => {
+      const svgs = Array.from(b.lastElementChild.children);
+      svgs.forEach(sv => sv.classList.toggle('hidden'));
+      const fdropdown = document.getElementById(`filter-section-${b.dataset.filter}`);
+      fdropdown.classList.toggle('hidden');
+    });
+  })
+}
+
+function setZoom(){
+  const zoomselect = <HTMLSelectElement>document.getElementById('zoom');
+  zoomselect.addEventListener('change', function(e) {
+    const selected = zoomselect.options[zoomselect.selectedIndex].value;
+    const zoom = parseInt(selected);
+    console.log("Set Zoom to: ", zoom);
+    // TODO: Set Zoom
+    // set_position(last_position);
+});
+}
+
+function setSlider(){
+  const slider = <HTMLFormElement>document.getElementById("gamma");
+  const output = <HTMLSpanElement>document.getElementById("gamma-description");
+  console.log('slider value: ', slider.value);
+  output.innerHTML = slider.value; // Display the default slider value
+
+  // Update the current slider value (each time you drag the slider handle)
+  slider.addEventListener('change', function(e){
+    console.log('tests input', e);
+    output.innerHTML = slider.value;
+  });
+
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("we ready baby 🎸 🎸");
   loadMetadata();
+  setSlider();
+  setZoom();
 });
