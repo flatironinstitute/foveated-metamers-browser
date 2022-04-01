@@ -174,7 +174,7 @@ function populateTable(retry = false): undefined {
   Tab.innerHTML = "";
   for (const i of match) {
     const row = Tab.insertRow(-1);
-    row.classList.add("border", "border-slate-200", "p-4");
+    row.classList.add("border", "border-neutral-200", "p-4");
     for (f of Fields) {
       const td = row.insertCell(-1);
       td.innerText = i[f].toString();
@@ -183,7 +183,7 @@ function populateTable(retry = false): undefined {
         "py-2",
         "whitespace-nowrap",
         "text-xs",
-        "text-slate-500"
+        "text-neutral-500"
       );
     }
     row.onclick = () => selectImage(row, i);
@@ -196,7 +196,7 @@ function populateTable(retry = false): undefined {
     FootCel.textContent = "";
   } else {
     FootCel.textContent = `${matches} matching images`;
-    FootCel.classList.add("border", "font-semibold", "border-slate-200", "p-4");
+    FootCel.classList.add("border", "font-semibold", "border-neutral-200", "p-4");
   }
 
   // Set Filter Toggles
@@ -221,14 +221,14 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
   const padding = first ?  'pb-6' : 'py-6';
   filtDiv.classList.add(
     "border-b",
-    "border-slate-200",
+    "border-neutral-200",
     padding
   );
   const filtName = f == 'psychophysics_comparison' ? 'psychophysics<br/>comparison' : f.replace("_", "&nbsp;");
   filtDiv.innerHTML = `<h3 class="-my-3 flow-root">
-    <button type="button" data-filter=${f} class="py-3 bg-white w-full flex items-center justify-between text-sm text-slate-400 hover:text-slate-500"
+    <button type="button" data-filter=${f} class="py-3 bg-white w-full flex items-center justify-between text-sm text-neutral-400 hover:text-neutral-500"
     name="plusminus">
-      <span class="font-medium text-xs text-slate-900 uppercase text-left">${filtName}</span>
+      <span class="font-medium text-xs text-neutral-900 uppercase text-left">${filtName}</span>
       <span class="ml-6 flex items-center">
         <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
@@ -258,13 +258,13 @@ function buildFilters(f: Field, first: boolean, filterform: HTMLFormElement){
     inpt.value = v.toString();
     inpt.checked = true;
     inpt.classList.add(
-      'h-4', 'w-4', 'border-slate-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
+      'h-4', 'w-4', 'border-neutral-300', 'rounded', 'text-indigo-600', 'focus:ring-indigo-500'
     );
     inpt.onchange = () => populateTable();
     // Label
     const lbl = document.createElement('label');
     lbl.setAttribute('for', labelfor);
-    lbl.classList.add('ml-2', 'text-xs', 'text-slate-600');
+    lbl.classList.add('ml-2', 'text-xs', 'text-neutral-600');
     lbl.innerHTML = v.toString();
     optFlex.appendChild(inpt);
     optFlex.appendChild(lbl);
@@ -284,7 +284,7 @@ function buildTable() {
   const table = <HTMLTableElement>document.getElementById("table");
   table.innerHTML = "";
   const thead = table.createTHead();
-  thead.classList.add("bg-slate-50");
+  thead.classList.add("bg-neutral-50");
   const namerow = thead.insertRow(-1);
   const selrow = thead.insertRow(-1);
   selrow.classList.add("border", "p-4");
@@ -305,7 +305,7 @@ function buildTable() {
       "text-left",
       "text-xs",
       "font-bold",
-      "text-slate-900",
+      "text-neutral-900",
       "uppercase",
       "tracking-wider"
     );
@@ -323,7 +323,7 @@ function buildTable() {
     //   "py-2",
     //   "text-left",
     //   "text-xs",
-    //   "text-slate-900",
+    //   "text-neutral-900",
     //   "uppercase",
     //   "tracking-wider"
     // );
@@ -344,12 +344,12 @@ function buildTable() {
 
   // Create Table Body
   Tab = table.createTBody();
-  Tab.classList.add("bg-white", "divide-y", "divide-slate-200");
+  Tab.classList.add("bg-white", "divide-y", "divide-neutral-200");
 
   // Add Footer
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
-  footrow.classList.add("border-b", "border-slate-200", "bg-slate-50");
+  footrow.classList.add("border-b", "border-neutral-200", "bg-neutral-50");
   FootCel = footrow.insertCell(-1);
   FootCel.classList.add(
     "px-4",
@@ -357,7 +357,7 @@ function buildTable() {
     "text-left",
     "text-xs",
     "font-bold",
-    "text-slate-900",
+    "text-neutral-900",
     "uppercase",
     "tracking-wider"
   );

@@ -38,7 +38,6 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 
 ## Notes
-put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
 - Move slider and zoom to the top left
 - Images only in full / half / quarter / eigth of full size.
 - Add lorem ipsum for where pleasse do not zoom dude. will go.
@@ -55,7 +54,9 @@ put site at /~wbroderick/metamers and a simple index.html with link to personal 
 - Fix slate to gray?
 - Top right button update link
 - Favicon
-- Create test url
 
 Punt
 - Select all / deselect all
+
+Done: 
+- Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
