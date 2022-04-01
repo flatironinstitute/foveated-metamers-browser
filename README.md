@@ -39,8 +39,8 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 ## Notes
 - Model: "" Target Image: "" Scaling Value: ""
-- Paginate https://stackoverflow.com/questions/42761068/paginate-javascript-array
-- Scaling to a dropdown - choices will update based on model.
+- Fix pagination https://stackoverflow.com/questions/42761068/paginate-javascript-array
+- Fix highlight
 
 ### With New Image Module
 - Image hover and zoom in webpack bug
@@ -51,6 +51,7 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 - Initialization type: make white into "white noise", move that to top of list.
 - Add sortby on table column heads
 - Table: metadata definiation on hover or in filter area?
+
 
 
 ### Done: 

@@ -100,14 +100,16 @@ function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
 }
 
 function setFilename(src: undefined | Image) {
-  const filename = <HTMLTableElement>document.getElementById("filename");
-  filename.innerHTML = "";
-  if (src.file) {
-    filename.innerText = src.file;
-  } else {
-    filename.innerText = "Error: please select an alternate image.";
-  }
-
+  const fileprops : Array<keyof Image> = ['file', 'target_image', 'scaling'];
+  fileprops.forEach((prop: keyof Image) => {
+    const p = <HTMLElement>document.getElementById(prop);
+    p.innerHTML = "";
+    if (src[prop]) {
+      p.innerText = src[prop].toString();
+    } else {
+      p.innerText = "File data not found";
+    }
+  })
 }
 
 function selectImage(
