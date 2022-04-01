@@ -38,25 +38,25 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 
 ## Notes
-- Move slider and zoom to the top left
-- Images only in full / half / quarter / eigth of full size.
-- Add lorem ipsum for where pleasse do not zoom dude. will go.
+- Model: "" Target Image: "" Scaling Value: ""
+- Paginate https://stackoverflow.com/questions/42761068/paginate-javascript-array
 - Scaling to a dropdown - choices will update based on model.
-- Initialization type: make white into "white noise", move that to top of list.
+
+### With New Image Module
+- Image hover and zoom in webpack bug
 - Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true;
 - Tie the 50% gray to the gamma
-- Move the about to the top then image then table.
-- Model: "" Target Image: "" Scaling Value: ""
-- Image hover and zoom in webpack bug
-- Paginate https://stackoverflow.com/questions/42761068/paginate-javascript-array
+- Select all / deselect all
+- Add lorem ipsum for where please do not zoom dude
+- Initialization type: make white into "white noise", move that to top of list.
 - Add sortby on table column heads
 - Table: metadata definiation on hover or in filter area?
-- Fix slate to gray?
+
+
+### Done: 
+- Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
+- Move slider and zoom to the top left
 - Top right button update link
 - Favicon
-
-Punt
-- Select all / deselect all
-
-Done: 
-- Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
+- Fix slate to gray?
+- Move the about to the top then image then table.
