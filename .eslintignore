@@ -3,3 +3,4 @@ dist
 webpack.*
 postcss.config.js
 tailwind.config.js
+src/assets/js/*
