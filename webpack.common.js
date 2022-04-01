@@ -23,7 +23,12 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
+      filename: "index.html",
       template: path.join(__dirname, "src", "index.html"),
+    }),
+    new HtmlWebpackPlugin({
+      filename: "metamers.html",
+      template: path.join(__dirname, "src", "metamers.html"),
     }),
     // Copies contents of assets file to dist, for files < 244KB.
     new CopyPlugin({
