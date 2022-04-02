@@ -38,7 +38,6 @@ let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
 let FootCel: HTMLTableCellElement;
-let Filename: HTMLElement;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -78,6 +77,11 @@ function getNaturalImage(img: Image): undefined | Image {
 function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
   img.src = src ? Data_root + src.file : "";
 }
+
+// function paginate(matches:[Image], pageSize: number, pageNumber: number) {
+//   // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
+//   return matches.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
+// }
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
   // Options for canvas_image_detail objects.
@@ -163,15 +167,14 @@ function populateTable(retry = false): undefined {
     return true;
   });
 
-  const matches = match.length;
-  if (matches == 0 && !retry) {
+  if (match.length == 0 && !retry) {
     /* should only happen when leftward selections have invalidated rightward ones;
         retry taking into account hidden options */
     return populateTable(true);
   }
 
-  /* only show first 20 matches */
-  // TODO: Add paginate?
+  // const matches = paginate(match, 24, 0);
+  console.log(match, typeof match);
   match.splice(24);
   Tab.innerHTML = "";
   for (const i of match) {
@@ -194,10 +197,10 @@ function populateTable(retry = false): undefined {
   SelectedRow = undefined;
   selectImage(Tab.rows[0], match[0]);
 
-  if (matches == 1) {
+  if (match.length == 1) {
     FootCel.textContent = "";
   } else {
-    FootCel.textContent = `${matches} matching images`;
+    FootCel.textContent = `${match.length} matching images`;
     FootCel.classList.add("border", "font-semibold", "border-neutral-200", "p-4");
   }
 
