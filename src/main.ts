@@ -38,6 +38,7 @@ let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
 let FootCel: HTMLTableCellElement;
+let Page: number | 1;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -78,10 +79,10 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
   img.src = src ? Data_root + src.file : "";
 }
 
-// function paginate(matches:[Image], pageSize: number, pageNumber: number) {
-//   // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
-//   return matches.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
-// }
+function paginate(matches:typeof Images) {
+  // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
+  return matches.slice((Page - 1) * 24, Page * 24);
+}
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
   // Options for canvas_image_detail objects.
@@ -173,11 +174,11 @@ function populateTable(retry = false): undefined {
     return populateTable(true);
   }
 
-  // const matches = paginate(match, 24, 0);
-  console.log(match, typeof match);
-  match.splice(24);
+  const matches = paginate(match);
+  // console.log(match, typeof match);
+  // match.splice(24);
   Tab.innerHTML = "";
-  for (const i of match) {
+  for (const i of matches) {
     const row = Tab.insertRow(-1);
     row.classList.add("border", "border-neutral-200", "p-4");
     for (f of Fields) {
@@ -195,12 +196,15 @@ function populateTable(retry = false): undefined {
   }
 
   SelectedRow = undefined;
-  selectImage(Tab.rows[0], match[0]);
+  selectImage(Tab.rows[0], matches[0]);
 
-  if (match.length == 1) {
+  const chunks:number = Math.ceil(match.length / 24);
+  const chunk:number = Page * 24;
+
+  if (chunks == 1) {
     FootCel.textContent = "";
   } else {
-    FootCel.textContent = `${match.length} matching images`;
+    FootCel.textContent = `Showing ${chunk - 24} to ${chunk} of ${match.length} results`;
     FootCel.classList.add("border", "font-semibold", "border-neutral-200", "p-4");
   }
 
