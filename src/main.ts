@@ -388,6 +388,7 @@ function initPage(metadata: MetadataJson) {
 
 async function loadMetadata() {
   const res = await fetch(Data_root + "metadata.json");
+  console.log(Data_root + "metadata.json");
   if (res.ok) {
     const body: MetadataJson = await res.json();
     initPage(body);

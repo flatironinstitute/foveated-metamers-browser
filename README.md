@@ -38,7 +38,6 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 
 ## Notes
-- Model: "" Target Image: "" Scaling Value: ""
 - Fix pagination https://stackoverflow.com/questions/42761068/paginate-javascript-array
 - Fix highlight
 
