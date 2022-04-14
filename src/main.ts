@@ -109,7 +109,7 @@ function setFilename(src: undefined | Image) {
   fileprops.forEach((prop: keyof Image) => {
     const p = <HTMLElement>document.getElementById(prop);
     p.innerHTML = "";
-    if (src[prop]) {
+    if (src && src[prop]) {
       p.innerText = src[prop].toString();
     } else {
       p.innerText = "File data not found";
