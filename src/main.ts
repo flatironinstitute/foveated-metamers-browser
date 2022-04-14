@@ -81,7 +81,7 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
 
 function paginate(matches:typeof Images) {
   const start = Page * 24;
-  return matches.slice(Page * 24, start + 24);
+  return matches.slice(start, start + 24);
 }
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
@@ -378,6 +378,7 @@ function buildTable() {
 function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
+  Page = 0;
   Selects = <any>{};
   Checks = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
