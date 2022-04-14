@@ -38,7 +38,7 @@ let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
 let FootCel: HTMLTableCellElement;
-let Page: number | 1;
+let Page: number | 0;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -80,8 +80,8 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
 }
 
 function paginate(matches:typeof Images) {
-  // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
-  return matches.slice((Page - 1) * 24, Page * 24);
+  const start = Page * 24;
+  return matches.slice(Page * 24, start + 24);
 }
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
