@@ -31,12 +31,10 @@ type FieldMap<T> = {
 let Images: Image[];
 let NaturalImages: Image[];
 let Checks: FieldMap<Array<HTMLInputElement>>;
-let Inputs: FieldMap<HTMLInputElement>;
 let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
-let FootCel: HTMLTableCellElement;
 let Page: number | 0;
 
 const Field_descriptions: FieldMap<string> = {
@@ -83,17 +81,50 @@ function paginate(matches:typeof Images) {
   return matches.slice(start, start + 24);
 }
 
-function setPaginationListeners(){
-  const prev = <HTMLElement>document.getElementById('previous');
-  const next = <HTMLElement>document.getElementById('next');
-  prev.addEventListener('click', () => {
-    Page -= 1;
+function setPaginationDisplay(match:typeof Images){
+  const chunks:number = Math.ceil(match.length / 24);
+  const chunk:number = Page * 24;
+
+  const start = <HTMLElement>document.getElementById('startchunk');
+  const end = <HTMLElement>document.getElementById('endchunk');
+  const length = <HTMLElement>document.getElementById('startchunk');
+  const nowShowing = <HTMLElement>document.getElementById('nowshowing');
+  const prevBtn = <HTMLElement>document.getElementById('previous');
+  const nextBtn = <HTMLElement>document.getElementById('next');
+
+  if (chunks <= 1) {
+    [nowShowing, prevBtn, nextBtn].forEach(btn => btn.classList.toggle('hidden'));
+  } else {
+    [nowShowing, prevBtn, nextBtn].forEach(btn => btn.classList.remove('hidden'));
+
+    if (Page == 0 ) {
+      start.innerText = "1";
+      end.innerText = "24";
+    } else {
+      start.innerText = (chunk - 24).toString();
+      end.innerText = (chunk).toString();
+    }
+    length.innerText = (match.length).toString();
+  }
+
+  prevBtn.addEventListener('click', () => {
+    if (Page > 0) {
+      Page -= 1
+    } else {
+      prevBtn.classList.add('hidden');
+    }
     populateTable();
   })
-  next.addEventListener('click', () =>{
-    Page += 1;
+  nextBtn.addEventListener('click', () =>{
+    Page < chunks ? Page += 1 : null;
+    if (Page < chunks ) {
+      Page += 1
+    } else {
+      nextBtn.classList.add('hidden');
+    }
     populateTable();
   })
+
 }
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
@@ -187,6 +218,8 @@ function populateTable(retry = false): undefined {
   }
 
   const matches = paginate(match);
+  setPaginationDisplay(match);
+
   Tab.innerHTML = "";
   for (const i of matches) {
     const row = Tab.insertRow(-1);
@@ -208,17 +241,7 @@ function populateTable(retry = false): undefined {
   SelectedRow = undefined;
   selectImage(Tab.rows[0], matches[0]);
 
-  const chunks:number = Math.ceil(match.length / 24);
-  const chunk:number = Page * 24;
-
-  if (chunks <= 1) {
-    FootCel.textContent = "";
-  } else {
-    FootCel.textContent = `Showing ${chunk > 0 ? chunk - 24 : 1} to ${chunk > 0 ? chunk : 24} of ${match.length} results`;
-  }
-
   setFilterListeners();
-  setPaginationListeners();
 }
 
 function genericCompare(a: any, b: any) {
@@ -337,26 +360,6 @@ function buildTable() {
   // Create Table Body
   Tab = table.createTBody();
   Tab.classList.add("bg-white", "divide-y", "divide-neutral-200");
-
-  // Add Footer
-  const foot = table.createTFoot();
-  const footrow = foot.insertRow(-1);
-  footrow.classList.add("border-b", "border-neutral-200", "bg-neutral-50");
-  FootCel = footrow.insertCell(-1);
-  FootCel.classList.add(
-    "px-4",
-    "py-3",
-    "flex",
-    "items-center",
-    "justify-between",
-    "text-neutral-900",
-    "text-xs",
-    "sm:px-6",
-    "hidden",
-    "sm:block",
-    "uppercase"
-  );
-  FootCel.colSpan = Fields.length;
 
   populateTable();
 }
