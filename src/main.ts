@@ -36,7 +36,6 @@ let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
-let FootCel: HTMLTableCellElement;
 let FootLeft: HTMLTableCellElement;
 let FootRight: HTMLTableCellElement;
 let Page: number | 0;
@@ -204,7 +203,10 @@ function populateTable(retry = false): undefined {
     FootLeft.textContent = "";
   } else {
     FootLeft.textContent = `Showing ${chunk > 0 ? chunk - 24 : 1} to ${chunk > 0 ? chunk : 24} of ${match.length} results`;
-    FootCel.classList.add("border", "font-semibold", "border-neutral-200", "p-4");
+    FootRight.innerHTML = `<div class="flex-1 flex justify-between sm:justify-end">
+      <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Previous </a>
+      <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Next </a>
+      </div>`
   }
 
   // Set Filter Toggles
@@ -332,19 +334,19 @@ function buildTable() {
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
   footrow.classList.add("border-b", "border-neutral-200", "bg-neutral-50");
-  FootCel = footrow.insertCell(-1);
-  FootCel.classList.add(
+  FootLeft = footrow.insertCell(-1);
+  FootLeft.classList.add(
     "px-4",
     "py-3",
     "flex",
     "items-center",
     "justify-between",
     "text-neutral-900",
-    "sm:px-6"
+    "sm:px-6",
+    "hidden sm:block"
   );
-  FootCel.colSpan = Fields.length;
-  FootLeft = FootCel.insertCell(0);
-  FootRight = FootCel.insertCell(1);
+  FootLeft.colSpan = Fields.length / 2;
+  FootRight = footrow.insertCell(0);
 
   populateTable();
 }
