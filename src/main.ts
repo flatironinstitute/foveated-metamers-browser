@@ -84,6 +84,19 @@ function paginate(matches:typeof Images) {
   return matches.slice(start, start + 24);
 }
 
+function setPaginationListeners(){
+  const prev = <HTMLElement>document.getElementById('previous');
+  const next = <HTMLElement>document.getElementById('next');
+  prev.addEventListener('click', () => {
+    Page -= 1;
+    populateTable();
+  })
+  next.addEventListener('click', () =>{
+    Page += 1;
+    populateTable();
+  })
+}
+
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
   // Options for canvas_image_detail objects.
   const options = {
@@ -209,8 +222,8 @@ function populateTable(retry = false): undefined {
       </div>`
   }
 
-  // Set Filter Toggles
   setFilterListeners();
+  setPaginationListeners();
 }
 
 function genericCompare(a: any, b: any) {
@@ -353,7 +366,6 @@ function buildTable() {
     "px-4",
     "py-3",
   );
-
 
   populateTable();
 }
