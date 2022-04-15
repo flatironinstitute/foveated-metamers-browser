@@ -343,7 +343,8 @@ function buildTable() {
     "justify-between",
     "text-neutral-900",
     "sm:px-6",
-    "hidden sm:block"
+    "hidden",
+    "sm:block"
   );
   FootLeft.colSpan = Fields.length / 2;
   FootRight = footrow.insertCell(0);
