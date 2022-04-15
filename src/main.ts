@@ -137,7 +137,6 @@ function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
     screen_min: 400,
   }
   // Create the detail image views using the canvas_image_detail jQueryUI plugin.
-  console.log(options, Img, NatImg);
   // const top_detail = top_display.canvas_image_detail(options);
   // const bottom_detail = bottom_display.canvas_image_detail(options);
 
@@ -357,7 +356,6 @@ function buildTable() {
       buildFilters(f, i < 1, filterform);
     }
 
-    setPaginationListeners();
   });
 
   // Create Table Body
@@ -365,6 +363,7 @@ function buildTable() {
   Tab.classList.add("bg-white", "divide-y", "divide-neutral-200");
 
   populateTable();
+  setPaginationListeners();
 }
 
 function initPage(metadata: MetadataJson) {
@@ -409,7 +408,6 @@ function setZoom(){
   zoomselect.addEventListener('change', function(e) {
     const selected = zoomselect.options[zoomselect.selectedIndex].value;
     const zoom = parseInt(selected);
-    console.log("Set Zoom to: ", zoom);
     // TODO: Set Zoom
     // set_position(last_position);
 });
