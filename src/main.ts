@@ -92,26 +92,14 @@ function paginate(matches:typeof Images) {
   const endIndex = Math.min(startIndex + PageSize - 1, matches.length - 1);
 
   // Setup pagination buttons and summary copy
-  setPaginationDisplay(matches, totalPages, startIndex, endIndex);
+  setPaginationDisplay(matches, startIndex, endIndex);
 
   // Return the selected array slice.
   return matches.slice(startIndex, endIndex);
 }
 
-// const prevBtn = <HTMLElement>document.getElementById('previous');
-// const nextBtn = <HTMLElement>document.getElementById('next');
-
-
-// prevBtn.addEventListener('click', () => {
-
-// })
-// nextBtn.addEventListener('click', () =>{
-
-// })
-
 function setPaginationDisplay(
   matches:typeof Images,
-  totalPages: number,
   startIndex: number,
   endIndex: number,
   ){
@@ -122,7 +110,24 @@ function setPaginationDisplay(
 
   start.innerText = (startIndex + 1).toString();
   end.innerText = (endIndex + 1).toString();
-  length.innerText = (totalPages).toString();
+  length.innerText = (matches.length).toString();
+}
+
+function setPaginationListeners(){
+  const prevBtn = <HTMLElement>document.getElementById('previous');
+  const nextBtn = <HTMLElement>document.getElementById('next');
+
+
+  prevBtn.addEventListener('click', () => {
+    CurrentPage -= 1;
+    console.log("previous", CurrentPage);
+    populateTable();
+  })
+  nextBtn.addEventListener('click', () =>{
+    CurrentPage += 1;
+    console.log("next", CurrentPage);
+    populateTable();
+  })
 }
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
@@ -352,6 +357,7 @@ function buildTable() {
       buildFilters(f, i < 1, filterform);
     }
 
+    setPaginationListeners();
   });
 
   // Create Table Body
