@@ -172,10 +172,9 @@ function selectImage(
   setFilename(img);
   if (SelectedRow) {
     SelectedRow.classList.remove("bg-indigo-100");
-  } else {
-    SelectedRow = row;
-    row.classList.add("bg-indigo-100");
   }
+  SelectedRow = row;
+  row.classList.add("bg-indigo-100");
 }
 
 function populateTable(retry = false): undefined {
