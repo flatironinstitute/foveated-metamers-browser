@@ -235,6 +235,7 @@ function populateTable(retry = false): undefined {
         "text-xs",
         "text-neutral-500"
       );
+      td.onclick = () => selectImage(row, i);
     }
     row.onclick = () => selectImage(row, i);
   }
