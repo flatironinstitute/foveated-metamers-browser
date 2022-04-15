@@ -204,8 +204,8 @@ function populateTable(retry = false): undefined {
   } else {
     FootLeft.textContent = `Showing ${chunk > 0 ? chunk - 24 : 1} to ${chunk > 0 ? chunk : 24} of ${match.length} results`;
     FootRight.innerHTML = `<div class="flex-1 flex justify-between sm:justify-end">
-      <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Previous </a>
-      <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Next </a>
+      <a id="previous" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Previous </a>
+      <a id="next" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Next </a>
       </div>`
   }
 
@@ -348,8 +348,9 @@ function buildTable() {
     "sm:block",
     "uppercase"
   );
-  FootLeft.colSpan = Fields.length / 2;
-  FootRight = footrow.insertCell(0);
+  FootLeft.colSpan = 50;
+  FootRight = footrow.insertCell(1);
+  FootRight.colSpan = 50;
 
   populateTable();
 }
