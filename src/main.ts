@@ -36,8 +36,7 @@ let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
-let FootLeft: HTMLTableCellElement;
-let FootRight: HTMLTableCellElement;
+let FootCel: HTMLTableCellElement;
 let Page: number | 0;
 
 const Field_descriptions: FieldMap<string> = {
@@ -213,13 +212,9 @@ function populateTable(retry = false): undefined {
   const chunk:number = Page * 24;
 
   if (chunks <= 1) {
-    FootLeft.textContent = "";
+    FootCel.textContent = "";
   } else {
-    FootLeft.textContent = `Showing ${chunk > 0 ? chunk - 24 : 1} to ${chunk > 0 ? chunk : 24} of ${match.length} results`;
-    FootRight.innerHTML = `<div class="flex-1 flex justify-between sm:justify-end">
-      <a id="previous" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Previous </a>
-      <a id="next" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"> Next </a>
-      </div>`
+    FootCel.textContent = `Showing ${chunk > 0 ? chunk - 24 : 1} to ${chunk > 0 ? chunk : 24} of ${match.length} results`;
   }
 
   setFilterListeners();
@@ -347,8 +342,8 @@ function buildTable() {
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
   footrow.classList.add("border-b", "border-neutral-200", "bg-neutral-50");
-  FootLeft = footrow.insertCell(0);
-  FootLeft.classList.add(
+  FootCel = footrow.insertCell(-1);
+  FootCel.classList.add(
     "px-4",
     "py-3",
     "flex",
@@ -361,11 +356,7 @@ function buildTable() {
     "sm:block",
     "uppercase"
   );
-  FootRight = footrow.insertCell(1);
-  FootRight.classList.add(
-    "px-4",
-    "py-3",
-  );
+  FootCel.colSpan = Fields.length;
 
   populateTable();
 }
