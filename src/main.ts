@@ -30,7 +30,6 @@ type FieldMap<T> = {
 
 let Images: Image[];
 let NaturalImages: Image[];
-let Selects: FieldMap<HTMLSelectElement>;
 let Checks: FieldMap<Array<HTMLInputElement>>;
 let Inputs: FieldMap<HTMLInputElement>;
 let Tab: HTMLTableSectionElement;
@@ -38,6 +37,8 @@ let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
 let FootCel: HTMLTableCellElement;
+let FootLeft: HTMLTableCellElement;
+let FootRight: HTMLTableCellElement;
 let Page: number | 0;
 
 const Field_descriptions: FieldMap<string> = {
@@ -175,8 +176,6 @@ function populateTable(retry = false): undefined {
   }
 
   const matches = paginate(match);
-  // console.log(match, typeof match);
-  // match.splice(24);
   Tab.innerHTML = "";
   for (const i of matches) {
     const row = Tab.insertRow(-1);
@@ -201,10 +200,10 @@ function populateTable(retry = false): undefined {
   const chunks:number = Math.ceil(match.length / 24);
   const chunk:number = Page * 24;
 
-  if (chunks == 1) {
-    FootCel.textContent = "";
+  if (chunks <= 1) {
+    FootLeft.textContent = "";
   } else {
-    FootCel.textContent = `Showing ${chunk - 24} to ${chunk} of ${match.length} results`;
+    FootLeft.textContent = `Showing ${chunk > 0 ? chunk - 24 : 1} to ${chunk > 0 ? chunk : 24} of ${match.length} results`;
     FootCel.classList.add("border", "font-semibold", "border-neutral-200", "p-4");
   }
 
@@ -323,32 +322,6 @@ function buildTable() {
       buildFilters(f, i < 1, filterform);
     }
 
-    // Selection Row
-    // const sel = document.createElement("select");
-    // sel.name = f;
-    // sel.classList.add(
-    //   f,
-    //   "px-4",
-    //   "py-2",
-    //   "text-left",
-    //   "text-xs",
-    //   "text-neutral-900",
-    //   "uppercase",
-    //   "tracking-wider"
-    // );
-    // sel.multiple = true;
-    // selrow.insertCell(-1).append(sel);
-    // sel.onchange = () => populateTable();
-    // const vals = new Set();
-    // for (const i of Images) {
-    //   vals.add(i[f]);
-    // }
-
-    // for (const v of Array.from(vals).sort(genericCompare)) {
-    //   sel.options.add(new Option(v.toString(), <string>v));
-    // }
-    // Selects[f] = sel;
-    // console.log("Selects and sel", Selects, sel);
   });
 
   // Create Table Body
@@ -362,15 +335,16 @@ function buildTable() {
   FootCel = footrow.insertCell(-1);
   FootCel.classList.add(
     "px-4",
-    "py-2",
-    "text-left",
-    "text-xs",
-    "font-bold",
+    "py-3",
+    "flex",
+    "items-center",
+    "justify-between",
     "text-neutral-900",
-    "uppercase",
-    "tracking-wider"
+    "sm:px-6"
   );
   FootCel.colSpan = Fields.length;
+  FootLeft = FootCel.insertCell(0);
+  FootRight = FootCel.insertCell(1);
 
   populateTable();
 }
@@ -378,8 +352,7 @@ function buildTable() {
 function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
-  Page = 0;
-  Selects = <any>{};
+  Page = <number>0;
   Checks = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
@@ -412,6 +385,10 @@ function setFilterListeners(){
   })
 }
 
+function jumpToPageMatch(page: number){
+  console.log(page);
+}
+
 function setZoom(){
   const zoomselect = <HTMLSelectElement>document.getElementById('zoom');
   zoomselect.addEventListener('change', function(e) {
@@ -426,19 +403,16 @@ function setZoom(){
 function setSlider(){
   const slider = <HTMLFormElement>document.getElementById("gamma");
   const output = <HTMLSpanElement>document.getElementById("gamma-description");
-  console.log('slider value: ', slider.value);
   output.innerHTML = slider.value; // Display the default slider value
 
   // Update the current slider value (each time you drag the slider handle)
   slider.addEventListener('change', function(e){
-    console.log('tests input', e);
     output.innerHTML = slider.value;
   });
 
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("we ready baby 🎸 🎸");
   loadMetadata();
   setSlider();
   setZoom();
