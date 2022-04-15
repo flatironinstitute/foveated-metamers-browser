@@ -334,7 +334,7 @@ function buildTable() {
   const foot = table.createTFoot();
   const footrow = foot.insertRow(-1);
   footrow.classList.add("border-b", "border-neutral-200", "bg-neutral-50");
-  FootLeft = footrow.insertCell(-1);
+  FootLeft = footrow.insertCell(0);
   FootLeft.classList.add(
     "px-4",
     "py-3",
@@ -342,9 +342,11 @@ function buildTable() {
     "items-center",
     "justify-between",
     "text-neutral-900",
+    "text-xs",
     "sm:px-6",
     "hidden",
-    "sm:block"
+    "sm:block",
+    "uppercase"
   );
   FootLeft.colSpan = Fields.length / 2;
   FootRight = footrow.insertCell(0);
