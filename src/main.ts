@@ -35,7 +35,8 @@ let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
-let Page: number | 0;
+let CurrentPage: number;
+let PageSize: number;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -77,54 +78,51 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
 }
 
 function paginate(matches:typeof Images) {
-  const start = Page * 24;
-  return matches.slice(start, start + 24);
-}
-
-function setPaginationDisplay(match:typeof Images){
-  const chunks:number = Math.ceil(match.length / 24);
-  const chunk:number = Page * 24;
-
-  const start = <HTMLElement>document.getElementById('startchunk');
-  const end = <HTMLElement>document.getElementById('endchunk');
-  const length = <HTMLElement>document.getElementById('startchunk');
-  const nowShowing = <HTMLElement>document.getElementById('nowshowing');
-  const prevBtn = <HTMLElement>document.getElementById('previous');
-  const nextBtn = <HTMLElement>document.getElementById('next');
-
-  if (chunks <= 1) {
-    [nowShowing, prevBtn, nextBtn].forEach(btn => btn.classList.toggle('hidden'));
-  } else {
-    [nowShowing, prevBtn, nextBtn].forEach(btn => btn.classList.remove('hidden'));
-
-    if (Page == 0 ) {
-      start.innerText = "1";
-      end.innerText = "24";
-    } else {
-      start.innerText = (chunk - 24).toString();
-      end.innerText = (chunk).toString();
-    }
-    length.innerText = (match.length).toString();
+  // calculate total pages
+  const totalPages = Math.ceil(matches.length / PageSize);
+  // ensure current page isn't out of range
+  if (CurrentPage < 1) {
+    CurrentPage = 1;
+  } else if (CurrentPage > totalPages) {
+    CurrentPage = totalPages;
   }
 
-  prevBtn.addEventListener('click', () => {
-    if (Page > 0) {
-      Page -= 1
-    } else {
-      prevBtn.classList.add('hidden');
-    }
-    populateTable();
-  })
-  nextBtn.addEventListener('click', () =>{
-    Page < chunks ? Page += 1 : null;
-    if (Page < chunks ) {
-      Page += 1
-    } else {
-      nextBtn.classList.add('hidden');
-    }
-    populateTable();
-  })
+  // calculate start and end item indexes
+  const startIndex = (CurrentPage - 1) * PageSize;
+  const endIndex = Math.min(startIndex + PageSize - 1, matches.length - 1);
 
+  // Setup pagination buttons and summary copy
+  setPaginationDisplay(matches, totalPages, startIndex, endIndex);
+
+  // Return the selected array slice.
+  return matches.slice(startIndex, endIndex);
+}
+
+// const prevBtn = <HTMLElement>document.getElementById('previous');
+// const nextBtn = <HTMLElement>document.getElementById('next');
+
+
+// prevBtn.addEventListener('click', () => {
+
+// })
+// nextBtn.addEventListener('click', () =>{
+
+// })
+
+function setPaginationDisplay(
+  matches:typeof Images,
+  totalPages: number,
+  startIndex: number,
+  endIndex: number,
+  ){
+
+  const start = <HTMLElement>document.getElementById('start');
+  const end = <HTMLElement>document.getElementById('end');
+  const length = <HTMLElement>document.getElementById('total');
+
+  start.innerText = (startIndex + 1).toString();
+  end.innerText = (endIndex + 1).toString();
+  length.innerText = (totalPages).toString();
 }
 
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
@@ -218,7 +216,6 @@ function populateTable(retry = false): undefined {
   }
 
   const matches = paginate(match);
-  setPaginationDisplay(match);
 
   Tab.innerHTML = "";
   for (const i of matches) {
@@ -367,7 +364,8 @@ function buildTable() {
 function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
-  Page = <number>0;
+  CurrentPage = 1;
+  PageSize = 24;
   Checks = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
@@ -398,10 +396,6 @@ function setFilterListeners(){
       fdropdown.classList.toggle('hidden');
     });
   })
-}
-
-function jumpToPageMatch(page: number){
-  console.log(page);
 }
 
 function setZoom(){
