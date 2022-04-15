@@ -348,9 +348,12 @@ function buildTable() {
     "sm:block",
     "uppercase"
   );
-  FootLeft.colSpan = 50;
   FootRight = footrow.insertCell(1);
-  FootRight.colSpan = 50;
+  FootRight.classList.add(
+    "px-4",
+    "py-3",
+  );
+
 
   populateTable();
 }
