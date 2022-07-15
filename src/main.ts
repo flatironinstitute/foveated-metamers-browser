@@ -30,15 +30,13 @@ type FieldMap<T> = {
 
 let Images: Image[];
 let NaturalImages: Image[];
-let Selects: FieldMap<HTMLSelectElement>;
 let Checks: FieldMap<Array<HTMLInputElement>>;
-let Inputs: FieldMap<HTMLInputElement>;
 let Tab: HTMLTableSectionElement;
 let Img: HTMLImageElement;
 let NatImg: HTMLImageElement;
 let SelectedRow: undefined | HTMLTableRowElement;
-let FootCel: HTMLTableCellElement;
-let Filename: HTMLElement;
+let CurrentPage: number;
+let PageSize: number;
 
 const Field_descriptions: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -79,6 +77,59 @@ function setImgSrc(img: HTMLImageElement, src: undefined | Image) {
   img.src = src ? Data_root + src.file : "";
 }
 
+function paginate(matches:typeof Images) {
+  // calculate total pages
+  const totalPages = Math.ceil(matches.length / PageSize);
+  // ensure current page isn't out of range
+  if (CurrentPage < 1) {
+    CurrentPage = 1;
+  } else if (CurrentPage > totalPages) {
+    CurrentPage = totalPages;
+  }
+
+  // calculate start and end item indexes
+  const startIndex = (CurrentPage - 1) * PageSize;
+  const endIndex = Math.min(startIndex + PageSize - 1, matches.length - 1);
+
+  // Setup pagination buttons and summary copy
+  setPaginationDisplay(matches, startIndex, endIndex);
+
+  // Return the selected array slice.
+  return matches.slice(startIndex, endIndex);
+}
+
+function setPaginationDisplay(
+  matches:typeof Images,
+  startIndex: number,
+  endIndex: number,
+  ){
+
+  const start = <HTMLElement>document.getElementById('start');
+  const end = <HTMLElement>document.getElementById('end');
+  const length = <HTMLElement>document.getElementById('total');
+
+  start.innerText = (startIndex + 1).toString();
+  end.innerText = (endIndex + 1).toString();
+  length.innerText = (matches.length).toString();
+}
+
+function setPaginationListeners(){
+  const prevBtn = <HTMLElement>document.getElementById('previous');
+  const nextBtn = <HTMLElement>document.getElementById('next');
+
+
+  prevBtn.addEventListener('click', () => {
+    CurrentPage -= 1;
+    console.log("previous", CurrentPage);
+    populateTable();
+  })
+  nextBtn.addEventListener('click', () =>{
+    CurrentPage += 1;
+    console.log("next", CurrentPage);
+    populateTable();
+  })
+}
+
 function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
   // Options for canvas_image_detail objects.
   const options = {
@@ -86,7 +137,6 @@ function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
     screen_min: 400,
   }
   // Create the detail image views using the canvas_image_detail jQueryUI plugin.
-  console.log(options, Img, NatImg);
   // const top_detail = top_display.canvas_image_detail(options);
   // const bottom_detail = bottom_display.canvas_image_detail(options);
 
@@ -104,7 +154,7 @@ function setFilename(src: undefined | Image) {
   fileprops.forEach((prop: keyof Image) => {
     const p = <HTMLElement>document.getElementById(prop);
     p.innerHTML = "";
-    if (src[prop]) {
+    if (src && src[prop]) {
       p.innerText = src[prop].toString();
     } else {
       p.innerText = "File data not found";
@@ -122,10 +172,9 @@ function selectImage(
   setFilename(img);
   if (SelectedRow) {
     SelectedRow.classList.remove("bg-indigo-100");
-  } else {
-    SelectedRow = row;
-    row.classList.add("bg-indigo-100");
   }
+  SelectedRow = row;
+  row.classList.add("bg-indigo-100");
 }
 
 function populateTable(retry = false): undefined {
@@ -163,18 +212,16 @@ function populateTable(retry = false): undefined {
     return true;
   });
 
-  const matches = match.length;
-  if (matches == 0 && !retry) {
+  if (match.length == 0 && !retry) {
     /* should only happen when leftward selections have invalidated rightward ones;
         retry taking into account hidden options */
     return populateTable(true);
   }
 
-  /* only show first 20 matches */
-  // TODO: Add paginate?
-  match.splice(24);
+  const matches = paginate(match);
+
   Tab.innerHTML = "";
-  for (const i of match) {
+  for (const i of matches) {
     const row = Tab.insertRow(-1);
     row.classList.add("border", "border-neutral-200", "p-4");
     for (f of Fields) {
@@ -187,21 +234,14 @@ function populateTable(retry = false): undefined {
         "text-xs",
         "text-neutral-500"
       );
+      td.onclick = () => selectImage(row, i);
     }
     row.onclick = () => selectImage(row, i);
   }
 
   SelectedRow = undefined;
-  selectImage(Tab.rows[0], match[0]);
+  selectImage(Tab.rows[0], matches[0]);
 
-  if (matches == 1) {
-    FootCel.textContent = "";
-  } else {
-    FootCel.textContent = `${matches} matching images`;
-    FootCel.classList.add("border", "font-semibold", "border-neutral-200", "p-4");
-  }
-
-  // Set Filter Toggles
   setFilterListeners();
 }
 
@@ -316,62 +356,21 @@ function buildTable() {
       buildFilters(f, i < 1, filterform);
     }
 
-    // Selection Row
-    // const sel = document.createElement("select");
-    // sel.name = f;
-    // sel.classList.add(
-    //   f,
-    //   "px-4",
-    //   "py-2",
-    //   "text-left",
-    //   "text-xs",
-    //   "text-neutral-900",
-    //   "uppercase",
-    //   "tracking-wider"
-    // );
-    // sel.multiple = true;
-    // selrow.insertCell(-1).append(sel);
-    // sel.onchange = () => populateTable();
-    // const vals = new Set();
-    // for (const i of Images) {
-    //   vals.add(i[f]);
-    // }
-
-    // for (const v of Array.from(vals).sort(genericCompare)) {
-    //   sel.options.add(new Option(v.toString(), <string>v));
-    // }
-    // Selects[f] = sel;
-    // console.log("Selects and sel", Selects, sel);
   });
 
   // Create Table Body
   Tab = table.createTBody();
   Tab.classList.add("bg-white", "divide-y", "divide-neutral-200");
 
-  // Add Footer
-  const foot = table.createTFoot();
-  const footrow = foot.insertRow(-1);
-  footrow.classList.add("border-b", "border-neutral-200", "bg-neutral-50");
-  FootCel = footrow.insertCell(-1);
-  FootCel.classList.add(
-    "px-4",
-    "py-2",
-    "text-left",
-    "text-xs",
-    "font-bold",
-    "text-neutral-900",
-    "uppercase",
-    "tracking-wider"
-  );
-  FootCel.colSpan = Fields.length;
-
   populateTable();
+  setPaginationListeners();
 }
 
 function initPage(metadata: MetadataJson) {
   Images = metadata.metamers;
   NaturalImages = metadata.natural_images;
-  Selects = <any>{};
+  CurrentPage = 1;
+  PageSize = 24;
   Checks = <any>{};
   Img = <HTMLImageElement>document.getElementById("img");
   NatImg = <HTMLImageElement>document.getElementById("natimg");
@@ -381,6 +380,7 @@ function initPage(metadata: MetadataJson) {
 
 async function loadMetadata() {
   const res = await fetch(Data_root + "metadata.json");
+  console.log(Data_root + "metadata.json");
   if (res.ok) {
     const body: MetadataJson = await res.json();
     initPage(body);
@@ -408,7 +408,6 @@ function setZoom(){
   zoomselect.addEventListener('change', function(e) {
     const selected = zoomselect.options[zoomselect.selectedIndex].value;
     const zoom = parseInt(selected);
-    console.log("Set Zoom to: ", zoom);
     // TODO: Set Zoom
     // set_position(last_position);
 });
@@ -417,19 +416,16 @@ function setZoom(){
 function setSlider(){
   const slider = <HTMLFormElement>document.getElementById("gamma");
   const output = <HTMLSpanElement>document.getElementById("gamma-description");
-  console.log('slider value: ', slider.value);
   output.innerHTML = slider.value; // Display the default slider value
 
   // Update the current slider value (each time you drag the slider handle)
   slider.addEventListener('change', function(e){
-    console.log('tests input', e);
     output.innerHTML = slider.value;
   });
 
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("we ready baby 🎸 🎸");
   loadMetadata();
   setSlider();
   setZoom();
