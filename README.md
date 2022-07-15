@@ -38,21 +38,16 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 
 ## Notes
-- Model: "" Target Image: "" Scaling Value: ""
-- Fix pagination https://stackoverflow.com/questions/42761068/paginate-javascript-array
-- Fix highlight
-
-### With New Image Module
-- Image hover and zoom in webpack bug
+- image hover and zoom
+- add zoom warning
 - Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true;
+- Initialization type: make white into "white noise", move that to top of list.
 - Tie the 50% gray to the gamma
 - Select all / deselect all
-- Add lorem ipsum for where please do not zoom dude
-- Initialization type: make white into "white noise", move that to top of list.
+- pagination
 - Add sortby on table column heads
-- Table: metadata definiation on hover or in filter area?
-
-
+- link to poster on top button
+- Table: metadata definition on hover or in filter area?
 
 ### Done: 
 - Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
@@ -61,3 +56,5 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 - Favicon
 - Fix slate to gray?
 - Move the about to the top then image then table.
+- Model: "" Target Image: "" Scaling Value: ""
+- Button
