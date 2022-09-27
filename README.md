@@ -29,10 +29,10 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 2. **Make the production build**
 
    ```zsh
-   npm run lint && npm run pretty
+   npm run build
    ```
 
-3. Move this to the ~/<username>/public_www/ folder
+3. Move `dist` to the ~/<username>/public_www/ folder
 
     Your project is now running at `https://flatironinstitute.org/~<username>
 
