@@ -32,7 +32,7 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
    npm run build
    ```
 
-3. Move `dist` to the ~/<USERNAME>/public_www/ folder
+3. Move `dist` to the ~/USERNAME/public_www/ folder
 
     Your project is now running at `https://flatironinstitute.org/~<username>
 
