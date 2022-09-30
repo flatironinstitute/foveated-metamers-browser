@@ -32,11 +32,10 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
    npm run build
    ```
 
-3. Move this to the ~/<username>/public_www/ folder
+3. Move `dist` to the ~/<username>/public_www/ folder
 
     Your project is now running at `https://flatironinstitute.org/~<username>
 
-## Todo:
 
 ### Liz
 - Image hover and zoom in webpack bug - Liz
@@ -48,8 +47,7 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 ### Billy
 - Gamma Slider: Liz to make the slider and give a stub function that WB can update.
 - Select all / deselect all
-- Add lorem ipsum for where please do not zoom dude
-- Initialization type: make white into "white noise", move that to top of list.
+- pagination
 - Add sortby on table column heads
 - Table: metadata def on hover or in filter area?
 - Check pagination
@@ -63,3 +61,5 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 - Favicon
 - Fix slate to gray?
 - Move the about to the top then image then table.
+- Model: "" Target Image: "" Scaling Value: ""
+- Button
