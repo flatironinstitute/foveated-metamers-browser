@@ -29,31 +29,34 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 2. **Make the production build**
 
    ```zsh
-   npm run lint && npm run pretty
+   npm run build
    ```
 
 3. Move this to the ~/<username>/public_www/ folder
 
     Your project is now running at `https://flatironinstitute.org/~<username>
 
+## Todo:
 
-## Notes
-- Fix pagination https://stackoverflow.com/questions/42761068/paginate-javascript-array
-- Fix highlight
+### Liz
+- Image hover and zoom in webpack bug - Liz
+- Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true; - Liz
+- Filter selection bug - Liz
+- Gamma Slider: Liz to make the slider and give a stub function that WB can update.
+- Tie the 50% gray to the gamma - Liz
 
-### With New Image Module
-- Image hover and zoom in webpack bug
-- Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true;
-- Tie the 50% gray to the gamma
+### Billy
+- Gamma Slider: Liz to make the slider and give a stub function that WB can update.
 - Select all / deselect all
 - Add lorem ipsum for where please do not zoom dude
 - Initialization type: make white into "white noise", move that to top of list.
 - Add sortby on table column heads
-- Table: metadata definiation on hover or in filter area?
+- Table: metadata def on hover or in filter area?
+- Check pagination
+- Check highlight
 
 
-
-### Done: 
+### Done:
 - Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
 - Move slider and zoom to the top left
 - Top right button update link
