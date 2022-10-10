@@ -150,11 +150,14 @@ function setImgDetail(Img: HTMLImageElement, NatImg: HTMLImageElement) {
 }
 
 function setFilename(src: undefined | Image) {
-  const fileprops : Array<keyof Image> = ['model_name', 'target_image', 'scaling'];
+  const fileprops : Array<keyof Image> = ['model_name', 'target_image', 'scaling',
+                                          'random_seed'];
+  console.log(src)
   fileprops.forEach((prop: keyof Image) => {
     const p = <HTMLElement>document.getElementById(prop);
     p.innerHTML = "";
-    if (src && src[prop]) {
+    // random_seed can be 0, and we want to display that
+    if (src && (src[prop] == 0 || src[prop])) {
       p.innerText = src[prop].toString();
     } else {
       p.innerText = "File data not found";
