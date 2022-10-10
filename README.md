@@ -46,12 +46,12 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 ### Billy
 - Gamma Slider: Liz to make the slider and give a stub function that WB can update.
-- Select all / deselect all
-- pagination
-- Add sortby on table column heads
+- Select all / deselect all -- for filter checkboxes
+- Add sortby on table column heads -- not sure about this
+- change image order to that found in paper, both for filter checkboxes and table rows
 - Table: metadata def on hover or in filter area?
-- Check pagination
-- Check highlight
+- Check pagination -- this appears to be working
+- Check highlight -- this appears to be working
 
 
 ### Done:
