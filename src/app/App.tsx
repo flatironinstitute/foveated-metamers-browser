@@ -56,7 +56,11 @@ interface AppState {
   paginated_rows: Image[];
   selected_image: Image | undefined;
   selected_natural_image: Image | undefined;
+  use_gamma: StateObject<boolean>;
+  gamma_exponent: StateObject<number>;
 }
+
+const GAMMA_FILTER_ID = `gamma-adjustment`;
 
 const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
 
@@ -118,7 +122,7 @@ function ImageMeta() {
       <li>
         <span className="mr-1 font-semibold">Model:</span>
         <span className="mr-3" id="model_name">
-          {selected_image?.file ?? "-"}
+          {selected_image?.model_name ?? "-"}
         </span>
       </li>
       <li>
@@ -133,14 +137,52 @@ function ImageMeta() {
           {selected_image?.scaling ?? "-"}
         </span>
       </li>
+      <li>
+        <span className="mr-1 font-semibold">File Path</span>
+        <span className="mr-3" id="scaling">
+          {selected_image?.file ?? "-"}
+        </span>
+      </li>
     </ul>
   );
 }
 
 function ImageTools() {
+  const context = useContext(AppContext);
   return (
-    <div className="flex items-center mb-3 whitespace-nowrap">
-      {/* <div class="flex-none flex items-center ml-auto pl-4 sm:pl-6">
+    <>
+      <div className="h-5"></div>
+      <div className="flex items-center mb-3 whitespace-nowrap">
+        <div className="flex flex-col gap-y-4">
+          <div className="flex gap-x-2">
+            <input
+              type="checkbox"
+              id="use-gamma"
+              className="h-7 w-7"
+              checked={context.use_gamma.value}
+              onChange={() => {
+                context.use_gamma.set((d) => !d);
+              }}
+            />
+            <label className="text-xl" htmlFor="use-gamma">
+              Gamma Correction
+            </label>
+          </div>
+          <input
+            disabled={context.use_gamma?.value ? false : true}
+            className="block"
+            id="gamma"
+            type="range"
+            min="0.8"
+            max="8"
+            step="0.2"
+            value={context.gamma_exponent.value}
+            onChange={(e) => {
+              context.gamma_exponent.set(parseFloat(e.target.value));
+            }}
+          />
+        </div>
+        {/* <div class="flex-none flex items-center ml-auto pl-4 sm:pl-6">
     <div class="group p-0.5 flex">
       <div>
         <label for="email" class="block text-sm font-medium text-gamma-700">Gamma</label>
@@ -162,25 +204,68 @@ function ImageTools() {
       </div>
     </div>
   </div> */}
+      </div>
+    </>
+  );
+}
+
+function ImageGridImage({ path, label }: { path?: string; label: string }) {
+  const [loading, set_loading] = useState(true);
+  const className = `col-span-1 flex flex-col justify-center relative ${
+    path ? `` : `hidden`
+  }`;
+  const use_gamma = useContext(AppContext).use_gamma.value;
+
+  useEffect(() => {
+    set_loading(true);
+  }, [path]);
+
+  const overlay = <Overlay>Loading...</Overlay>;
+
+  const src = `${DATA_URL_BASE}${path}`;
+
+  return (
+    <div className={className}>
+      <img
+        key={src}
+        className="py-2 w-600"
+        alt="target image"
+        src={src}
+        onLoad={(e) => {
+          set_loading(false);
+        }}
+        style={{
+          filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
+        }}
+      />
+      <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
+        {label}
+      </h2>
+      {loading && overlay}
     </div>
   );
 }
 
-function ImageGridImage({ path }: { path?: string }) {
-  const className = `col-span-1 flex flex-col justify-center ${
-    path ? `` : `hidden`
-  }`;
+function GammaFilter() {
+  const context = useContext(AppContext);
+  const props = {
+    type: "gamma",
+    amplitude: "1",
+    exponent: context.gamma_exponent.value.toString(),
+    offset: "0",
+  };
   return (
-    <div className={className}>
-      <img
-        className="py-2 w-600"
-        alt="target image"
-        src={`${DATA_URL_BASE}${path}`}
-      />
-      <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
-        Target Image
-      </h2>
-    </div>
+    <svg width="0" height="0">
+      <defs>
+        <filter id={GAMMA_FILTER_ID}>
+          <feComponentTransfer>
+            <feFuncR {...props}></feFuncR>
+            <feFuncG {...props}></feFuncG>
+            <feFuncB {...props}></feFuncB>
+          </feComponentTransfer>
+        </filter>
+      </defs>
+    </svg>
   );
 }
 
@@ -192,34 +277,20 @@ function ImageGrid() {
       <div className="bg-gamma-500 rounded lg:col-span-6">
         <div className="max-w-max mx-auto py-4 px-10 mb-12">
           <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-            <ImageGridImage path={selected_natural_image?.file} />
-            {/* <div className="col-span-1 flex flex-col justify-center">
-              <img
-                className="py-2 w-600"
-                alt="target image"
-                src={`${DATA_URL_BASE}${selected_natural_image?.file}`}
-              />
-              <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
-                Target Image
-              </h2>
-            </div> */}
+            <ImageGridImage
+              path={selected_natural_image?.file}
+              label="Target Image"
+            />
             {/* <!-- <div class="col-span-1 flex flex-col justify-center">
           <img class="py-2 w-600" id="natimg-det" alt="target image detail" src="./assets/richter3.jpg">
           <h2 class="text-center text-black text-sm font-semibold uppercase tracking-wide ">
             Target Image Detail
           </h2>
         </div> --> */}
-            <ImageGridImage path={selected_image?.file} />
-            {/* <div className="col-span-1 flex flex-col justify-center">
-              <img
-                className="py-2 w-600"
-                alt="synethsized image"
-                src={`${DATA_URL_BASE}${selected_image?.file}`}
-              />
-              <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide ">
-                Synthesized Image
-              </h2>
-            </div> */}
+            <ImageGridImage
+              path={selected_image?.file}
+              label="Synthesized Image"
+            />
             {/* <!-- <div class="col-span-1 flex flex-col justify-center">
           <img class="py-2 w-600" id="img-det" alt="synethsized image detail" src="./assets/richter3.jpg">
           <h2 class="text-center text-black text-sm font-semibold uppercase tracking-wide ">
@@ -229,6 +300,7 @@ function ImageGrid() {
           </div>
         </div>
       </div>
+      <GammaFilter />
     </div>
   );
 }
@@ -656,6 +728,8 @@ function create_app_state(): AppState {
   const filters = useStateObject<FilterState | null>(null);
   const current_page = useStateObject<number>(1);
   const selected_image_key = useStateObject<string | null>(null);
+  const use_gamma = useStateObject<boolean>(false);
+  const gamma_exponent = useStateObject<number>(1.0);
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
@@ -761,6 +835,8 @@ function create_app_state(): AppState {
     paginated_rows,
     selected_image,
     selected_natural_image,
+    use_gamma,
+    gamma_exponent,
   };
 }
 
