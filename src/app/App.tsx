@@ -1,116 +1,24 @@
 "use client";
 
-import type { Context, Dispatch, SetStateAction } from "react";
-import { createContext, useEffect, useContext, useState, useMemo } from "react";
-import { sort, ascending } from "d3-array";
+import { Context, forwardRef, useRef } from "react";
+import type { FilterID, Field, Image } from "./types";
+import type { AppState } from "./app_state";
+import type { Dimensions } from "./useResizeObserver";
+import { createContext, useEffect, useContext, useState } from "react";
+import { sort } from "d3-array";
 import { format as d3format } from "d3-format";
-
-interface Metadata {
-  model_name: string;
-  downsampled: boolean;
-  psychophysics_comparison: string;
-  target_image: string;
-  scaling: number;
-  initialization_type: string;
-  random_seed: number;
-  gamma_corrected: boolean;
-}
-
-type Image = Metadata & {
-  file: string;
-  __hash?: string;
-};
-
-type MetadataJson = {
-  metamers: Image[];
-  natural_images: Image[];
-};
-
-type Field = keyof Metadata;
-
-type FilterID = keyof Omit<Metadata, "random_seed">;
-
-type FieldMap<T> = {
-  [Property in Field]: T;
-};
-
-type FilterState = {
-  [Key in FilterID]: {
-    [k: string]: boolean;
-  };
-};
-
-type StateObject<T> = {
-  value: T;
-  set: Dispatch<SetStateAction<T>>;
-};
-
-interface AppState {
-  metadata: StateObject<MetadataJson | null>;
-  filters: StateObject<FilterState | null>;
-  current_page: StateObject<number>;
-  selected_image_key: StateObject<string | null>;
-  page_start: number;
-  page_end: number;
-  filtered_rows: Image[];
-  paginated_rows: Image[];
-  selected_image: Image | undefined;
-  selected_natural_image: Image | undefined;
-  use_gamma: StateObject<boolean>;
-  gamma_exponent: StateObject<number>;
-}
+import useResizeObserver from "./useResizeObserver";
+import create_app_state, {
+  DATA_URL_BASE,
+  FILTER_IDS,
+  FIELDS,
+  FIELD_DESCRIPTIONS,
+  log,
+} from "./app_state";
 
 const GAMMA_FILTER_ID = `gamma-adjustment`;
 
-const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
-
-const FIELD_DESCRIPTIONS: FieldMap<string> = {
-  model_name: "The model used to synthesize this image.",
-  downsampled: "Whether the image was downsampled before synthesis.",
-  psychophysics_comparison:
-    "The experimental comparison(s) this image was used in.",
-  target_image:
-    "The natural image whose model representation this metamer was synthesized to match.",
-  scaling: "The model's scaling parameter used to synthesize this image.",
-  initialization_type:
-    "The image used to initialize metamer synthesis fo this image.",
-  random_seed:
-    "The number used to set pytorch and numpy's random number generators for synthesis.",
-  gamma_corrected: "Whether this image has been gamma corrected (to 2.2?).",
-};
-
-const FIELDS: Field[] = Object.keys(FIELD_DESCRIPTIONS) as Field[];
-
-const FILTER_IDS: FilterID[] = FIELDS.filter(
-  (d): d is FilterID => d !== "random_seed"
-);
-
-const INITIAL_FILTER_STATE = Object.fromEntries(
-  FILTER_IDS.map((filter_id) => [filter_id, {}])
-) as FilterState;
-
-const PAGE_SIZE = 25;
-
-function log(...args: any[]) {
-  console.log(`🖼️`, ...args);
-}
-
 const format_commas = d3format(`,`);
-
-function get_image_hash(image: Image) {
-  let string = ``;
-  const keys = Object.keys(image).filter((d) => d !== "__hash");
-  for (const key of sort(keys, ascending)) {
-    const value = image[key as keyof Image];
-    string += value?.toString() + "_";
-  }
-  return string;
-}
-
-function useStateObject<T>(initial_value: T): StateObject<T> {
-  const [value, set] = useState<T>(initial_value);
-  return { value, set };
-}
 
 const AppContext: Context<AppState> = createContext({} as AppState);
 
@@ -147,110 +55,249 @@ function ImageMeta() {
   );
 }
 
-function ImageTools() {
+function BigCheckbox({
+  checked,
+  onChange,
+  id,
+  label,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  id: string;
+  label: string;
+}) {
+  return (
+    <div className="flex gap-x-2">
+      <input
+        type="checkbox"
+        id={id}
+        className="h-7 w-7"
+        checked={checked}
+        onChange={onChange}
+      />
+      <label className="text-xl" htmlFor={id}>
+        {label}
+      </label>
+    </div>
+  );
+}
+
+function GammaForm() {
   const context = useContext(AppContext);
   const gamma_enabled = context.use_gamma.value;
+
+  return (
+    <div className="flex flex-col gap-y-4 w-[300px]">
+      <BigCheckbox
+        id="use-gamma"
+        label="Gamma Correction"
+        checked={gamma_enabled}
+        onChange={() => context.use_gamma.set((d) => !d)}
+      />
+      <div className="flex gap-x-4">
+        <input
+          disabled={gamma_enabled ? false : true}
+          className="block"
+          id="gamma-value"
+          type="range"
+          min="0.8"
+          max="8"
+          step="0.2"
+          value={context.gamma_exponent.value}
+          onChange={(e) => {
+            context.gamma_exponent.set(parseFloat(e.target.value));
+          }}
+        />
+        <label
+          htmlFor="gamma-value"
+          className={`text-xl ${gamma_enabled ? `` : `opacity-20`}`}
+        >
+          {d3format(`.1f`)(context.gamma_exponent.value)}
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function ZoomForm() {
+  const context = useContext(AppContext);
+  const zoom_enabled = context.use_zoom.value;
+
+  return (
+    <div className="flex flex-col gap-y-4 w-[300px]">
+      <BigCheckbox
+        id="use-zoom"
+        label="Zoom"
+        checked={zoom_enabled}
+        onChange={() => context.use_zoom.set((d) => !d)}
+      />
+    </div>
+  );
+}
+
+function ImageTools() {
   return (
     <>
       <div className="h-5"></div>
-      <div className="flex items-center mb-3 whitespace-nowrap">
-        <div className="flex flex-col gap-y-4 w-[300px]">
-          <div className="flex gap-x-2">
-            <input
-              type="checkbox"
-              id="use-gamma"
-              className="h-7 w-7"
-              checked={gamma_enabled}
-              onChange={() => {
-                context.use_gamma.set((d) => !d);
-              }}
-            />
-            <label className="text-xl" htmlFor="use-gamma">
-              Gamma Correction
-            </label>
-          </div>
-          <div className="flex gap-x-4">
-            <input
-              disabled={gamma_enabled ? false : true}
-              className="block"
-              id="gamma-value"
-              type="range"
-              min="0.8"
-              max="8"
-              step="0.2"
-              value={context.gamma_exponent.value}
-              onChange={(e) => {
-                context.gamma_exponent.set(parseFloat(e.target.value));
-              }}
-            />
-            <label
-              htmlFor="gamma-value"
-              className={`text-xl ${gamma_enabled ? `` : `opacity-20`}`}
-            >
-              {d3format(`.1f`)(context.gamma_exponent.value)}
-            </label>
-          </div>
-        </div>
-        {/* <div class="flex-none flex items-center ml-auto pl-4 sm:pl-6">
-    <div class="group p-0.5 flex">
-      <div>
-        <label for="email" class="block text-sm font-medium text-gamma-700">Gamma</label>
-        <div class="mt-1 slide-container">
-          <input type="range" min="0.8" max="8" value="1" step="0.2" class="slider" id="gamma">
-        </div>
-        <p class="mt-2 text-sm text-gamma-500">Value: <span id="gamma-description"> </span></p>
+      <div className="flex flex-col gap-y-5">
+        <GammaForm />
+        <ZoomForm />
       </div>
-    </div>
-    <div class="hidden sm:block w-px h-6 bg-gamma-200 ml-6"></div>
-    <div class="relative hidden sm:block ml-2.5">
-      <div style="opacity:1" :style="'opacity:1'">
-        <select x-model="activeSnippet" class="bg-transparent text-gamma-900 rounded-lg border-0 form-select p-0 pl-3.5 pr-[1.875rem] h-9 w-full sm:text-sm font-medium focus:shadow-none focus-visible:ring-2 focus-visible:ring-teal-500" style="background-image:none;">
-          <option selected value="1" >Zoom 1x</option>
-          <option value="2">Zoom 2x</option>
-          <option value="3">Zoom 3x</option>
-          <option value="4">Zoom 4x</option>
-        </select>
-      </div>
-    </div>
-  </div> */}
-      </div>
+      <div className="h-5"></div>
     </>
   );
 }
 
-function ImageGridImage({ path, label }: { path?: string; label: string }) {
-  const [loading, set_loading] = useState(true);
-  const className = `col-span-1 flex flex-col justify-center relative ${
-    path ? `` : `hidden`
-  }`;
-  const use_gamma = useContext(AppContext).use_gamma.value;
+function useImageSrc(type: "natural" | "synthesized") {
+  const context = useContext(AppContext);
+  const context_key: keyof AppState =
+    type === "natural" ? "selected_natural_image" : "selected_image";
+  const image = context[context_key] as Image;
+  if (!image) return undefined;
+  const path = image?.file;
+  const src = `${DATA_URL_BASE}${path}`;
+  return src;
+}
 
+function Minimap() {
+  const context = useContext(AppContext);
+
+  const use_zoom = context.use_zoom.value;
+
+  const minimap_size = (() => {
+    const view = context.image_viewport_size.value;
+    if (!view) return null;
+    const nat = context.current_image_natural_size.value;
+    if (!nat) return null;
+    return {
+      width: (view.width / nat.width) * view.width,
+      height: (view.height / nat.height) * view.height,
+    };
+  })();
+
+  return use_zoom && minimap_size ? (
+    <div
+      className="absolute outline outline-2 outline-red-500"
+      style={{
+        top: 0,
+        left: 0,
+        width: minimap_size.width,
+        height: minimap_size.height,
+      }}
+    ></div>
+  ) : null;
+}
+
+function ImageGridImage({
+  label,
+  type,
+  measure,
+}: {
+  path?: string;
+  label: string;
+  type: "natural" | "synthesized";
+  measure?: boolean;
+}) {
+  const context = useContext(AppContext);
+
+  const src = useImageSrc(type);
+
+  const base_class = `col-span-1 flex flex-col justify-center relative`;
+  const className = `${base_class} ${src ? `` : `hidden`}`;
+
+  // Get the image viewport size, maybe
+  const image_ref = useRef<HTMLImageElement>(null);
+  const image_size = useResizeObserver(measure ? image_ref : undefined);
+  useEffect(() => {
+    if (!image_size) return;
+    log("Image viewport size:", image_size);
+    context.image_viewport_size.set(image_size);
+  }, [image_size]);
+
+  // Apply gamma correction filter
+  const use_gamma = useContext(AppContext).use_gamma.value;
+  const style = {
+    filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
+  };
+
+  // Show loading overlay
+  const [loading, set_loading] = useState(true);
   useEffect(() => {
     set_loading(true);
-  }, [path]);
-
+  }, [src]);
   const overlay = <Overlay>Loading...</Overlay>;
-
-  const src = `${DATA_URL_BASE}${path}`;
+  const onLoad = () => {
+    set_loading(false);
+    if (measure && image_ref?.current) {
+      context.current_image_natural_size.set({
+        width: image_ref.current.naturalWidth,
+        height: image_ref.current.naturalHeight,
+      });
+    }
+  };
 
   return (
     <div className={className}>
-      <img
-        key={src}
-        className="py-2 w-600"
-        alt="target image"
-        src={src}
-        onLoad={(e) => {
-          set_loading(false);
-        }}
-        style={{
-          filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
-        }}
-      />
       <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
         {label}
       </h2>
+      <div className="h-4"></div>
+      <div className="relative">
+        <img
+          key={src}
+          alt={label}
+          src={src}
+          onLoad={onLoad}
+          style={style}
+          ref={image_ref}
+        />
+        <Minimap />
+      </div>
       {loading && overlay}
+    </div>
+  );
+}
+
+function ImageGridZoomBox({
+  label,
+  type,
+}: {
+  label: string;
+  type: "natural" | "synthesized";
+}) {
+  const context = useContext(AppContext);
+  const viewport_size = context.image_viewport_size.value ?? {
+    width: 0,
+    height: 0,
+  };
+  const { width, height } = viewport_size;
+
+  const className = `col-span-1 flex flex-col justify-center relative`;
+  const use_gamma = useContext(AppContext).use_gamma.value;
+
+  const src = useImageSrc(type);
+
+  return (
+    <div className={className}>
+      <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
+        {label}
+      </h2>
+      <div className="h-4"></div>
+      <div
+        className="overflow-hidden outline outline-2 outline-red-500"
+        style={{ width: `${width}px`, height: `${height}px` }}
+      >
+        <img
+          key={src}
+          src={src}
+          className="object-none"
+          alt={label}
+          style={{
+            filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
+            objectPosition: `top 0px left 0px`,
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -282,32 +329,54 @@ function GammaFilter() {
 
 function ImageGrid() {
   const context = useContext(AppContext);
-  const { selected_image, selected_natural_image } = context;
+  const { selected_image, selected_natural_image, use_zoom } = context;
+
+  const natural_image_ref = useRef<HTMLImageElement>(null);
+  const synthesized_image_ref = useRef<HTMLImageElement>(null);
+
+  const image_size = useResizeObserver(natural_image_ref);
+
+  useEffect(() => {
+    context.image_viewport_size.set(image_size);
+  }, [image_size]);
+
+  useEffect(() => {
+    if (!synthesized_image_ref.current) return;
+    console.log("SETTING NAT", synthesized_image_ref.current);
+    context.current_image_natural_size.set({
+      width: synthesized_image_ref.current.naturalWidth,
+      height: synthesized_image_ref.current.naturalHeight,
+    });
+  }, [synthesized_image_ref.current]);
+
   return (
     <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-6 gap-x-8 gap-y-10">
       <div className="bg-gamma-500 rounded lg:col-span-6">
         <div className="max-w-max mx-auto py-4 px-10 mb-12">
           <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
             <ImageGridImage
+              type="natural"
               path={selected_natural_image?.file}
               label="Target Image"
+              measure
             />
-            {/* <!-- <div class="col-span-1 flex flex-col justify-center">
-          <img class="py-2 w-600" id="natimg-det" alt="target image detail" src="./assets/richter3.jpg">
-          <h2 class="text-center text-black text-sm font-semibold uppercase tracking-wide ">
-            Target Image Detail
-          </h2>
-        </div> --> */}
             <ImageGridImage
+              type="synthesized"
               path={selected_image?.file}
               label="Synthesized Image"
             />
-            {/* <!-- <div class="col-span-1 flex flex-col justify-center">
-          <img class="py-2 w-600" id="img-det" alt="synethsized image detail" src="./assets/richter3.jpg">
-          <h2 class="text-center text-black text-sm font-semibold uppercase tracking-wide ">
-            Synthesized Image Detail
-          </h2>
-        </div> --> */}
+            {use_zoom.value && (
+              <>
+                <ImageGridZoomBox
+                  type="natural"
+                  label="Target Image (Zoomed)"
+                />
+                <ImageGridZoomBox
+                  type="synthesized"
+                  label="Synthesized Image (Zoomed)"
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -732,123 +801,6 @@ function TableAndFilters() {
       </div>
     </section>
   );
-}
-
-function create_app_state(): AppState {
-  const metadata = useStateObject<MetadataJson | null>(null);
-  const filters = useStateObject<FilterState | null>(null);
-  const current_page = useStateObject<number>(1);
-  const selected_image_key = useStateObject<string | null>(null);
-  const use_gamma = useStateObject<boolean>(false);
-  const gamma_exponent = useStateObject<number>(1.0);
-
-  // Fetch the metadata, and populate the initial filters state
-  useEffect(() => {
-    const url = new URL(DATA_URL_BASE + "metadata.json");
-    (async () => {
-      log(`Fetching metadata from ${url}`);
-      const response = await fetch(url);
-      const metadata_ = (await response.json()) as MetadataJson;
-      log(`Metadata:`, metadata_);
-
-      const metamers: Image[] = metadata_.metamers;
-
-      // Hash all the images
-      for (const image of metamers) {
-        image.__hash = get_image_hash(image);
-      }
-
-      // Populate filter options state using all values of each field
-      const next_filter_state: FilterState = INITIAL_FILTER_STATE;
-      // For each filter_id, create an object with all possible values
-      // and set them to true
-      const entries = Object.entries(next_filter_state);
-      for (const [filter_id, filter_values] of entries) {
-        // Create a set of all values for this filter
-        const filter_values = Array.from(
-          new Set(metamers.map((image) => image[filter_id as FilterID]))
-        );
-        // All values start out `true`
-        const active_filters: { [k: string]: true } = Object.fromEntries(
-          filter_values.map((v) => [v, true])
-        );
-        next_filter_state[filter_id as FilterID] = active_filters;
-      }
-
-      metadata.set(metadata_);
-      filters.set(next_filter_state);
-    })();
-  }, []);
-
-  // Get filtered rows from current filter state
-  const filtered_rows = useMemo<Image[]>(() => {
-    if (!metadata.value) return [];
-    if (!filters.value) return [];
-    const metamers = metadata.value?.metamers ?? [];
-    const filter_state = filters.value;
-    const filtered_metamers = metamers.filter((image: Image) => {
-      let keep = true;
-      for (const filter_id of Object.keys(filter_state)) {
-        if (!(filter_id in image)) {
-          console.log(`Filter ${filter_id} not in image`, image);
-          continue;
-        }
-        const image_value = image[filter_id as FilterID];
-        const value_as_string = image_value.toString();
-        // The current filter state for this filter_id and value
-        const this_filter_state =
-          filter_state?.[filter_id as FilterID]?.[value_as_string];
-        if (!this_filter_state) {
-          keep = false;
-          break;
-        }
-      }
-      return keep;
-    });
-    return filtered_metamers;
-  }, [metadata.value, filters.value]);
-
-  const page_start = (current_page.value - 1) * PAGE_SIZE;
-  const page_end = page_start + PAGE_SIZE;
-
-  const paginated_rows = useMemo<Image[]>(() => {
-    // Slice the rows to the current page
-    return filtered_rows.slice(page_start, page_end);
-  }, [filtered_rows, page_start, page_end]);
-
-  // If our filters update, reset the current page to 1
-  useEffect(() => {
-    current_page.set(1);
-  }, [filters.value]);
-
-  const selected_image = useMemo<Image | undefined>(() => {
-    const metamers = metadata.value?.metamers ?? [];
-    return metamers.find(
-      (image: Image) => image.__hash === selected_image_key.value
-    );
-  }, [selected_image_key.value, metadata.value]);
-
-  const selected_natural_image = useMemo<Image | undefined>(() => {
-    const natural_images = metadata.value?.natural_images ?? [];
-    return natural_images.find(
-      (d) => d.target_image === selected_image?.target_image
-    );
-  }, [selected_image?.target_image, metadata.value]);
-
-  return {
-    metadata,
-    filters,
-    filtered_rows,
-    current_page,
-    selected_image_key,
-    page_start,
-    page_end,
-    paginated_rows,
-    selected_image,
-    selected_natural_image,
-    use_gamma,
-    gamma_exponent,
-  };
 }
 
 export default function App() {
