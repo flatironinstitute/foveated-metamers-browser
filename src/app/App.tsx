@@ -149,17 +149,18 @@ function ImageMeta() {
 
 function ImageTools() {
   const context = useContext(AppContext);
+  const gamma_enabled = context.use_gamma.value;
   return (
     <>
       <div className="h-5"></div>
       <div className="flex items-center mb-3 whitespace-nowrap">
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-4 w-[300px]">
           <div className="flex gap-x-2">
             <input
               type="checkbox"
               id="use-gamma"
               className="h-7 w-7"
-              checked={context.use_gamma.value}
+              checked={gamma_enabled}
               onChange={() => {
                 context.use_gamma.set((d) => !d);
               }}
@@ -168,19 +169,27 @@ function ImageTools() {
               Gamma Correction
             </label>
           </div>
-          <input
-            disabled={context.use_gamma?.value ? false : true}
-            className="block"
-            id="gamma"
-            type="range"
-            min="0.8"
-            max="8"
-            step="0.2"
-            value={context.gamma_exponent.value}
-            onChange={(e) => {
-              context.gamma_exponent.set(parseFloat(e.target.value));
-            }}
-          />
+          <div className="flex gap-x-4">
+            <input
+              disabled={gamma_enabled ? false : true}
+              className="block"
+              id="gamma-value"
+              type="range"
+              min="0.8"
+              max="8"
+              step="0.2"
+              value={context.gamma_exponent.value}
+              onChange={(e) => {
+                context.gamma_exponent.set(parseFloat(e.target.value));
+              }}
+            />
+            <label
+              htmlFor="gamma-value"
+              className={`text-xl ${gamma_enabled ? `` : `opacity-20`}`}
+            >
+              {d3format(`.1f`)(context.gamma_exponent.value)}
+            </label>
+          </div>
         </div>
         {/* <div class="flex-none flex items-center ml-auto pl-4 sm:pl-6">
     <div class="group p-0.5 flex">
@@ -248,10 +257,12 @@ function ImageGridImage({ path, label }: { path?: string; label: string }) {
 
 function GammaFilter() {
   const context = useContext(AppContext);
+  const gamma_exponent = context.gamma_exponent.value;
+  const inverse = 1 / gamma_exponent;
   const props = {
     type: "gamma",
     amplitude: "1",
-    exponent: context.gamma_exponent.value.toString(),
+    exponent: inverse.toString(),
     offset: "0",
   };
   return (
