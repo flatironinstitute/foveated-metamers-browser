@@ -48,6 +48,8 @@ interface AppState {
   metadata: StateObject<MetadataJson | null>;
   filters: StateObject<FilterState | null>;
   current_page: StateObject<number>;
+  page_start: number;
+  page_end: number;
   filtered_rows: Image[];
   paginated_rows: Image[];
 }
@@ -82,6 +84,8 @@ const PAGE_SIZE = 25;
 function log(...args: any[]) {
   console.log(`🖼️`, ...args);
 }
+
+const format_commas = d3format(`,`);
 
 function useStateObject<T>(initial_value: T): StateObject<T> {
   const [value, set] = useState<T>(initial_value);
@@ -401,6 +405,7 @@ function TableHead() {
 
 function TableBody() {
   const paginated_rows = useContext(AppContext)?.paginated_rows ?? [];
+  console.log({ paginated_rows });
   return (
     <tbody className="bg-white divide-y divide-neutral-200">
       {paginated_rows.map((row) => (
@@ -410,20 +415,11 @@ function TableBody() {
               key={field_id}
               className="px-4 py-2 whitespace-nowrap text-xs text-neutral-500"
             >
-              {row[field_id]}
+              {row[field_id].toString()}
             </td>
           ))}
         </tr>
       ))}
-      <tr>
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gamma-900"></td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
-        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-          <a href="#" className="text-indigo-600 hover:text-indigo-900"></a>
-        </td>
-      </tr>
     </tbody>
   );
 }
@@ -464,40 +460,79 @@ function SVGRightArrow() {
   );
 }
 
+function PrevNext({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+}) {
+  const className =
+    "border-t-2 border-transparent pt-4 pr-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase";
+  return (
+    <a
+      className={`${className} ${
+        disabled
+          ? "opacity-10"
+          : "cursor-pointer hover:text-gamma-700 hover:border-indigo-700"
+      }`}
+      onClick={disabled ? undefined : onClick}
+    >
+      {children}
+    </a>
+  );
+}
+
 function Pagination() {
-  const filtered_rows = useContext(AppContext)?.filtered_rows ?? [];
+  const context = useContext(AppContext);
+  const filtered_rows = context?.filtered_rows ?? [];
+  const page_start = context?.page_start ?? 0;
+  const page_end = context?.page_end ?? 0;
   return (
     <nav className="border-t border-gamma-200 px-4 flex items-center justify-between sm:px-0">
       <div className="-mt-px w-0 flex-1 flex">
-        <a
-          id="previous"
-          className="border-t-2 border-transparent pt-4 pr-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase hover:text-gamma-700 hover:border-indigo-700"
+        <PrevNext
+          disabled={page_start <= 0}
+          onClick={() => {
+            context?.current_page.set((p) => p - 1);
+          }}
         >
           <SVGLeftArrow />
           Previous
-        </a>
+        </PrevNext>
       </div>
       <div className="hidden md:-mt-px md:flex">
         <p
           id="nowshowing"
           className="font-medium text-xs text-neutral-900 uppercase pt-4 px-4 inline-flex items-center"
         >
-          Showing <span className="px-2" id="start"></span> to
-          <span className="px-2" id="end"></span> of
+          Showing
+          <span className="px-2" id="start">
+            {format_commas(page_start + 1)}
+          </span>
+          to
+          <span className="px-2" id="end">
+            {format_commas(page_end)}
+          </span>{" "}
+          of
           <span className="px-2" id="total">
-            {d3format(`,`)(filtered_rows.length)}
+            {format_commas(filtered_rows.length)}
           </span>
           results
         </p>
       </div>
       <div className="-mt-px w-0 flex-1 flex justify-end">
-        <a
-          id="next"
-          className="border-t-2 border-transparent pt-4 pl-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase hover:text-gamma-700 hover:border-indigo-700"
+        <PrevNext
+          disabled={page_end >= filtered_rows.length}
+          onClick={() => {
+            context?.current_page.set((p) => p + 1);
+          }}
         >
           Next
           <SVGRightArrow />
-        </a>
+        </PrevNext>
       </div>
     </nav>
   );
@@ -545,9 +580,6 @@ function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
   const filters = useStateObject<FilterState | null>(null);
   const current_page = useStateObject<number>(1);
-  // const metadata = useSignal<MetadataJson | null>(null);
-  // const filters = useSignal<FilterState | null>(null);
-  // const current_page = useSignal<number>(1);
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
@@ -610,14 +642,28 @@ function create_app_state(): AppState {
     return filtered_metamers;
   }, [metadata.value, filters.value]);
 
+  const page_start = (current_page.value - 1) * PAGE_SIZE;
+  const page_end = page_start + PAGE_SIZE;
+
   const paginated_rows = useMemo<Image[]>(() => {
     // Slice the rows to the current page
-    const start = (current_page.value - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
-    return filtered_rows.slice(start, end);
-  }, [filtered_rows, current_page]);
+    return filtered_rows.slice(page_start, page_end);
+  }, [filtered_rows, page_start, page_end]);
 
-  return { metadata, filters, filtered_rows, paginated_rows, current_page };
+  // If our filters update, reset the current page to 1
+  useEffect(() => {
+    current_page.set(1);
+  }, [filters.value]);
+
+  return {
+    metadata,
+    filters,
+    filtered_rows,
+    page_start,
+    page_end,
+    paginated_rows,
+    current_page,
+  };
 }
 
 export default function App() {
