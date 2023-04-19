@@ -2,7 +2,7 @@
 
 import type { Context, Dispatch, SetStateAction } from "react";
 import { createContext, useEffect, useContext, useState, useMemo } from "react";
-import { sort } from "d3-array";
+import { sort, ascending } from "d3-array";
 import { format as d3format } from "d3-format";
 
 interface Metadata {
@@ -18,6 +18,7 @@ interface Metadata {
 
 type Image = Metadata & {
   file: string;
+  __hash?: string;
 };
 
 type MetadataJson = {
@@ -48,11 +49,16 @@ interface AppState {
   metadata: StateObject<MetadataJson | null>;
   filters: StateObject<FilterState | null>;
   current_page: StateObject<number>;
+  selected_image_key: StateObject<string | null>;
   page_start: number;
   page_end: number;
   filtered_rows: Image[];
   paginated_rows: Image[];
+  selected_image: Image | undefined;
+  selected_natural_image: Image | undefined;
 }
+
+const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
 
 const FIELD_DESCRIPTIONS: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -87,6 +93,16 @@ function log(...args: any[]) {
 
 const format_commas = d3format(`,`);
 
+function get_image_hash(image: Image) {
+  let string = ``;
+  const keys = Object.keys(image).filter((d) => d !== "__hash");
+  for (const key of sort(keys, ascending)) {
+    const value = image[key as keyof Image];
+    string += value?.toString() + "_";
+  }
+  return string;
+}
+
 function useStateObject<T>(initial_value: T): StateObject<T> {
   const [value, set] = useState<T>(initial_value);
   return { value, set };
@@ -95,25 +111,29 @@ function useStateObject<T>(initial_value: T): StateObject<T> {
 const AppContext: Context<AppState> = createContext({} as AppState);
 
 function ImageMeta() {
+  const context = useContext(AppContext);
+  const selected_image = context.selected_image;
   return (
-    <p className="leading-6 mt-4 text-base text-gamma-900 tracking-wide truncate">
-      <span className="mr-1 font-semibold">Model</span>:{" "}
-      <span className="mr-3" id="model_name">
-        -
-      </span>
-      <span className="mr-1 font-semibold">Target Image</span>:{" "}
-      <span className="mr-3" id="target_image">
-        -
-      </span>
-      <span className="mr-1 font-semibold">Scaling Value</span>:{" "}
-      <span className="mr-3" id="scaling">
-        -
-      </span>
-      <span className="mr-1 font-semibold">Random Seed</span>:{" "}
-      <span className="mr-3" id="random_seed">
-        -
-      </span>
-    </p>
+    <ul className="leading-6 mt-4 text-base text-gamma-900 tracking-wide truncate">
+      <li>
+        <span className="mr-1 font-semibold">Model:</span>
+        <span className="mr-3" id="model_name">
+          {selected_image?.file ?? "-"}
+        </span>
+      </li>
+      <li>
+        <span className="mr-1 font-semibold">Target Image:</span>
+        <span className="mr-3" id="target_image">
+          {selected_image?.target_image ?? "-"}
+        </span>
+      </li>
+      <li>
+        <span className="mr-1 font-semibold">Scaling Value</span>
+        <span className="mr-3" id="scaling">
+          {selected_image?.scaling ?? "-"}
+        </span>
+      </li>
+    </ul>
   );
 }
 
@@ -146,40 +166,60 @@ function ImageTools() {
   );
 }
 
+function ImageGridImage({ path }: { path?: string }) {
+  const className = `col-span-1 flex flex-col justify-center ${
+    path ? `` : `hidden`
+  }`;
+  return (
+    <div className={className}>
+      <img
+        className="py-2 w-600"
+        alt="target image"
+        src={`${DATA_URL_BASE}${path}`}
+      />
+      <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
+        Target Image
+      </h2>
+    </div>
+  );
+}
+
 function ImageGrid() {
+  const context = useContext(AppContext);
+  const { selected_image, selected_natural_image } = context;
   return (
     <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-6 gap-x-8 gap-y-10">
       <div className="bg-gamma-500 rounded lg:col-span-6">
         <div className="max-w-max mx-auto py-4 px-10 mb-12">
           <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-            <div className="col-span-1 flex flex-col justify-center">
+            <ImageGridImage path={selected_natural_image?.file} />
+            {/* <div className="col-span-1 flex flex-col justify-center">
               <img
                 className="py-2 w-600"
-                id="natimg"
                 alt="target image"
-                src="./assets/richter2.jpg"
+                src={`${DATA_URL_BASE}${selected_natural_image?.file}`}
               />
               <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide">
                 Target Image
               </h2>
-            </div>
+            </div> */}
             {/* <!-- <div class="col-span-1 flex flex-col justify-center">
           <img class="py-2 w-600" id="natimg-det" alt="target image detail" src="./assets/richter3.jpg">
           <h2 class="text-center text-black text-sm font-semibold uppercase tracking-wide ">
             Target Image Detail
           </h2>
         </div> --> */}
-            <div className="col-span-1 flex flex-col justify-center">
+            <ImageGridImage path={selected_image?.file} />
+            {/* <div className="col-span-1 flex flex-col justify-center">
               <img
                 className="py-2 w-600"
-                id="img"
                 alt="synethsized image"
-                src="./assets/richter1.jpg"
+                src={`${DATA_URL_BASE}${selected_image?.file}`}
               />
               <h2 className="text-center text-black text-sm font-semibold uppercase tracking-wide ">
                 Synthesized Image
               </h2>
-            </div>
+            </div> */}
             {/* <!-- <div class="col-span-1 flex flex-col justify-center">
           <img class="py-2 w-600" id="img-det" alt="synethsized image detail" src="./assets/richter3.jpg">
           <h2 class="text-center text-black text-sm font-semibold uppercase tracking-wide ">
@@ -189,6 +229,26 @@ function ImageGrid() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Overlay({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="absolute w-full h-full top-0 left-0 grid items-center justify-center bg-neutral-100/80 text-6xl rounded">
+      {children}
+    </div>
+  );
+}
+
+function ImageSection({ children }: { children: React.ReactNode }) {
+  const context = useContext(AppContext);
+  const selected_image = context.selected_image;
+  const overlay = <Overlay>Select an Image</Overlay>;
+  return (
+    <div className="relative">
+      {children}
+      {!selected_image && overlay}
     </div>
   );
 }
@@ -303,7 +363,7 @@ function Filter({ id: filter_id }: { id: FilterID }) {
           onClick={() => set_hidden((h) => !h)}
         >
           <span className="font-medium text-xs text-neutral-900 uppercase text-left">
-            {filter_id}
+            {filter_id.replaceAll("_", " ")}
           </span>
           <span className="ml-6 flex items-center">
             {hidden ? <SVGPlus /> : <SVGMinus />}
@@ -404,22 +464,37 @@ function TableHead() {
 }
 
 function TableBody() {
-  const paginated_rows = useContext(AppContext)?.paginated_rows ?? [];
-  console.log({ paginated_rows });
+  const context = useContext(AppContext);
+  const paginated_rows = context?.paginated_rows ?? [];
   return (
     <tbody className="bg-white divide-y divide-neutral-200">
-      {paginated_rows.map((row) => (
-        <tr key={row.file} className="border border-neutral-200 p-4">
-          {FIELDS.map((field_id: Field) => (
-            <td
-              key={field_id}
-              className="px-4 py-2 whitespace-nowrap text-xs text-neutral-500"
-            >
-              {row[field_id].toString()}
-            </td>
-          ))}
-        </tr>
-      ))}
+      {paginated_rows.map((row) => {
+        const selected = context?.selected_image_key.value === row.__hash;
+        return (
+          <tr
+            key={row.__hash}
+            className={`cursor-pointer border border-neutral-200 p-4 ${
+              selected ? `bg-indigo-100` : ``
+            }`}
+            onClick={() => {
+              if (typeof row.__hash === "undefined") {
+                console.error(`Row has no hash: ${JSON.stringify(row)}`);
+              } else {
+                context?.selected_image_key.set(row.__hash);
+              }
+            }}
+          >
+            {FIELDS.map((field_id: Field) => (
+              <td
+                key={field_id}
+                className="px-4 py-2 whitespace-nowrap text-xs text-neutral-500"
+              >
+                {row[field_id].toString()}
+              </td>
+            ))}
+          </tr>
+        );
+      })}
     </tbody>
   );
 }
@@ -566,7 +641,7 @@ function TableAndFilters() {
         <div className="lg:col-span-5">
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <TableError />
+              {/* <TableError /> */}
               <Table />
             </div>
           </div>
@@ -580,19 +655,25 @@ function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
   const filters = useStateObject<FilterState | null>(null);
   const current_page = useStateObject<number>(1);
+  const selected_image_key = useStateObject<string | null>(null);
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
-    const url_base = process.env.NEXT_PUBLIC_DATA_URL;
-    const url = new URL(url_base + "metadata.json");
+    const url = new URL(DATA_URL_BASE + "metadata.json");
     (async () => {
       log(`Fetching metadata from ${url}`);
       const response = await fetch(url);
       const metadata_ = (await response.json()) as MetadataJson;
       log(`Metadata:`, metadata_);
 
-      // Populate filter options state using all values of each field
       const metamers: Image[] = metadata_.metamers;
+
+      // Hash all the images
+      for (const image of metamers) {
+        image.__hash = get_image_hash(image);
+      }
+
+      // Populate filter options state using all values of each field
       const next_filter_state: FilterState = INITIAL_FILTER_STATE;
       // For each filter_id, create an object with all possible values
       // and set them to true
@@ -655,19 +736,38 @@ function create_app_state(): AppState {
     current_page.set(1);
   }, [filters.value]);
 
+  const selected_image = useMemo<Image | undefined>(() => {
+    const metamers = metadata.value?.metamers ?? [];
+    return metamers.find(
+      (image: Image) => image.__hash === selected_image_key.value
+    );
+  }, [selected_image_key.value, metadata.value]);
+
+  const selected_natural_image = useMemo<Image | undefined>(() => {
+    const natural_images = metadata.value?.natural_images ?? [];
+    return natural_images.find(
+      (d) => d.target_image === selected_image?.target_image
+    );
+  }, [selected_image?.target_image, metadata.value]);
+
   return {
     metadata,
     filters,
     filtered_rows,
+    current_page,
+    selected_image_key,
     page_start,
     page_end,
     paginated_rows,
-    current_page,
+    selected_image,
+    selected_natural_image,
   };
 }
 
 export default function App() {
   const app_state = create_app_state();
+
+  const overlay = <Overlay>Loading...</Overlay>;
 
   return (
     <AppContext.Provider value={app_state}>
@@ -680,11 +780,14 @@ export default function App() {
             <p className="mt-2 mb-3 text-3xl leading-8 font-extrabold tracking-tight text-gamma-900 sm:text-4xl">
               Images
             </p>
-            <ImageMeta />
-            <ImageTools />
-            <ImageGrid />
+            <ImageSection>
+              <ImageMeta />
+              <ImageTools />
+              <ImageGrid />
+            </ImageSection>
             <TableAndFilters />
           </div>
+          {app_state.metadata.value ? null : overlay}
         </div>
       </section>
     </AppContext.Provider>
