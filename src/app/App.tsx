@@ -252,9 +252,12 @@ function Filter({ id }: { id: Field }) {
 
   const filter_state = context.filters.value?.[id] ?? {};
 
-  const filter_ids: string[] = sort(Object.keys(filter_state), genericCompare);
+  const filter_values_sorted: string[] = sort(
+    Object.keys(filter_state),
+    genericCompare
+  );
 
-  const filter_options: Array<FilterOptionProps> = filter_ids.map(
+  const filter_options: Array<FilterOptionProps> = filter_values_sorted.map(
     (value, index) => {
       return {
         id: `filter-${id}-${index}`,
