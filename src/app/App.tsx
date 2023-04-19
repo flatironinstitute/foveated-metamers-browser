@@ -1,23 +1,72 @@
 "use client";
-import { Context, useEffect } from "react";
-import type { Signal } from "@preact/signals-react";
-import { createContext, useContext } from "react";
-import { useSignal } from "@preact/signals-react";
+
+import { Context, useState } from "react";
+import type { ReadonlySignal, Signal } from "@preact/signals-react";
+import { createContext, useEffect, useContext } from "react";
+import { useSignal, useComputed, useSignalEffect } from "@preact/signals-react";
+import { sort } from "d3-array";
+
+interface Metadata {
+  model_name: string;
+  downsampled: boolean;
+  psychophysics_comparison: string;
+  target_image: string;
+  scaling: number;
+  initialization_type: string;
+  random_seed: number;
+  gamma_corrected: boolean;
+}
+
+type Image = Metadata & {
+  file: string;
+};
+
+type MetadataJson = {
+  metamers: Image[];
+  natural_images: Image[];
+};
+
+type Field = keyof Metadata;
+
+type FieldMap<T> = {
+  [Property in keyof Metadata]: T;
+};
+
+type FilterState = {
+  [k: string]: {
+    [k: string]: boolean;
+  };
+};
+
+interface AppState {
+  metadata: Signal<MetadataJson | null>;
+  filters: Signal<FilterState | null>;
+}
+
+const field_descriptions: FieldMap<string> = {
+  model_name: "The model used to synthesize this image.",
+  downsampled: "Whether the image was downsampled before synthesis.",
+  psychophysics_comparison:
+    "The experimental comparison(s) this image was used in.",
+  target_image:
+    "The natural image whose model representation this metamer was synthesized to match.",
+  scaling: "The model's scaling parameter used to synthesize this image.",
+  initialization_type:
+    "The image used to initialize metamer synthesis fo this image.",
+  random_seed:
+    "The number used to set pytorch and numpy's random number generators for synthesis.",
+  gamma_corrected: "Whether this image has been gamma corrected (to 2.2?).",
+};
+
+const fields: Field[] = Object.keys(field_descriptions) as Field[];
+
+const filter_ids: Field[] = fields.filter((d) => d !== "random_seed");
 
 function log(...args: any[]) {
   console.log(`🖼️`, ...args);
 }
 
-interface AppState {
-  metadata?: any;
-}
-
-function create_app_state(): AppState {
-  const metadata = useSignal(null);
-  return { metadata };
-}
-
-export const AppContext: Context<AppState> = createContext({});
+const AppContext: Context<AppState> = createContext({} as AppState);
 
 function ImageMeta() {
   return (
@@ -118,152 +167,144 @@ function ImageGrid() {
   );
 }
 
-function Filters() {
+function SVGPlus() {
   return (
-    <form className="lg:block" id="filterform">
-      {/* <!-- Filter Placeholder --> */}
-      <div className="border-b border-gamma-200 pb-6">
-        <h3 className="-my-3 flow-root">
-          <button
-            type="button"
-            className="py-3 bg-white w-full flex items-center justify-between text-sm text-gamma-400 hover:text-gamma-500"
-            name="plusminus"
-          >
-            <span className="font-medium text-gamma-900"> Model Name </span>
-            <span className="ml-6 flex items-center">
-              <svg
-                className="h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <svg
-                className="h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </span>
-          </button>
-        </h3>
-        {/* <!-- Filter section, show/hide based on section state. --> */}
-        <div className="pt-6" id="filter-section-0">
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                id="filter-color-0"
-                name="color[]"
-                value="white"
-                type="checkbox"
-                className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="filter-color-0"
-                className="ml-3 text-sm text-gamma-600"
-              >
-                {" "}
-                White{" "}
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="filter-color-1"
-                name="color[]"
-                value="beige"
-                type="checkbox"
-                className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="filter-color-1"
-                className="ml-3 text-sm text-gamma-600"
-              >
-                {" "}
-                Beige{" "}
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="filter-color-2"
-                name="color[]"
-                value="blue"
-                type="checkbox"
-                checked
-                readOnly
-                className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="filter-color-2"
-                className="ml-3 text-sm text-gamma-600"
-              >
-                {" "}
-                Blue{" "}
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="filter-color-3"
-                name="color[]"
-                value="brown"
-                type="checkbox"
-                className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="filter-color-3"
-                className="ml-3 text-sm text-gamma-600"
-              >
-                {" "}
-                Brown{" "}
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="filter-color-4"
-                name="color[]"
-                value="green"
-                type="checkbox"
-                className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="filter-color-4"
-                className="ml-3 text-sm text-gamma-600"
-              >
-                {" "}
-                Green{" "}
-              </label>
-            </div>
-            <div className="flex items-center">
-              <input
-                id="filter-color-5"
-                name="color[]"
-                value="purple"
-                type="checkbox"
-                className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
-              />
-              <label
-                htmlFor="filter-color-5"
-                className="ml-3 text-sm text-gamma-600"
-              >
-                {" "}
-                Purple{" "}
-              </label>
-            </div>
-          </div>
+    <svg
+      className="h-5 w-5"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function SVGMinus() {
+  return (
+    <svg
+      className="h-5 w-5"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+type FilterOptionProps = {
+  id: string;
+  filter_id: string;
+  value: string;
+};
+
+function FilterOption({ id, filter_id, value }: FilterOptionProps) {
+  const context = useContext(AppContext);
+
+  const filter_state = context.filters.value?.[filter_id] ?? {};
+
+  const filter_is_checked = filter_state[value];
+
+  return (
+    <div className="flex items-center">
+      <input
+        id={id}
+        value={value}
+        type="checkbox"
+        checked={filter_is_checked}
+        className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
+        onChange={(event) => {
+          context.filters.value = {
+            ...context.filters.value,
+            [filter_id]: {
+              ...filter_state,
+              [value]: event.target.checked,
+            },
+          };
+        }}
+      />
+      <label htmlFor={id} className="ml-3 text-sm text-gamma-600">
+        {value?.toString()}
+      </label>
+    </div>
+  );
+}
+
+function genericCompare(a: any, b: any) {
+  return a - b || (a < b ? -1 : a > b ? 1 : 0);
+}
+
+function Filter({ id }: { id: Field }) {
+  const context = useContext(AppContext);
+
+  const [hidden, set_hidden] = useState(true);
+
+  const filter_state = context.filters.value?.[id] ?? {};
+
+  const filter_ids: string[] = sort(Object.keys(filter_state), genericCompare);
+
+  const filter_options: Array<FilterOptionProps> = filter_ids.map(
+    (value, index) => {
+      return {
+        id: `filter-${id}-${index}`,
+        filter_id: id,
+        value,
+      };
+    }
+  );
+
+  return (
+    <div className="border-b border-gamma-200 pb-6">
+      <h3 className="-my-3 flow-root">
+        <button
+          type="button"
+          data-filter={id}
+          className="py-3 bg-white w-full flex items-center justify-between text-sm text-neutral-400 hover:text-neutral-500"
+          name="plusminus"
+          onClick={() => set_hidden((h) => !h)}
+        >
+          <span className="font-medium text-xs text-neutral-900 uppercase text-left">
+            {id}
+          </span>
+          <span className="ml-6 flex items-center">
+            {hidden ? <SVGPlus /> : <SVGMinus />}
+          </span>
+        </button>
+      </h3>
+      <div className={`pt-6 ${hidden && `hidden`}`} id={`filter-options-${id}`}>
+        <div className="space-y-4">
+          {filter_options.map((option) => (
+            <FilterOption
+              key={option.id}
+              id={option.id}
+              filter_id={option.filter_id}
+              value={option.value}
+            />
+          ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Filters() {
+  const filter_ids = fields.filter((d) => d !== "random_seed");
+  return (
+    <form className="lg:block" id="filterform">
+      {filter_ids.map((filter_id) => (
+        <Filter id={filter_id} key={filter_id} />
+      ))}
     </form>
   );
 }
@@ -450,6 +491,51 @@ function TableAndFilters() {
   );
 }
 
+function create_app_state(): AppState {
+  const metadata = useSignal<MetadataJson | null>(null);
+
+  const filters = useSignal<FilterState | null>(null);
+
+  useSignalEffect(() => {
+    if (!metadata.value) return;
+    const metamers = metadata.value?.metamers ?? [];
+    // Initialize filter state
+    if (filters.value) return;
+    // For each filter_id, create an object with all possible values
+    // and set them to true
+    const filter_state: FilterState = Object.fromEntries(
+      filter_ids.map((id: keyof Metadata) => {
+        const filter_values = Array.from(new Set(metamers.map((m) => m[id])));
+        const active_filters: { [k: string]: boolean } = Object.fromEntries(
+          filter_values.map((v) => [v, true])
+        );
+        return [id, active_filters];
+      })
+    ) as FilterState;
+    filters.value = filter_state;
+    console.log("filters", filters.value);
+  });
+
+  // const filters = useComputed<FilterState>(() => {
+  //   const metamers = metadata.value?.metamers ?? [];
+  //   const filter_ids: Field[] = fields.filter((d) => d !== "random_seed");
+  //   const filter_state: FilterState = Object.fromEntries<{
+  //     [k: string]: boolean;
+  //   }>(
+  //     filter_ids.map((id: keyof Metadata) => {
+  //       const filter_values = Array.from(new Set(metamers.map((m) => m[id])));
+  //       const active_filters: { [k: string]: boolean } = Object.fromEntries(
+  //         filter_values.map((v) => [v, true])
+  //       );
+  //       return [id, active_filters];
+  //     })
+  //   ) as FilterState;
+  //   return filter_state;
+  // });
+
+  return { metadata, filters };
+}
+
 export default function App() {
   const app_state = create_app_state();
 
@@ -459,7 +545,7 @@ export default function App() {
     (async () => {
       log(`Fetching metadata from ${url}`);
       const response = await fetch(url);
-      const data = await response.json();
+      const data = (await response.json()) satisfies Metadata;
       log(`Metadata:`, data);
       app_state.metadata.value = data;
     })();
