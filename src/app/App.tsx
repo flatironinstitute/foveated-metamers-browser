@@ -1,10 +1,9 @@
 "use client";
 
-import { Context, useState } from "react";
-import type { ReadonlySignal, Signal } from "@preact/signals-react";
-import { createContext, useEffect, useContext } from "react";
-import { useSignal, useComputed, useSignalEffect } from "@preact/signals-react";
+import type { Context, Dispatch, SetStateAction } from "react";
+import { createContext, useEffect, useContext, useState, useMemo } from "react";
 import { sort } from "d3-array";
+import { format as d3format } from "d3-format";
 
 interface Metadata {
   model_name: string;
@@ -28,22 +27,32 @@ type MetadataJson = {
 
 type Field = keyof Metadata;
 
+type FilterID = keyof Omit<Metadata, "random_seed">;
+
 type FieldMap<T> = {
-  [Property in keyof Metadata]: T;
+  [Property in Field]: T;
 };
 
 type FilterState = {
-  [k: string]: {
+  [Key in FilterID]: {
     [k: string]: boolean;
   };
 };
 
+type StateObject<T> = {
+  value: T;
+  set: Dispatch<SetStateAction<T>>;
+};
+
 interface AppState {
-  metadata: Signal<MetadataJson | null>;
-  filters: Signal<FilterState | null>;
+  metadata: StateObject<MetadataJson | null>;
+  filters: StateObject<FilterState | null>;
+  current_page: StateObject<number>;
+  filtered_rows: Image[];
+  paginated_rows: Image[];
 }
 
-const field_descriptions: FieldMap<string> = {
+const FIELD_DESCRIPTIONS: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
   downsampled: "Whether the image was downsampled before synthesis.",
   psychophysics_comparison:
@@ -58,12 +67,25 @@ const field_descriptions: FieldMap<string> = {
   gamma_corrected: "Whether this image has been gamma corrected (to 2.2?).",
 };
 
-const fields: Field[] = Object.keys(field_descriptions) as Field[];
+const FIELDS: Field[] = Object.keys(FIELD_DESCRIPTIONS) as Field[];
 
-const filter_ids: Field[] = fields.filter((d) => d !== "random_seed");
+const FILTER_IDS: FilterID[] = FIELDS.filter(
+  (d): d is FilterID => d !== "random_seed"
+);
+
+const INITIAL_FILTER_STATE = Object.fromEntries(
+  FILTER_IDS.map((filter_id) => [filter_id, {}])
+) as FilterState;
+
+const PAGE_SIZE = 25;
 
 function log(...args: any[]) {
   console.log(`🖼️`, ...args);
+}
+
+function useStateObject<T>(initial_value: T): StateObject<T> {
+  const [value, set] = useState<T>(initial_value);
+  return { value, set };
 }
 
 const AppContext: Context<AppState> = createContext({} as AppState);
@@ -205,15 +227,13 @@ function SVGMinus() {
 
 type FilterOptionProps = {
   id: string;
-  filter_id: string;
+  filter_id: FilterID;
   value: string;
 };
 
 function FilterOption({ id, filter_id, value }: FilterOptionProps) {
-  const context = useContext(AppContext);
-
-  const filter_state = context.filters.value?.[filter_id] ?? {};
-
+  const filters = useContext(AppContext).filters;
+  const filter_state = filters.value?.[filter_id] ?? {};
   const filter_is_checked = filter_state[value];
 
   return (
@@ -225,13 +245,16 @@ function FilterOption({ id, filter_id, value }: FilterOptionProps) {
         checked={filter_is_checked}
         className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
         onChange={(event) => {
-          context.filters.value = {
-            ...context.filters.value,
-            [filter_id]: {
-              ...filter_state,
-              [value]: event.target.checked,
-            },
-          };
+          filters.set((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              [filter_id]: {
+                ...(prev[filter_id] ?? {}),
+                [value]: event.target.checked,
+              },
+            };
+          });
         }}
       />
       <label htmlFor={id} className="ml-3 text-sm text-gamma-600">
@@ -245,12 +268,10 @@ function genericCompare(a: any, b: any) {
   return a - b || (a < b ? -1 : a > b ? 1 : 0);
 }
 
-function Filter({ id }: { id: Field }) {
-  const context = useContext(AppContext);
-
+function Filter({ id: filter_id }: { id: FilterID }) {
   const [hidden, set_hidden] = useState(true);
 
-  const filter_state = context.filters.value?.[id] ?? {};
+  const filter_state = useContext(AppContext).filters.value?.[filter_id] ?? {};
 
   const filter_values_sorted: string[] = sort(
     Object.keys(filter_state),
@@ -260,8 +281,8 @@ function Filter({ id }: { id: Field }) {
   const filter_options: Array<FilterOptionProps> = filter_values_sorted.map(
     (value, index) => {
       return {
-        id: `filter-${id}-${index}`,
-        filter_id: id,
+        id: `filter-${filter_id}-${index}`,
+        filter_id,
         value,
       };
     }
@@ -272,20 +293,23 @@ function Filter({ id }: { id: Field }) {
       <h3 className="-my-3 flow-root">
         <button
           type="button"
-          data-filter={id}
+          data-filter={filter_id}
           className="py-3 bg-white w-full flex items-center justify-between text-sm text-neutral-400 hover:text-neutral-500"
           name="plusminus"
           onClick={() => set_hidden((h) => !h)}
         >
           <span className="font-medium text-xs text-neutral-900 uppercase text-left">
-            {id}
+            {filter_id}
           </span>
           <span className="ml-6 flex items-center">
             {hidden ? <SVGPlus /> : <SVGMinus />}
           </span>
         </button>
       </h3>
-      <div className={`pt-6 ${hidden && `hidden`}`} id={`filter-options-${id}`}>
+      <div
+        className={`pt-6 ${hidden && `hidden`}`}
+        id={`filter-options-${filter_id}`}
+      >
         <div className="space-y-4">
           {filter_options.map((option) => (
             <FilterOption
@@ -302,10 +326,9 @@ function Filter({ id }: { id: Field }) {
 }
 
 function Filters() {
-  const filter_ids = fields.filter((d) => d !== "random_seed");
   return (
     <form className="lg:block" id="filterform">
-      {filter_ids.map((filter_id) => (
+      {FILTER_IDS.map((filter_id) => (
         <Filter id={filter_id} key={filter_id} />
       ))}
     </form>
@@ -357,6 +380,129 @@ function TableError() {
   );
 }
 
+function TableHead() {
+  return (
+    <thead className="bg-neutral-50">
+      <tr>
+        {FIELDS.map((field) => (
+          <th
+            key={field}
+            scope="col"
+            className="target_image px-4 py-2 text-left text-xs font-bold text-neutral-900 uppercase tracking-wider"
+            title={FIELD_DESCRIPTIONS[field]}
+          >
+            {field.replaceAll("_", " ")}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+}
+
+function TableBody() {
+  const paginated_rows = useContext(AppContext)?.paginated_rows ?? [];
+  return (
+    <tbody className="bg-white divide-y divide-neutral-200">
+      {paginated_rows.map((row) => (
+        <tr key={row.file} className="border border-neutral-200 p-4">
+          {FIELDS.map((field_id: Field) => (
+            <td
+              key={field_id}
+              className="px-4 py-2 whitespace-nowrap text-xs text-neutral-500"
+            >
+              {row[field_id]}
+            </td>
+          ))}
+        </tr>
+      ))}
+      <tr>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gamma-900"></td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
+        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+          <a href="#" className="text-indigo-600 hover:text-indigo-900"></a>
+        </td>
+      </tr>
+    </tbody>
+  );
+}
+
+function SVGLeftArrow() {
+  return (
+    <svg
+      className="mr-3 h-5 w-5 text-gamma-400"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function SVGRightArrow() {
+  return (
+    <svg
+      className="ml-3 h-5 w-5 text-gamma-400"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function Pagination() {
+  const filtered_rows = useContext(AppContext)?.filtered_rows ?? [];
+  return (
+    <nav className="border-t border-gamma-200 px-4 flex items-center justify-between sm:px-0">
+      <div className="-mt-px w-0 flex-1 flex">
+        <a
+          id="previous"
+          className="border-t-2 border-transparent pt-4 pr-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase hover:text-gamma-700 hover:border-indigo-700"
+        >
+          <SVGLeftArrow />
+          Previous
+        </a>
+      </div>
+      <div className="hidden md:-mt-px md:flex">
+        <p
+          id="nowshowing"
+          className="font-medium text-xs text-neutral-900 uppercase pt-4 px-4 inline-flex items-center"
+        >
+          Showing <span className="px-2" id="start"></span> to
+          <span className="px-2" id="end"></span> of
+          <span className="px-2" id="total">
+            {d3format(`,`)(filtered_rows.length)}
+          </span>
+          results
+        </p>
+      </div>
+      <div className="-mt-px w-0 flex-1 flex justify-end">
+        <a
+          id="next"
+          className="border-t-2 border-transparent pt-4 pl-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase hover:text-gamma-700 hover:border-indigo-700"
+        >
+          Next
+          <SVGRightArrow />
+        </a>
+      </div>
+    </nav>
+  );
+}
+
 function Table() {
   return (
     <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8 rounded">
@@ -365,106 +511,10 @@ function Table() {
           id="table"
           className="min-w-full divide-y divide-gamma-200 border border-gamma-200 rounded"
         >
-          <thead className="bg-white">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gamma-900 uppercase tracking-wider"
-              >
-                -
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gamma-900 uppercase tracking-wider"
-              >
-                -
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gamma-900 uppercase tracking-wider"
-              >
-                -
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gamma-900 uppercase tracking-wider"
-              >
-                -
-              </th>
-              <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Edit</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gamma-200">
-            <tr>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gamma-900"></td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gamma-500"></td>
-              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a
-                  href="#"
-                  className="text-indigo-600 hover:text-indigo-900"
-                ></a>
-              </td>
-            </tr>
-          </tbody>
+          <TableHead />
+          <TableBody />
         </table>
-        <nav className="border-t border-gamma-200 px-4 flex items-center justify-between sm:px-0">
-          <div className="-mt-px w-0 flex-1 flex">
-            <a
-              id="previous"
-              className="border-t-2 border-transparent pt-4 pr-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase hover:text-gamma-700 hover:border-indigo-700"
-            >
-              <svg
-                className="mr-3 h-5 w-5 text-gamma-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Previous
-            </a>
-          </div>
-          <div className="hidden md:-mt-px md:flex">
-            <p
-              id="nowshowing"
-              className="font-medium text-xs text-neutral-900 uppercase pt-4 px-4 inline-flex items-center"
-            >
-              Showing <span className="px-2" id="start"></span> to{" "}
-              <span className="px-2" id="end"></span> of{" "}
-              <span className="px-2" id="total"></span> results
-            </p>
-          </div>
-          <div className="-mt-px w-0 flex-1 flex justify-end">
-            <a
-              id="next"
-              className="border-t-2 border-transparent pt-4 pl-1 inline-flex items-center font-medium text-xs text-neutral-900 uppercase hover:text-gamma-700 hover:border-indigo-700"
-            >
-              Next
-              <svg
-                className="ml-3 h-5 w-5 text-gamma-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </a>
-          </div>
-        </nav>
+        <Pagination />
       </div>
     </div>
   );
@@ -481,78 +531,97 @@ function TableAndFilters() {
         <div className="lg:col-span-5">
           <div className="flex flex-col">
             <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              {/* <!-- Table Error --> */}
               <TableError />
-              {/* <!-- End Table Error --> */}
               <Table />
             </div>
           </div>
         </div>
-        {/* <!-- End Table --> */}
       </div>
     </section>
   );
 }
 
 function create_app_state(): AppState {
-  const metadata = useSignal<MetadataJson | null>(null);
+  const metadata = useStateObject<MetadataJson | null>(null);
+  const filters = useStateObject<FilterState | null>(null);
+  const current_page = useStateObject<number>(1);
+  // const metadata = useSignal<MetadataJson | null>(null);
+  // const filters = useSignal<FilterState | null>(null);
+  // const current_page = useSignal<number>(1);
 
-  const filters = useSignal<FilterState | null>(null);
-
-  useSignalEffect(() => {
-    if (!metadata.value) return;
-    const metamers = metadata.value?.metamers ?? [];
-    // Initialize filter state
-    if (filters.value) return;
-    // For each filter_id, create an object with all possible values
-    // and set them to true
-    const filter_state: FilterState = Object.fromEntries(
-      filter_ids.map((id: keyof Metadata) => {
-        const filter_values = Array.from(new Set(metamers.map((m) => m[id])));
-        const active_filters: { [k: string]: boolean } = Object.fromEntries(
-          filter_values.map((v) => [v, true])
-        );
-        return [id, active_filters];
-      })
-    ) as FilterState;
-    filters.value = filter_state;
-    console.log("filters", filters.value);
-  });
-
-  // const filters = useComputed<FilterState>(() => {
-  //   const metamers = metadata.value?.metamers ?? [];
-  //   const filter_ids: Field[] = fields.filter((d) => d !== "random_seed");
-  //   const filter_state: FilterState = Object.fromEntries<{
-  //     [k: string]: boolean;
-  //   }>(
-  //     filter_ids.map((id: keyof Metadata) => {
-  //       const filter_values = Array.from(new Set(metamers.map((m) => m[id])));
-  //       const active_filters: { [k: string]: boolean } = Object.fromEntries(
-  //         filter_values.map((v) => [v, true])
-  //       );
-  //       return [id, active_filters];
-  //     })
-  //   ) as FilterState;
-  //   return filter_state;
-  // });
-
-  return { metadata, filters };
-}
-
-export default function App() {
-  const app_state = create_app_state();
-
+  // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
     const url_base = process.env.NEXT_PUBLIC_DATA_URL;
     const url = new URL(url_base + "metadata.json");
     (async () => {
       log(`Fetching metadata from ${url}`);
       const response = await fetch(url);
-      const data = (await response.json()) satisfies Metadata;
-      log(`Metadata:`, data);
-      app_state.metadata.value = data;
+      const metadata_ = (await response.json()) as MetadataJson;
+      log(`Metadata:`, metadata_);
+
+      // Populate filter options state using all values of each field
+      const metamers: Image[] = metadata_.metamers;
+      const next_filter_state: FilterState = INITIAL_FILTER_STATE;
+      // For each filter_id, create an object with all possible values
+      // and set them to true
+      const entries = Object.entries(next_filter_state);
+      for (const [filter_id, filter_values] of entries) {
+        // Create a set of all values for this filter
+        const filter_values = Array.from(
+          new Set(metamers.map((image) => image[filter_id as FilterID]))
+        );
+        // All values start out `true`
+        const active_filters: { [k: string]: true } = Object.fromEntries(
+          filter_values.map((v) => [v, true])
+        );
+        next_filter_state[filter_id as FilterID] = active_filters;
+      }
+
+      metadata.set(metadata_);
+      filters.set(next_filter_state);
     })();
   }, []);
+
+  // Get filtered rows from current filter state
+  const filtered_rows = useMemo<Image[]>(() => {
+    if (!metadata.value) return [];
+    if (!filters.value) return [];
+    const metamers = metadata.value?.metamers ?? [];
+    const filter_state = filters.value;
+    const filtered_metamers = metamers.filter((image: Image) => {
+      let keep = true;
+      for (const filter_id of Object.keys(filter_state)) {
+        if (!(filter_id in image)) {
+          console.log(`Filter ${filter_id} not in image`, image);
+          continue;
+        }
+        const image_value = image[filter_id as FilterID];
+        const value_as_string = image_value.toString();
+        // The current filter state for this filter_id and value
+        const this_filter_state =
+          filter_state?.[filter_id as FilterID]?.[value_as_string];
+        if (!this_filter_state) {
+          keep = false;
+          break;
+        }
+      }
+      return keep;
+    });
+    return filtered_metamers;
+  }, [metadata.value, filters.value]);
+
+  const paginated_rows = useMemo<Image[]>(() => {
+    // Slice the rows to the current page
+    const start = (current_page.value - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    return filtered_rows.slice(start, end);
+  }, [filtered_rows, current_page]);
+
+  return { metadata, filters, filtered_rows, paginated_rows, current_page };
+}
+
+export default function App() {
+  const app_state = create_app_state();
 
   return (
     <AppContext.Provider value={app_state}>
