@@ -1,3 +1,52 @@
+import Markdown from "react-markdown";
+
+const left_side = `
+
+[Foveated Metamers Browser](/) contains a
+searchable database of the synthesized model metamers for the
+paper _Foveated Metamers of the Early Visual System_
+(currently in preparation).
+
+This project investigates how human perception changes across
+the visual field using behavioral experiments and
+computational models of early stages of visual processing. We
+use these models to investigate what people **cannot** see,
+an approach that has a long history of vision science. If we
+know what information people are insensitive to, we can
+discard it or randomize it, and the resulting image should
+appear unchanged from the original.
+
+Our models approximate the early visual system by averaging
+image statistics (such as the brightness) in regions of space
+across the image. These regions grow with distance from the
+center of gaze, and the rate at which they grow, called
+**scaling**, is the model's only free parameter.
+
+`.trim();
+
+const right_side = `
+
+In this experiment, we take 20 large images of natural scenes
+and generate synthetic images that our models (with a range of
+scaling values) think are identical to the natural ones. We
+then show these images to humans to find the largest scaling
+value where humans are unable to distinguish the two; that is,
+where humans and the models are discarding the same
+information. This allows us to reason about how similar
+processing steps happen in the human visual system
+
+See the Vision Science Society 2020
+[conference poster](https://osf.io/aketq/) for more
+details.
+
+This website will allow you to browse all of the synthetic
+images generated for this project: you can filter by model,
+scaling value, target image, and more. Please
+[open an issue](https://github.com/flatironinstitute/foveated-metamers-browser/issues)
+if you have any difficulties.
+
+`.trim();
+
 export default function About() {
   return (
     <section className="py-8 xl:py-16 px-4 sm:px-6 lg:px-8 bg-gamma-50 overflow-hidden">
@@ -72,55 +121,10 @@ export default function About() {
           <div className="relative sm:bg-white md:p-6 rounded">
             <div className="lg:grid lg:grid-cols-2 lg:gap-6">
               <div className="prose prose-lg prose-gamma text-gamma-600 lg:max-w-none">
-                <p>
-                  <a href="#">Foveated Metamers Browser</a> contains a
-                  searchable database of the synthesized model metamers for the
-                  paper <i>Foveated Metamers of the Early Visual System</i>{" "}
-                  (currently in preparation).
-                </p>
-                <p>
-                  This project investigates how human perception changes across
-                  the visual field using behavioral experiments and
-                  computational models of early stages of visual processing. We
-                  use these models to investigate what people <b>cannot</b> see,
-                  an approach that has a long history of vision science. If we
-                  know what information people are insensitive to, we can
-                  discard it or randomize it, and the resulting image should
-                  appear unchanged from the original.
-                </p>
-                <p>
-                  Our models approximate the early visual system by averaging
-                  image statistics (such as the brightness) in regions of space
-                  across the image. These regions grow with distance from the
-                  center of gaze, and the rate at which they grow, called{" "}
-                  <b>scaling</b>, is the model's only free parameter.
-                </p>
+                <Markdown>{left_side}</Markdown>
               </div>
               <div className="mt-6 prose prose-gamma prose-lg text-gamma-600 lg:mt-0">
-                <p>
-                  In this experiment, we take 20 large images of natural scenes
-                  and generate synthetic images that our models (with a range of
-                  scaling values) think are identical to the natural ones. We
-                  then show these images to humans to find the largest scaling
-                  value where humans are unable to distinguish the two; that is,
-                  where humans and the models are discarding the same
-                  information. This allows us to reason about how similar
-                  processing steps happen in the human visual system
-                </p>
-                <p>
-                  See the Vision Science Society 2020{" "}
-                  <a href="https://osf.io/aketq/">conference poster</a> for more
-                  details.
-                </p>
-                <p>
-                  This website will allow you to browse all of the synthetic
-                  images generated for this project: you can filter by model,
-                  scaling value, target image, and more. Please{" "}
-                  <a href="https://github.com/flatironinstitute/foveated-metamers-browser/issues">
-                    open an issue
-                  </a>{" "}
-                  if you have any difficulties.
-                </p>
+                <Markdown>{right_side}</Markdown>
               </div>
             </div>
           </div>
