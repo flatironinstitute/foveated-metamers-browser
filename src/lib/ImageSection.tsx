@@ -176,7 +176,7 @@ export function ImageTools() {
   return (
     <>
       <div className="h-5"></div>
-      <div className="flex flex-col gap-y-5">
+      <div className="flex gap-y-5 gap-x-5">
         <GammaForm />
         <ZoomForm />
       </div>
