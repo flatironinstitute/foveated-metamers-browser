@@ -1,4 +1,4 @@
-import './globals.css'
+import 'src/lib/globals.css'
 
 export const metadata = {
   title: 'Foveated Metamers Browser',

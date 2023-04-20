@@ -1,5 +1,6 @@
 "use client";
 
+import type { Context } from "react";
 import type {
   MetadataJson,
   StudyImage,
@@ -9,10 +10,12 @@ import type {
   StateObject,
   FieldMap,
   Dimensions,
-  Position
+  Position,
 } from "./types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, createContext } from "react";
 import { sort, ascending } from "d3-array";
+
+export const AppContext: Context<AppState> = createContext({} as AppState);
 
 export const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
 
@@ -68,7 +71,7 @@ export type MagnifierState = {
   center: Position;
   natural_size: Dimensions | null;
   viewport_size: Dimensions | null;
-}
+};
 
 export type AppState = {
   metadata: StateObject<MetadataJson | null>;
@@ -84,7 +87,7 @@ export type AppState = {
   use_gamma: StateObject<boolean>;
   gamma_exponent: StateObject<number>;
   magnifier: StateObject<MagnifierState>;
-}
+};
 
 export default function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
@@ -98,8 +101,8 @@ export default function create_app_state(): AppState {
     zoom_multiplier: 1.0,
     center: { x: 200, y: 200 },
     natural_size: null,
-    viewport_size: null
-  })
+    viewport_size: null,
+  });
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
@@ -207,6 +210,6 @@ export default function create_app_state(): AppState {
     selected_natural_image,
     use_gamma,
     gamma_exponent,
-    magnifier
+    magnifier,
   };
 }

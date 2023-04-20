@@ -2,12 +2,6 @@ export default function About() {
   return (
     <section className="py-8 xl:py-16 px-4 sm:px-6 lg:px-8 bg-gamma-50 overflow-hidden">
       <div className="max-w-max lg:max-w-7xl mx-auto">
-        {/* <div className="relative z-10 mb-8 md:mb-2 md:px-6">
-        <div className="text-base max-w-prose lg:max-w-none">
-          <h2 className="leading-6 text-indigo-600 font-semibold tracking-wide uppercase">About</h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gamma-900 sm:text-4xl">Foveated Metamers Browser</p>
-        </div>
-      </div> */}
         <div className="relative">
           <svg
             className="hidden md:block absolute top-0 right-0 -mt-20 -mr-20"
@@ -129,22 +123,6 @@ export default function About() {
                 </p>
               </div>
             </div>
-            {/* <div className="mt-8 inline-flex rounded-md shadow">
-            <a href="https://github.com/flatironinstitute/foveated-metamers-browser" className="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Github
-            </a>
-          </div>
-          <div className="mt-8 ml-1 inline-flex rounded-md shadow">
-            <a href="#" className="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Paper
-            </a>
-          </div> */}
           </div>
         </div>
       </div>
