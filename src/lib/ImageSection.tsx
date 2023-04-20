@@ -59,11 +59,11 @@ function BigCheckbox({
       <input
         type="checkbox"
         id={id}
-        className="h-7 w-7"
+        className="h-7 w-7 cursor-pointer"
         checked={checked}
         onChange={onChange}
       />
-      <label className="text-xl" htmlFor={id}>
+      <label className="text-xl cursor-pointer" htmlFor={id}>
         {label}
       </label>
     </div>
@@ -92,7 +92,7 @@ function Slider({
   return (
     <div className="flex gap-x-4">
       <input
-        className="block"
+        className="block enabled:cursor-pointer"
         type="range"
         disabled={disabled}
         id={id}
