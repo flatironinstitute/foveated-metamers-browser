@@ -5,8 +5,8 @@ import type { StudyImage, Position, Dimensions } from "./types";
 import type { AppState, MagnifierState } from "./app_state";
 import { useEffect, useContext, useState, useRef } from "react";
 import * as d3 from "./d3";
-import { AppContext, DATA_URL_BASE, log } from "./app_state";
-import { Overlay } from "./utils";
+import { AppContext, DATA_URL_BASE } from "./app_state";
+import { Overlay, log } from "./utils";
 
 const GAMMA_FILTER_ID = `gamma-adjustment`;
 
@@ -266,7 +266,7 @@ function MagnifyingGlass() {
     const element = ref.current as Element;
 
     function on_drag(event: any) {
-      log(`onDrag`, event);
+      // log(`on_drag`, event);
       context.magnifier.set((d) =>
         set_magnifier_center(d, { x: event.x, y: event.y })
       );
@@ -559,8 +559,6 @@ export function ImageGrid() {
     </div>
   );
 }
-
-
 
 export default function ImageSection() {
   const context = useContext(AppContext);

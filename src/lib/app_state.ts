@@ -14,10 +14,13 @@ import type {
 } from "./types";
 import { useEffect, useMemo, useState, createContext } from "react";
 import { sort, ascending } from "d3-array";
+import { log } from "./utils";
 
 export const AppContext: Context<AppState> = createContext({} as AppState);
 
 export const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
+
+log(`Data URL:`, DATA_URL_BASE);
 
 export const FIELD_DESCRIPTIONS: FieldMap<string> = {
   model_name: "The model used to synthesize this image.",
@@ -45,10 +48,6 @@ export const PAGE_SIZE = 25;
 const INITIAL_FILTER_STATE = Object.fromEntries(
   FILTER_IDS.map((filter_id) => [filter_id, {}])
 ) as FilterState;
-
-export function log(...args: any[]) {
-  console.log(`🖼️`, ...args);
-}
 
 function get_image_hash(image: StudyImage) {
   let string = ``;
