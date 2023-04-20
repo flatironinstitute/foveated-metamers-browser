@@ -1,7 +1,7 @@
 "use client";
 
 import type { Context, SyntheticEvent } from "react";
-import type { FilterID, Field, Image, Position, Dimensions } from "./types";
+import type { FilterID, Field, StudyImage, Position, Dimensions } from "./types";
 import type { AppState, MagnifierState } from "./app_state";
 import { createContext, useEffect, useContext, useState, useRef } from "react";
 import * as d3 from "./d3";
@@ -198,7 +198,7 @@ function useImageSrc(type: "natural" | "synthesized") {
   const context = useContext(AppContext);
   const context_key: keyof AppState =
     type === "natural" ? "selected_natural_image" : "selected_image";
-  const image = context[context_key] as Image;
+  const image = context[context_key] as StudyImage;
   if (!image) return undefined;
   const path = image?.file;
   const src = `${DATA_URL_BASE}${path}`;

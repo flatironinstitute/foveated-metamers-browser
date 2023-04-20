@@ -11,14 +11,14 @@ export interface Metadata {
   gamma_corrected: boolean;
 }
 
-export type Image = Metadata & {
+export type StudyImage = Metadata & {
   file: string;
   __hash?: string;
 };
 
 export type MetadataJson = {
-  metamers: Image[];
-  natural_images: Image[];
+  metamers: StudyImage[];
+  natural_images: StudyImage[];
 };
 
 export type Field = keyof Metadata;

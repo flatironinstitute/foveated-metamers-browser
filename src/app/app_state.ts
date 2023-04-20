@@ -2,7 +2,7 @@
 
 import type {
   MetadataJson,
-  Image,
+  StudyImage,
   Field,
   FilterState,
   FilterID,
@@ -47,11 +47,11 @@ export function log(...args: any[]) {
   console.log(`🖼️`, ...args);
 }
 
-function get_image_hash(image: Image) {
+function get_image_hash(image: StudyImage) {
   let string = ``;
   const keys = Object.keys(image).filter((d) => d !== "__hash");
   for (const key of sort(keys, ascending)) {
-    const value = image[key as keyof Image];
+    const value = image[key as keyof StudyImage];
     string += value?.toString() + "_";
   }
   return string;
@@ -77,10 +77,10 @@ export type AppState = {
   selected_image_key: StateObject<string | null>;
   page_start: number;
   page_end: number;
-  filtered_rows: Image[];
-  paginated_rows: Image[];
-  selected_image: Image | undefined;
-  selected_natural_image: Image | undefined;
+  filtered_rows: StudyImage[];
+  paginated_rows: StudyImage[];
+  selected_image: StudyImage | undefined;
+  selected_natural_image: StudyImage | undefined;
   use_gamma: StateObject<boolean>;
   gamma_exponent: StateObject<number>;
   magnifier: StateObject<MagnifierState>;
@@ -110,7 +110,7 @@ export default function create_app_state(): AppState {
       const metadata_ = (await response.json()) as MetadataJson;
       log(`Metadata:`, metadata_);
 
-      const metamers: Image[] = metadata_.metamers;
+      const metamers: StudyImage[] = metadata_.metamers;
 
       // Hash all the images
       for (const image of metamers) {
@@ -140,12 +140,12 @@ export default function create_app_state(): AppState {
   }, []);
 
   // Get filtered rows from current filter state
-  const filtered_rows = useMemo<Image[]>(() => {
+  const filtered_rows = useMemo<StudyImage[]>(() => {
     if (!metadata.value) return [];
     if (!filters.value) return [];
     const metamers = metadata.value?.metamers ?? [];
     const filter_state = filters.value;
-    const filtered_metamers = metamers.filter((image: Image) => {
+    const filtered_metamers = metamers.filter((image: StudyImage) => {
       let keep = true;
       for (const filter_id of Object.keys(filter_state)) {
         if (!(filter_id in image)) {
@@ -170,7 +170,7 @@ export default function create_app_state(): AppState {
   const page_start = (current_page.value - 1) * PAGE_SIZE;
   const page_end = page_start + PAGE_SIZE;
 
-  const paginated_rows = useMemo<Image[]>(() => {
+  const paginated_rows = useMemo<StudyImage[]>(() => {
     // Slice the rows to the current page
     return filtered_rows.slice(page_start, page_end);
   }, [filtered_rows, page_start, page_end]);
@@ -180,15 +180,15 @@ export default function create_app_state(): AppState {
     current_page.set(1);
   }, [filters.value]);
 
-  const selected_image = useMemo<Image | undefined>(() => {
+  const selected_image = useMemo<StudyImage | undefined>(() => {
     const metamers = metadata.value?.metamers ?? [];
     return metamers.find(
-      (image: Image) => image.__hash === selected_image_key.value
+      (image: StudyImage) => image.__hash === selected_image_key.value
     );
   }, [selected_image_key.value, metadata.value]);
 
-  const selected_natural_image = useMemo<Image | undefined>(() => {
-    const natural_images: Image[] = metadata.value?.natural_images ?? [];
+  const selected_natural_image = useMemo<StudyImage | undefined>(() => {
+    const natural_images: StudyImage[] = metadata.value?.natural_images ?? [];
     return natural_images.find(
       (d) => d.target_image === selected_image?.target_image
     );
