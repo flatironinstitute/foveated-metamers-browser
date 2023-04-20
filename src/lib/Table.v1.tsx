@@ -1,6 +1,6 @@
 "use client";
 
-import type { FilterID, Field, FilterState } from "./types";
+import type { FilterID, Field } from "./types";
 import { useContext, useState } from "react";
 import * as d3 from "./d3";
 import {
@@ -8,7 +8,6 @@ import {
   FILTER_IDS,
   FIELDS,
   FIELD_DESCRIPTIONS,
-  PAGE_SIZE,
 } from "./app_state";
 
 function SVGPlus() {
@@ -59,13 +58,13 @@ function FilterOption({ id, filter_id, value }: FilterOptionProps) {
   const filter_is_checked = filter_state[value];
 
   return (
-    <div className="flex items-center cursor-pointer">
+    <div className="flex items-center">
       <input
         id={id}
         value={value}
         type="checkbox"
         checked={filter_is_checked}
-        className="hidden"
+        className="h-4 w-4 border-gamma-300 rounded text-indigo-600 focus:ring-indigo-500"
         onChange={(event) => {
           filters.set((prev) => {
             if (!prev) return prev;
@@ -79,11 +78,7 @@ function FilterOption({ id, filter_id, value }: FilterOptionProps) {
           });
         }}
       />
-      <label
-        aria-checked={filter_is_checked}
-        htmlFor={id}
-        className="text-sm cursor-pointer rounded-xl bg-slate-200 opacity-40 px-2 aria-checked:opacity-100"
-      >
+      <label htmlFor={id} className="ml-3 text-sm text-gamma-600">
         {value?.toString()}
       </label>
     </div>
@@ -95,8 +90,9 @@ function genericCompare(a: any, b: any) {
 }
 
 function Filter({ id: filter_id }: { id: FilterID }) {
-  const context = useContext(AppContext);
-  const filter_state = context.filters.value?.[filter_id] ?? {};
+  const [hidden, set_hidden] = useState(true);
+
+  const filter_state = useContext(AppContext).filters.value?.[filter_id] ?? {};
 
   const filter_values_sorted: string[] = d3.sort(
     Object.keys(filter_state),
@@ -114,62 +110,37 @@ function Filter({ id: filter_id }: { id: FilterID }) {
   );
 
   return (
-    <div className="flex flex-col gap-y-2">
-      <div className="flex gap-x-2">
-        <h3 className="font-bold text-xs text-neutral-900 uppercase text-left whitespace-nowrap">
-          {filter_id.replaceAll("_", " ")}
-        </h3>
-        <div
-          className="cursor-pointer text-xs uppercase text-blue-500 underline"
-          onClick={() => {
-            context.filters.set((d: FilterState | null) => {
-              if (!d) return d;
-              const filter_options = d[filter_id];
-              for (const option of Object.keys(filter_options)) {
-                filter_options[option] = true;
-              }
-              return {
-                ...d,
-                [filter_id]: filter_options,
-              };
-            });
-          }}
+    <div className="border-b border-gamma-200 pb-6">
+      <h3 className="-my-3 flow-root">
+        <button
+          type="button"
+          data-filter={filter_id}
+          className="py-3 bg-white w-full flex items-center justify-between text-sm text-neutral-400 hover:text-neutral-500"
+          name="plusminus"
+          onClick={() => set_hidden((h) => !h)}
         >
-          all
-        </div>
-        <div
-          className="cursor-pointer text-xs uppercase text-blue-500 underline"
-          onClick={() => {
-            context.filters.set((d: FilterState | null) => {
-              if (!d) return d;
-              const filter_options = d[filter_id];
-              for (const option of Object.keys(filter_options)) {
-                filter_options[option] = false;
-              }
-              return {
-                ...d,
-                [filter_id]: filter_options,
-              };
-            });
-          }}
-        >
-          none
-        </div>
-      </div>
-
+          <span className="font-medium text-xs text-neutral-900 uppercase text-left">
+            {filter_id.replaceAll("_", " ")}
+          </span>
+          <span className="ml-6 flex items-center">
+            {hidden ? <SVGPlus /> : <SVGMinus />}
+          </span>
+        </button>
+      </h3>
       <div
-        className="flex flex-wrap gap-x-2 gap-y-2 items-center"
-        data-filter={filter_id}
+        className={`pt-6 ${hidden && `hidden`}`}
         id={`filter-options-${filter_id}`}
       >
-        {filter_options.map((option) => (
-          <FilterOption
-            key={option.id}
-            id={option.id}
-            filter_id={option.filter_id}
-            value={option.value}
-          />
-        ))}
+        <div className="space-y-4">
+          {filter_options.map((option) => (
+            <FilterOption
+              key={option.id}
+              id={option.id}
+              filter_id={option.filter_id}
+              value={option.value}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -177,7 +148,7 @@ function Filter({ id: filter_id }: { id: FilterID }) {
 
 function Filters() {
   return (
-    <form className="grid gap-y-8 grid-cols-2 gap-x-12" id="filterform">
+    <form className="block" id="filterform">
       {FILTER_IDS.map((filter_id) => (
         <Filter id={filter_id} key={filter_id} />
       ))}
@@ -207,23 +178,21 @@ function TableHead() {
 function TableBody() {
   const context = useContext(AppContext);
   const paginated_rows = context?.paginated_rows ?? [];
-  const indices = d3.range(PAGE_SIZE);
   return (
     <tbody className="bg-white divide-y divide-neutral-200">
-      {indices.map((index: number) => {
-        const row = paginated_rows[index];
-        const selected = context?.selected_image_key.value === row?.__hash;
+      {paginated_rows.map((row) => {
+        const selected = context?.selected_image_key.value === row.__hash;
         return (
           <tr
-            key={row?.__hash ?? index}
+            key={row.__hash}
             className={`cursor-pointer border border-neutral-200 p-4 ${
               selected ? `bg-indigo-100` : ``
             }`}
             onClick={() => {
-              if (typeof row?.__hash === "undefined") {
+              if (typeof row.__hash === "undefined") {
                 console.error(`Row has no hash: ${JSON.stringify(row)}`);
               } else {
-                context?.selected_image_key.set(row?.__hash);
+                context?.selected_image_key.set(row.__hash);
               }
             }}
           >
@@ -232,7 +201,7 @@ function TableBody() {
                 key={field_id}
                 className="px-4 py-2 whitespace-nowrap text-xs text-neutral-500"
               >
-                {row?.[field_id]?.toString() ?? <pre>&nbsp;</pre>}
+                {row[field_id].toString()}
               </td>
             ))}
           </tr>
@@ -380,7 +349,7 @@ export default function TableAndFilters() {
       aria-labelledby="data-table"
       className="max-w-auto mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24 bg-white"
     >
-      <div className="grid grid-cols-1 gap-x-8 gap-y-10 pt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-x-8 gap-y-10 pt-6">
         <Filters />
         <div className="lg:col-span-5">
           <div className="flex flex-col">
