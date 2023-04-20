@@ -8,8 +8,9 @@ import type {
   FilterID,
   StateObject,
   FieldMap,
+  Dimensions,
+  Position
 } from "./types";
-import type { Dimensions } from "./useResizeObserver";
 import { useEffect, useMemo, useState } from "react";
 import { sort, ascending } from "d3-array";
 
@@ -61,7 +62,15 @@ function useStateObject<T>(initial_value: T): StateObject<T> {
   return { value, set };
 }
 
-export interface AppState {
+export type MagnifierState = {
+  active: boolean;
+  zoom_multiplier: number;
+  center: Position;
+  natural_size: Dimensions | null;
+  viewport_size: Dimensions | null;
+}
+
+export type AppState = {
   metadata: StateObject<MetadataJson | null>;
   filters: StateObject<FilterState | null>;
   current_page: StateObject<number>;
@@ -74,12 +83,7 @@ export interface AppState {
   selected_natural_image: Image | undefined;
   use_gamma: StateObject<boolean>;
   gamma_exponent: StateObject<number>;
-  current_image_natural_size: StateObject<{
-    width: number;
-    height: number;
-  } | null>;
-  image_viewport_size: StateObject<Dimensions | null>;
-  use_zoom: StateObject<boolean>;
+  magnifier: StateObject<MagnifierState>;
 }
 
 export default function create_app_state(): AppState {
@@ -89,12 +93,13 @@ export default function create_app_state(): AppState {
   const selected_image_key = useStateObject<string | null>(null);
   const use_gamma = useStateObject<boolean>(false);
   const gamma_exponent = useStateObject<number>(1.0);
-  const current_image_natural_size = useStateObject<{
-    width: number;
-    height: number;
-  } | null>(null);
-  const image_viewport_size = useStateObject<Dimensions | null>(null);
-  const use_zoom = useStateObject<boolean>(false);
+  const magnifier = useStateObject<MagnifierState>({
+    active: false,
+    zoom_multiplier: 2.0,
+    center: { x: 200, y: 200 },
+    natural_size: null,
+    viewport_size: null
+  })
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
@@ -202,8 +207,6 @@ export default function create_app_state(): AppState {
     selected_natural_image,
     use_gamma,
     gamma_exponent,
-    current_image_natural_size,
-    image_viewport_size,
-    use_zoom,
+    magnifier
   };
 }

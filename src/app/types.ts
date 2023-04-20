@@ -39,3 +39,13 @@ export type StateObject<T> = {
   value: T;
   set: Dispatch<SetStateAction<T>>;
 };
+
+export interface Dimensions {
+  height: number;
+  width: number;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
