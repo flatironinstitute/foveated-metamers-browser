@@ -95,7 +95,7 @@ export default function create_app_state(): AppState {
   const gamma_exponent = useStateObject<number>(1.0);
   const magnifier = useStateObject<MagnifierState>({
     active: false,
-    zoom_multiplier: 2.0,
+    zoom_multiplier: 1.0,
     center: { x: 200, y: 200 },
     natural_size: null,
     viewport_size: null

@@ -133,9 +133,9 @@ function GammaForm() {
       <Slider
         disabled={!gamma_enabled}
         id="gamma-value"
-        min={0.8}
-        max={8}
-        step={0.2}
+        min={0.1}
+        max={10}
+        step={0.1}
         value={context.gamma_exponent.value}
         onChange={(e) => {
           const element = e.target as HTMLInputElement;
