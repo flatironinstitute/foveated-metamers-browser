@@ -6,7 +6,7 @@ import type { AppState, MagnifierState } from "./app_state";
 import { useEffect, useContext, useState, useRef } from "react";
 import * as d3 from "./d3";
 import { AppContext, DATA_URL_BASE } from "./app_state";
-import { Overlay, log } from "./utils";
+import { Overlay, Slider, log } from "./utils";
 
 const GAMMA_FILTER_ID = `gamma-adjustment`;
 
@@ -70,44 +70,7 @@ function BigCheckbox({
   );
 }
 
-function Slider({
-  disabled,
-  id,
-  min,
-  max,
-  step,
-  value,
-  onChange,
-  format,
-}: {
-  disabled?: boolean;
-  id: string;
-  min: number;
-  max: number;
-  step: number;
-  value: number;
-  onChange: (e: SyntheticEvent<HTMLInputElement>) => void;
-  format: (d: number) => string;
-}) {
-  return (
-    <div className="flex gap-x-4">
-      <input
-        className="block enabled:cursor-pointer"
-        type="range"
-        disabled={disabled}
-        id={id}
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={onChange}
-      />
-      <label htmlFor={id} className={`text-xl ${disabled ? `opacity-20` : ``}`}>
-        {format(value)}
-      </label>
-    </div>
-  );
-}
+
 
 function GammaForm() {
   const context = useContext(AppContext);

@@ -1,15 +1,16 @@
 "use client";
 
-import type { FilterID, Field, FilterState } from "./types";
-import { useContext, useState } from "react";
+import type { Field, FilterState } from "./types";
+import { useContext, useState, useEffect } from "react";
 import * as d3 from "./d3";
 import {
   AppContext,
   FILTER_IDS,
-  FIELDS,
   FIELD_DESCRIPTIONS,
   PAGE_SIZE,
+  TABLE_COLUMNS,
 } from "./app_state";
+import { Slider } from "./utils";
 
 function SVGPlus() {
   return (
@@ -47,13 +48,13 @@ function SVGMinus() {
   );
 }
 
-type FilterOptionProps = {
+type CheckboxChipProps = {
   id: string;
-  filter_id: FilterID;
+  filter_id: Field;
   value: string;
 };
 
-function FilterOption({ id, filter_id, value }: FilterOptionProps) {
+function CheckboxChip({ id, filter_id, value }: CheckboxChipProps) {
   const filters = useContext(AppContext).filters;
   const filter_state = filters.value?.[filter_id] ?? {};
   const filter_is_checked = filter_state[value];
@@ -90,20 +91,16 @@ function FilterOption({ id, filter_id, value }: FilterOptionProps) {
   );
 }
 
-function genericCompare(a: any, b: any) {
-  return a - b || (a < b ? -1 : a > b ? 1 : 0);
-}
-
-function Filter({ id: filter_id }: { id: FilterID }) {
+function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
   const context = useContext(AppContext);
   const filter_state = context.filters.value?.[filter_id] ?? {};
 
   const filter_values_sorted: string[] = d3.sort(
     Object.keys(filter_state),
-    genericCompare
+    d3.ascending
   );
 
-  const filter_options: Array<FilterOptionProps> = filter_values_sorted.map(
+  const filter_options: Array<CheckboxChipProps> = filter_values_sorted.map(
     (value, index) => {
       return {
         id: `filter-${filter_id}-${index}`,
@@ -114,70 +111,166 @@ function Filter({ id: filter_id }: { id: FilterID }) {
   );
 
   return (
+    <div
+      className="flex flex-wrap gap-x-2 gap-y-2 items-center"
+      data-filter={filter_id}
+      id={`filter-options-${filter_id}`}
+    >
+      {filter_options.map((option) => (
+        <CheckboxChip
+          key={option.id}
+          id={option.id}
+          filter_id={option.filter_id}
+          value={option.value}
+        />
+      ))}
+    </div>
+  );
+}
+
+function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
+  const context = useContext(AppContext);
+  const filter_state = context.filters.value?.[filter_id] ?? {};
+
+  const filter_keys_sorted: number[] = d3.sort<number>(
+    Object.keys(filter_state).map((d) => +d)
+  );
+
+  const min = +(d3.min(filter_keys_sorted, (d) => +d)?.toFixed(1) ?? 0);
+  const max = +(d3.max(filter_keys_sorted, (d) => +d)?.toFixed(1) ?? 1.5);
+
+  const [from_internal, set_from_internal] = useState<number>(min);
+  const [to_internal, set_to_internal] = useState<number>(max);
+
+  // Find the closest value in filter_keys_sorted to from_internal
+  const from_index = d3.bisectLeft(filter_keys_sorted, from_internal);
+  const to_index = d3.bisectLeft(filter_keys_sorted, to_internal);
+  let from = filter_keys_sorted[from_index] ?? min;
+  let to = filter_keys_sorted[to_index] ?? max;
+
+  console.log({
+    from_internal,
+    to_internal,
+    from_index,
+    to_index,
+    from,
+    to,
+  });
+
+  // const active_values = filter_keys_sorted.filter((key) => filter_state[key]);
+
+  // const active_extent = d3.extent(active_values, (d) => +d);
+
+  // const [from, set_from] = useState<number>(extent_min ?? 0);
+  // const [to, set_to] = useState<number>(extent_max ?? 2);
+
+  // if (!extent_min || !extent_max) return null;
+
+  useEffect(() => {
+    context.filters.set((prev) => {
+      if (!prev) return prev;
+      const new_filter_state: { [k: string]: boolean } = {};
+      for (const key of filter_keys_sorted) {
+        const value = +key;
+        if (value >= from && value <= to) {
+          new_filter_state[key.toString()] = true;
+        } else {
+          new_filter_state[key.toString()] = false;
+        }
+      }
+      return { ...prev, [filter_id]: new_filter_state };
+    });
+  }, [from, to]);
+
+  return (
+    <div className="grid" style={{ gridTemplateColumns: `8ch 1fr` }}>
+      <div>From:</div>
+      <Slider
+        debug
+        id={`${filter_id}-from`}
+        min={min}
+        max={max}
+        step="0.001"
+        value={+from}
+        format={d3.format(`.3f`)}
+        onChange={(evt) => {
+          const value = evt.target.valueAsNumber;
+          set_from_internal(value);
+          if (value > to) {
+            set_to_internal(value);
+          }
+        }}
+      />
+      <div>To:</div>
+      <Slider
+        id={`${filter_id}-to`}
+        min={min}
+        max={max}
+        step="0.001"
+        value={+to}
+        format={d3.format(`.3f`)}
+        onChange={(evt) => {
+          const value = evt.target.valueAsNumber;
+          set_to_internal(value);
+          if (value < from) {
+            set_from_internal(value);
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+function Filter({ id: filter_id }: { id: Field }): JSX.Element {
+  const context = useContext(AppContext);
+
+  const all_none = [true, false].map((value) => {
+    return (
+      <div
+        key={value.toString()}
+        className="cursor-pointer text-xs uppercase text-blue-500 underline"
+        onClick={() => {
+          context.filters.set((d: FilterState | null) => {
+            if (!d) return d;
+            const filter_options = d[filter_id];
+            for (const option of Object.keys(filter_options)) {
+              filter_options[option] = value;
+            }
+            return {
+              ...d,
+              [filter_id]: filter_options,
+            };
+          });
+        }}
+      >
+        {value ? "all" : "none"}
+      </div>
+    );
+  });
+
+  const use_slider = filter_id === "scaling";
+
+  return (
     <div className="flex flex-col gap-y-2">
       <div className="flex gap-x-2">
         <h3 className="font-bold text-xs text-neutral-900 uppercase text-left whitespace-nowrap">
           {filter_id.replaceAll("_", " ")}
         </h3>
-        <div
-          className="cursor-pointer text-xs uppercase text-blue-500 underline"
-          onClick={() => {
-            context.filters.set((d: FilterState | null) => {
-              if (!d) return d;
-              const filter_options = d[filter_id];
-              for (const option of Object.keys(filter_options)) {
-                filter_options[option] = true;
-              }
-              return {
-                ...d,
-                [filter_id]: filter_options,
-              };
-            });
-          }}
-        >
-          all
-        </div>
-        <div
-          className="cursor-pointer text-xs uppercase text-blue-500 underline"
-          onClick={() => {
-            context.filters.set((d: FilterState | null) => {
-              if (!d) return d;
-              const filter_options = d[filter_id];
-              for (const option of Object.keys(filter_options)) {
-                filter_options[option] = false;
-              }
-              return {
-                ...d,
-                [filter_id]: filter_options,
-              };
-            });
-          }}
-        >
-          none
-        </div>
+        {use_slider ? null : all_none}
       </div>
 
-      <div
-        className="flex flex-wrap gap-x-2 gap-y-2 items-center"
-        data-filter={filter_id}
-        id={`filter-options-${filter_id}`}
-      >
-        {filter_options.map((option) => (
-          <FilterOption
-            key={option.id}
-            id={option.id}
-            filter_id={option.filter_id}
-            value={option.value}
-          />
-        ))}
-      </div>
+      {use_slider ? (
+        <RangeSlider id={filter_id} />
+      ) : (
+        <CheckBoxes id={filter_id} />
+      )}
     </div>
   );
 }
 
 function Filters() {
   return (
-    <form className="grid gap-y-8 grid-cols-2 gap-x-12" id="filterform">
+    <form className="grid gap-y-8 md:grid-cols-2 gap-x-12" id="filterform">
       {FILTER_IDS.map((filter_id) => (
         <Filter id={filter_id} key={filter_id} />
       ))}
@@ -189,14 +282,14 @@ function TableHead() {
   return (
     <thead className="bg-neutral-50">
       <tr>
-        {FIELDS.map((field) => (
+        {TABLE_COLUMNS.map((field_id: Field) => (
           <th
-            key={field}
+            key={field_id}
             scope="col"
             className="target_image px-4 py-2 text-left text-xs font-bold text-neutral-900 uppercase tracking-wider"
-            title={FIELD_DESCRIPTIONS[field]}
+            title={FIELD_DESCRIPTIONS[field_id]}
           >
-            {field.replaceAll("_", " ")}
+            {field_id.replaceAll("_", " ")}
           </th>
         ))}
       </tr>
@@ -227,7 +320,7 @@ function TableBody() {
               }
             }}
           >
-            {FIELDS.map((field_id: Field) => (
+            {TABLE_COLUMNS.map((field_id: Field) => (
               <td
                 key={field_id}
                 className="px-4 py-2 whitespace-nowrap text-xs text-neutral-500"

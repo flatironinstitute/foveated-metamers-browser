@@ -23,14 +23,12 @@ export type MetadataJson = {
 
 export type Field = keyof Metadata;
 
-export type FilterID = keyof Omit<Metadata, "random_seed">;
-
 export type FieldMap<T> = {
   [Property in Field]: T;
 };
 
 export type FilterState = {
-  [Key in FilterID]: {
+  [Key in Field]: {
     [k: string]: boolean;
   };
 };

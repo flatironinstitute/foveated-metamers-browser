@@ -6,7 +6,6 @@ import type {
   StudyImage,
   Field,
   FilterState,
-  FilterID,
   StateObject,
   FieldMap,
   Dimensions,
@@ -39,8 +38,12 @@ export const FIELD_DESCRIPTIONS: FieldMap<string> = {
 
 export const FIELDS: Field[] = Object.keys(FIELD_DESCRIPTIONS) as Field[];
 
-export const FILTER_IDS: FilterID[] = FIELDS.filter(
-  (d): d is FilterID => d !== "random_seed"
+export const FILTER_IDS: Field[] = FIELDS.filter(
+  (d) => d !== "random_seed" && d !== "gamma_corrected"
+);
+
+export const TABLE_COLUMNS: Field[] = FIELDS.filter(
+  (d: Field) => d !== "gamma_corrected"
 );
 
 export const PAGE_SIZE = 25;
@@ -112,6 +115,11 @@ export default function create_app_state(): AppState {
       const metadata_ = (await response.json()) as MetadataJson;
       log(`Metadata:`, metadata_);
 
+      // Filter out all metamers with gamma correction
+      metadata_.metamers = metadata_.metamers.filter(
+        (image) => !image.gamma_corrected
+      );
+
       const metamers: StudyImage[] = metadata_.metamers;
 
       // Hash all the images
@@ -127,13 +135,13 @@ export default function create_app_state(): AppState {
       for (const [filter_id, filter_values] of entries) {
         // Create a set of all values for this filter
         const filter_values = Array.from(
-          new Set(metamers.map((image) => image[filter_id as FilterID]))
+          new Set(metamers.map((image) => image[filter_id as Field]))
         );
         // All values start out `true`
         const active_filters: { [k: string]: true } = Object.fromEntries(
           filter_values.map((v) => [v, true])
         );
-        next_filter_state[filter_id as FilterID] = active_filters;
+        next_filter_state[filter_id as Field] = active_filters;
       }
 
       metadata.set(metadata_);
@@ -154,11 +162,11 @@ export default function create_app_state(): AppState {
           console.log(`Filter ${filter_id} not in image`, image);
           continue;
         }
-        const image_value = image[filter_id as FilterID];
+        const image_value = image[filter_id as Field];
         const value_as_string = image_value.toString();
         // The current filter state for this filter_id and value
         const this_filter_state =
-          filter_state?.[filter_id as FilterID]?.[value_as_string];
+          filter_state?.[filter_id as Field]?.[value_as_string];
         if (!this_filter_state) {
           keep = false;
           break;
