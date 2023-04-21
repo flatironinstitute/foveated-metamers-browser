@@ -70,8 +70,6 @@ function BigCheckbox({
   );
 }
 
-
-
 function GammaForm() {
   const context = useContext(AppContext);
   const gamma_enabled = context.use_gamma.value;
@@ -155,7 +153,10 @@ function useImageSrc(type: "natural" | "synthesized") {
   const image = context[context_key] as StudyImage;
   if (!image) return undefined;
   const path = image?.file;
-  const src = `${DATA_URL_BASE}${path}`;
+  const src = new URL(
+    `${DATA_URL_BASE}/${path}`,
+    window.location.href
+  ).toString();
   return src;
 }
 
