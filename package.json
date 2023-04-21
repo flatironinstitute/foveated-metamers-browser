@@ -2,6 +2,8 @@
   "name": "foveated-metamers-browser",
   "version": "0.1.0",
   "private": true,
+  "author": "Flatiron Institute",
+  "license": "Apache-2.0",
   "scripts": {
     "proxy": "npx local-cors-proxy --proxyUrl https://users.flatironinstitute.org/",
     "dev": "next dev",
