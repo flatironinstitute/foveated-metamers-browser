@@ -114,7 +114,7 @@ export default function create_app_state(): AppState {
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
-    const url = new URL(DATA_URL_BASE + "metadata.json");
+    const url = new URL(`${DATA_URL_BASE}/metadata.json`, window.location.href);
     (async () => {
       log(`Fetching metadata from ${url}`);
       const response = await fetch(url);

@@ -148,24 +148,6 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
   let from = filter_keys_sorted[from_index] ?? min;
   let to = filter_keys_sorted[to_index] ?? max;
 
-  console.log({
-    from_internal,
-    to_internal,
-    from_index,
-    to_index,
-    from,
-    to,
-  });
-
-  // const active_values = filter_keys_sorted.filter((key) => filter_state[key]);
-
-  // const active_extent = d3.extent(active_values, (d) => +d);
-
-  // const [from, set_from] = useState<number>(extent_min ?? 0);
-  // const [to, set_to] = useState<number>(extent_max ?? 2);
-
-  // if (!extent_min || !extent_max) return null;
-
   useEffect(() => {
     context.filters.set((prev) => {
       if (!prev) return prev;
@@ -289,7 +271,9 @@ function TableHead() {
           let arrow = null;
           const sort_this_field = sort_by === field_id;
           if (sort_this_field) {
-            arrow = <span>&ensp;{sort_direction === "ascending" ? "▲" : "▼"}</span>;
+            arrow = (
+              <span>&ensp;{sort_direction === "ascending" ? "▲" : "▼"}</span>
+            );
           }
           return (
             <th
