@@ -12,7 +12,7 @@ import type {
   Position,
 } from "./types";
 import { useEffect, useMemo, useState, createContext } from "react";
-import { sort, ascending } from "d3-array";
+import * as d3 from "./d3";
 import { log } from "./utils";
 
 export const AppContext: Context<AppState> = createContext({} as AppState);
@@ -55,7 +55,7 @@ const INITIAL_FILTER_STATE = Object.fromEntries(
 function get_image_hash(image: StudyImage) {
   let string = ``;
   const keys = Object.keys(image).filter((d) => d !== "__hash");
-  for (const key of sort(keys, ascending)) {
+  for (const key of d3.sort(keys, d3.ascending)) {
     const value = image[key as keyof StudyImage];
     string += value?.toString() + "_";
   }
@@ -83,6 +83,8 @@ export type AppState = {
   page_start: number;
   page_end: number;
   filtered_rows: StudyImage[];
+  sort_by: StateObject<Field>;
+  sort_direction: StateObject<"ascending" | "descending">;
   paginated_rows: StudyImage[];
   selected_image: StudyImage | undefined;
   selected_natural_image: StudyImage | undefined;
@@ -105,6 +107,10 @@ export default function create_app_state(): AppState {
     natural_size: null,
     viewport_size: null,
   });
+  const sort_by = useStateObject<Field>("model_name");
+  const sort_direction = useStateObject<"ascending" | "descending">(
+    "ascending"
+  );
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
@@ -153,9 +159,14 @@ export default function create_app_state(): AppState {
   const filtered_rows = useMemo<StudyImage[]>(() => {
     if (!metadata.value) return [];
     if (!filters.value) return [];
-    const metamers = metadata.value?.metamers ?? [];
+    const metamers_unsorted = metadata.value?.metamers ?? [];
+    const sort_func =
+      sort_direction.value === "ascending" ? d3.ascending : d3.descending;
+    const metamers_sorted = d3.sort(metamers_unsorted, (a, b) =>
+      sort_func(a[sort_by.value], b[sort_by.value])
+    );
     const filter_state = filters.value;
-    const filtered_metamers = metamers.filter((image: StudyImage) => {
+    const filtered_metamers = metamers_sorted.filter((image: StudyImage) => {
       let keep = true;
       for (const filter_id of Object.keys(filter_state)) {
         if (!(filter_id in image)) {
@@ -174,8 +185,9 @@ export default function create_app_state(): AppState {
       }
       return keep;
     });
+
     return filtered_metamers;
-  }, [metadata.value, filters.value]);
+  }, [metadata.value, filters.value, sort_by.value, sort_direction.value]);
 
   const page_start = (current_page.value - 1) * PAGE_SIZE;
   const page_end = page_start + PAGE_SIZE;
@@ -218,5 +230,7 @@ export default function create_app_state(): AppState {
     use_gamma,
     gamma_exponent,
     magnifier,
+    sort_by,
+    sort_direction,
   };
 }

@@ -279,19 +279,40 @@ function Filters() {
 }
 
 function TableHead() {
+  const context = useContext(AppContext);
+  const sort_by = context.sort_by.value;
+  const sort_direction = context.sort_direction.value;
+
   return (
     <thead className="bg-neutral-50">
       <tr>
-        {TABLE_COLUMNS.map((field_id: Field) => (
-          <th
-            key={field_id}
-            scope="col"
-            className="target_image px-4 py-2 text-left text-xs font-bold text-neutral-900 uppercase tracking-wider"
-            title={FIELD_DESCRIPTIONS[field_id]}
-          >
-            {field_id.replaceAll("_", " ")}
-          </th>
-        ))}
+        {TABLE_COLUMNS.map((field_id: Field) => {
+          let arrow = null;
+          const sort_this_field = sort_by === field_id;
+          if (sort_this_field) {
+            arrow = <span>&ensp;{sort_direction === "ascending" ? "▲" : "▼"}</span>;
+          }
+          return (
+            <th
+              key={field_id}
+              scope="col"
+              className="cursor-pointer px-4 py-2 text-left text-xs font-bold text-neutral-900 uppercase tracking-wider whitespace-nowrap"
+              title={FIELD_DESCRIPTIONS[field_id]}
+              onClick={() => {
+                if (sort_this_field) {
+                  context.sort_direction.set((d) =>
+                    d === "ascending" ? "descending" : "ascending"
+                  );
+                } else {
+                  context.sort_by.set(field_id);
+                }
+              }}
+            >
+              <span>{field_id.replaceAll("_", " ")}</span>
+              {arrow}
+            </th>
+          );
+        })}
       </tr>
     </thead>
   );
