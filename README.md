@@ -8,10 +8,18 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 1.  **Start developing.**
 
-    Navigate to the Flatiron cluster, clone this repo in your `mnt/home/<username>`, and start it up. If you are not on the FI network, fire up that VPN.
+    Navigate to the Flatiron cluster, clone this repo in your `mnt/home/<username>`, and start it up. 
+    If you are not on the FI network, fire up that VPN.
 
     ```zsh
     npm install
+    npm run dev
+    ```
+
+    You may also run the app locally and proxy requests to the live site:
+
+    ```zsh
+    npm run proxy
     npm run dev
     ```
 
@@ -37,11 +45,11 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
    Your project is now running at `https://flatironinstitute.org/~<username>
 
-### Liz
+### Paul
 
-- [ ] Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true; - Liz
-- [ ] Gamma Slider: Liz to make the slider and give a stub function that WB can update.
-- [ ] Tie the 50% gray to the gamma - Liz
+- [x] Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true
+- [x] Gamma Slider: Liz to make the slider and give a stub function that WB can update.
+- [ ] Tie the 50% gray to the gamma
 
 ### Billy
 
