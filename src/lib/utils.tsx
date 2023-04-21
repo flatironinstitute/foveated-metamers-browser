@@ -1,4 +1,5 @@
 import type { ChangeEventHandler, SyntheticEvent } from "react";
+import React from "react";
 
 export function log(...args: any[]) {
   console.log(`🖼️`, ...args);
@@ -21,18 +22,11 @@ export function Slider({
   value,
   onChange,
   format,
-  debug
 }: {
   disabled?: boolean;
   id: string;
-  min: number;
-  max: number;
-  step: HTMLInputElement["step"];
-  value?: number;
-  onChange?: ChangeEventHandler<HTMLInputElement>
   format: (d: number) => string;
-  debug?: boolean;
-}) {
+} & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="flex gap-x-4">
       <input
@@ -47,7 +41,7 @@ export function Slider({
         onChange={onChange}
       />
       <label htmlFor={id} className={`text-xl ${disabled ? `opacity-20` : ``}`}>
-        {Number.isFinite(value) && format(value!)}
+        {Number.isFinite(value) && format(+value!)}
       </label>
     </div>
   );
