@@ -38,4 +38,4 @@ next-env.d.ts
 
 /package-lock.json
 .eslintcache
-/deploy.sh
+/deploy.js
