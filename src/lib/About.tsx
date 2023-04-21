@@ -37,13 +37,19 @@ processing steps happen in the human visual system
 
 See the Vision Science Society 2020
 [conference poster](https://osf.io/aketq/) for more
-details.
+details about the experiment.
 
 This website will allow you to browse all of the synthetic
 images generated for this project: you can filter by model,
 scaling value, target image, and more. Please
 [open an issue](https://github.com/flatironinstitute/foveated-metamers-browser/issues)
 if you have any difficulties.
+
+Please see <a href="https://osf.io/kjf75">the project's OSF page</a> 
+if you wish to download all the images in bulk (as well as other associated 
+files, such as the behavioral data), and the 
+[project Github page](https://github.com/billbrod/foveated-metamers/)
+for more details about using the code or data.
 
 `.trim();
 
