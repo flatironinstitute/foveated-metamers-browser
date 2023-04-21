@@ -1,4 +1,3 @@
-import type { ChangeEventHandler, SyntheticEvent } from "react";
 import React from "react";
 
 export function log(...args: any[]) {

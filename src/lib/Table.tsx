@@ -186,7 +186,6 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
     <div className="grid" style={{ gridTemplateColumns: `8ch 1fr` }}>
       <div>From:</div>
       <Slider
-        debug
         id={`${filter_id}-from`}
         min={min}
         max={max}
