@@ -4,6 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
+    "proxy": "npx local-cors-proxy --proxyUrl https://users.flatironinstitute.org/",
     "compile": "tsc",
     "build-dev": "webpack --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
