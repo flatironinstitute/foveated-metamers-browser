@@ -45,7 +45,7 @@ scaling value, target image, and more. Please
 [open an issue](https://github.com/flatironinstitute/foveated-metamers-browser/issues)
 if you have any difficulties.
 
-Please see <a href="https://osf.io/kjf75">the project's OSF page</a> 
+Please see [the project's OSF page](https://osf.io/kjf75) 
 if you wish to download all the images in bulk (as well as other associated 
 files, such as the behavioral data), and the 
 [project Github page](https://github.com/billbrod/foveated-metamers/)
