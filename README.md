@@ -8,15 +8,24 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 1.  **Start developing.**
 
-    Navigate to the Flatiron cluster, clone this repo in your `mnt/home/<username>`, and start it up. If you are not on the FI network, fire up that VPN.
+    Navigate to the Flatiron cluster, clone this repo in your `mnt/home/<username>`, and start it up. 
+    If you are not on the FI network, fire up that VPN.
 
     ```zsh
-    npm run serve
+    npm install
+    npm run dev
+    ```
+
+    You may also run the app locally and proxy requests to the live site:
+
+    ```zsh
+    npm run proxy
+    npm run dev
     ```
 
 2.  **Open the source code and start editing!**
 
-    Your site is now running at `http://localhost:8082/` or `http://10.250.144.2:8082/`!
+    Your site is now running at `http://localhost:3000/`
 
 ## Deploy
 
@@ -34,17 +43,16 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 
 3. Move the contents of `dist` to the ~/USERNAME/public_www/ folder
 
-    Your project is now running at `https://flatironinstitute.org/~<username>
+   Your project is now running at `https://flatironinstitute.org/~<username>
 
+### Paul
 
-### Liz
-- Image hover and zoom in webpack bug - Liz
-- Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true; - Liz
-- Filter selection bug - Liz
-- Gamma Slider: Liz to make the slider and give a stub function that WB can update.
-- Tie the 50% gray to the gamma - Liz
+- [x] Remove all Gamma Corrected Column and remove all values where Gamma Corrected = true
+- [x] Gamma Slider: Liz to make the slider and give a stub function that WB can update.
+- [ ] Tie the 50% gray to the gamma
 
 ### Billy
+
 - Gamma Slider: Liz to make the slider and give a stub function that WB can update.
 - Select all / deselect all -- for filter checkboxes
 - Add sortby on table column heads -- not sure about this
@@ -53,13 +61,15 @@ Browse natural and simulated foveated metamer images hosted on the Flatiron Inst
 - Check pagination -- this appears to be working
 - Check highlight -- this appears to be working
 
-
 ### Done:
-- Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
-- Move slider and zoom to the top left
-- Top right button update link
-- Favicon
-- Fix slate to gray?
-- Move the about to the top then image then table.
-- Model: "" Target Image: "" Scaling Value: ""
-- Button
+
+- [x] Image zoom
+- [x] Filter selection bug - Liz
+- [x] Put site at /~wbroderick/metamers and a simple index.html with link to personal page and link to /metamers
+- [x] Move slider and zoom to the top left
+- [x] Top right button update link
+- [x] Favicon
+- [x] Fix slate to gray?
+- [x] Move the about to the top then image then table.
+- [x] Model: "" Target Image: "" Scaling Value: ""
+- [x] Button

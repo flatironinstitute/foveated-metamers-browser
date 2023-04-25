@@ -1,6 +1,0 @@
-node_modules
-dist
-webpack.*
-postcss.config.js
-tailwind.config.js
-src/assets/js/*

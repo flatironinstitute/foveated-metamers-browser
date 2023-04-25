@@ -1,7 +1,11 @@
+// @ts-check
 const defaultTheme = require("tailwindcss/defaultTheme");
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{html,ts}"],
+  content: [
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
   theme: {
     extend: {
       sans: ["Inter var", ...defaultTheme.fontFamily.sans],
@@ -23,8 +27,5 @@ module.exports = {
       },
     },
   },
-  variants: {
-    extend: {},
-  },
   plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")],
-};
+}
