@@ -3,7 +3,9 @@
 import create_app_state, { AppContext } from "./app_state";
 import ImageSection from "./ImageSection";
 import TableAndFilters from "./Table";
-import { Overlay } from "./utils";
+import { Overlay, log } from "./utils";
+
+log(`Build Date:`, process.env.NEXT_PUBLIC_BUILD_DATE);
 
 export default function App() {
   const app_state = create_app_state();
