@@ -75,37 +75,61 @@ export type MagnifierState = {
   viewport_size: Dimensions | null;
 };
 
+type GammaState = {
+  active: boolean;
+  exponent: number;
+};
+
+type ImageElementState = {
+  target: HTMLImageElement | null;
+  synthesized: HTMLImageElement | null;
+};
+
+type TableState = {
+  sort_by: Field;
+  sort_direction: "ascending" | "descending";
+  current_page: number;
+};
+
 export type AppState = {
   metadata: StateObject<MetadataJson | null>;
   filters: StateObject<FilterState | null>;
-  current_page: StateObject<number>;
   selected_image_key: StateObject<string | null>;
-  page_start: number;
-  page_end: number;
   filtered_rows: StudyImage[];
-  sort_by: StateObject<Field>;
-  sort_direction: StateObject<"ascending" | "descending">;
   paginated_rows: StudyImage[];
   selected_image: StudyImage | undefined;
   selected_natural_image: StudyImage | undefined;
-  use_gamma: StateObject<boolean>;
-  gamma_exponent: StateObject<number>;
+  gamma: StateObject<GammaState>;
   magnifier: StateObject<MagnifierState>;
+  table: StateObject<TableState>;
+  image_elements: StateObject<ImageElementState>;
+  page_start: number;
+  page_end: number;
 };
 
 export default function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
   const filters = useStateObject<FilterState | null>(null);
-  const current_page = useStateObject<number>(1);
   const selected_image_key = useStateObject<string | null>(null);
-  const use_gamma = useStateObject<boolean>(false);
-  const gamma_exponent = useStateObject<number>(1.0);
+  const gamma = useStateObject<GammaState>({
+    active: false,
+    exponent: 1.0,
+  });
   const magnifier = useStateObject<MagnifierState>({
     active: false,
     zoom_multiplier: 1.0,
     center: { x: 200, y: 200 },
     natural_size: null,
     viewport_size: null,
+  });
+  const table = useStateObject<TableState>({
+    sort_by: "model_name",
+    sort_direction: "ascending",
+    current_page: 1,
+  });
+  const image_elements = useStateObject<ImageElementState>({
+    target: null,
+    synthesized: null,
   });
   const sort_by = useStateObject<Field>("model_name");
   const sort_direction = useStateObject<"ascending" | "descending">(
@@ -189,7 +213,7 @@ export default function create_app_state(): AppState {
     return filtered_metamers;
   }, [metadata.value, filters.value, sort_by.value, sort_direction.value]);
 
-  const page_start = (current_page.value - 1) * PAGE_SIZE;
+  const page_start = (table.value.current_page - 1) * PAGE_SIZE;
   const page_end = page_start + PAGE_SIZE;
 
   const paginated_rows = useMemo<StudyImage[]>(() => {
@@ -199,7 +223,7 @@ export default function create_app_state(): AppState {
 
   // If our filters update, reset the current page to 1
   useEffect(() => {
-    current_page.set(1);
+    table.set((d) => ({ ...d, current_page: 1 }));
   }, [filters.value]);
 
   const selected_image = useMemo<StudyImage | undefined>(() => {
@@ -220,17 +244,15 @@ export default function create_app_state(): AppState {
     metadata,
     filters,
     filtered_rows,
-    current_page,
     selected_image_key,
     page_start,
     page_end,
     paginated_rows,
     selected_image,
     selected_natural_image,
-    use_gamma,
-    gamma_exponent,
+    gamma,
     magnifier,
-    sort_by,
-    sort_direction,
+    table,
+    image_elements,
   };
 }

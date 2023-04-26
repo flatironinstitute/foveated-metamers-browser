@@ -72,7 +72,7 @@ function BigCheckbox({
 
 function GammaForm() {
   const context = useContext(AppContext);
-  const gamma_enabled = context.use_gamma.value;
+  const gamma_enabled = context.gamma.value.active;
 
   return (
     <div className="flex flex-col gap-y-4 w-[300px]">
@@ -80,18 +80,21 @@ function GammaForm() {
         id="use-gamma"
         label="Gamma Correction"
         checked={gamma_enabled}
-        onChange={() => context.use_gamma.set((d) => !d)}
+        onChange={() => context.gamma.set((d) => ({ ...d, active: !d.active }))}
       />
       <Slider
         disabled={!gamma_enabled}
         id="gamma-value"
         min={0.1}
-        max={10}
+        max={3}
         step={0.1}
-        value={context.gamma_exponent.value}
+        value={context.gamma.value.exponent}
         onChange={(e) => {
           const element = e.target as HTMLInputElement;
-          context.gamma_exponent.set(parseFloat(element.value));
+          context.gamma.set((d) => ({
+            ...d,
+            exponent: parseFloat(element.value),
+          }));
         }}
         format={d3.format(`.1f`)}
       />
@@ -343,7 +346,7 @@ function ImageBox({
   useSizeReporter({ measure, image_ref });
 
   // Apply gamma correction filter
-  const use_gamma = useContext(AppContext).use_gamma.value;
+  const use_gamma = useContext(AppContext).gamma.value.active;
   const style = {
     filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
   };
@@ -398,7 +401,7 @@ function ImageBoxZoomed({
   const zoom_multiplier = context.magnifier.value.zoom_multiplier;
   const viewport_size = context.magnifier.value.viewport_size;
   const natural_size = context.magnifier.value.natural_size;
-  const use_gamma = context.use_gamma.value;
+  const use_gamma = context.gamma.value.active;
 
   const src = useImageSrc(type);
 
@@ -467,7 +470,7 @@ function ImageBoxZoomed({
 
 function GammaFilter() {
   const context = useContext(AppContext);
-  const gamma_exponent = context.gamma_exponent.value;
+  const gamma_exponent = context.gamma.value.exponent;
   const inverse = 1 / gamma_exponent;
   const props = {
     type: "gamma",

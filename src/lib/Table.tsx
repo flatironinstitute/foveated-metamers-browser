@@ -261,8 +261,8 @@ function Filters() {
 
 function TableHead() {
   const context = useContext(AppContext);
-  const sort_by = context.sort_by.value;
-  const sort_direction = context.sort_direction.value;
+  const sort_by = context.table.value.sort_by;
+  const sort_direction = context.table.value.sort_direction;
 
   return (
     <thead className="bg-neutral-50">
@@ -283,11 +283,18 @@ function TableHead() {
               title={FIELD_DESCRIPTIONS[field_id]}
               onClick={() => {
                 if (sort_this_field) {
-                  context.sort_direction.set((d) =>
-                    d === "ascending" ? "descending" : "ascending"
-                  );
+                  context.table.set((d) => ({
+                    ...d,
+                    sort_direction:
+                      d.sort_direction === "ascending"
+                        ? "descending"
+                        : "ascending",
+                  }));
                 } else {
-                  context.sort_by.set(field_id);
+                  context.table.set((d) => ({
+                    ...d,
+                    sort_by: field_id,
+                  }));
                 }
               }}
             >
@@ -412,7 +419,10 @@ function Pagination() {
         <PrevNext
           disabled={page_start <= 0}
           onClick={() => {
-            context?.current_page.set((p) => p - 1);
+            context.table.set((p) => ({
+              ...p,
+              current_page: p.current_page - 1,
+            }));
           }}
         >
           <SVGLeftArrow />
@@ -443,7 +453,10 @@ function Pagination() {
         <PrevNext
           disabled={page_end >= filtered_rows.length}
           onClick={() => {
-            context?.current_page.set((p) => p + 1);
+            context.table.set((p) => ({
+              ...p,
+              current_page: p.current_page + 1,
+            }));
           }}
         >
           Next
