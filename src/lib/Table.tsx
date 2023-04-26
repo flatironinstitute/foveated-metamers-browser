@@ -12,42 +12,6 @@ import {
 } from "./app_state";
 import { Slider } from "./utils";
 
-function SVGPlus() {
-  return (
-    <svg
-      className="h-5 w-5"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        fillRule="evenodd"
-        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function SVGMinus() {
-  return (
-    <svg
-      className="h-5 w-5"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        fillRule="evenodd"
-        d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
 type CheckboxChipProps = {
   id: string;
   filter_id: Field;
@@ -261,8 +225,8 @@ function Filters() {
 
 function TableHead() {
   const context = useContext(AppContext);
-  const sort_by = context.sort_by.value;
-  const sort_direction = context.sort_direction.value;
+  const sort_by = context.table.value.sort_by;
+  const sort_direction = context.table.value.sort_direction;
 
   return (
     <thead className="bg-neutral-50">
@@ -283,11 +247,18 @@ function TableHead() {
               title={FIELD_DESCRIPTIONS[field_id]}
               onClick={() => {
                 if (sort_this_field) {
-                  context.sort_direction.set((d) =>
-                    d === "ascending" ? "descending" : "ascending"
-                  );
+                  context.table.set((d) => ({
+                    ...d,
+                    sort_direction:
+                      d.sort_direction === "ascending"
+                        ? "descending"
+                        : "ascending",
+                  }));
                 } else {
-                  context.sort_by.set(field_id);
+                  context.table.set((d) => ({
+                    ...d,
+                    sort_by: field_id,
+                  }));
                 }
               }}
             >
@@ -412,7 +383,10 @@ function Pagination() {
         <PrevNext
           disabled={page_start <= 0}
           onClick={() => {
-            context?.current_page.set((p) => p - 1);
+            context.table.set((p) => ({
+              ...p,
+              current_page: p.current_page - 1,
+            }));
           }}
         >
           <SVGLeftArrow />
@@ -443,7 +417,10 @@ function Pagination() {
         <PrevNext
           disabled={page_end >= filtered_rows.length}
           onClick={() => {
-            context?.current_page.set((p) => p + 1);
+            context.table.set((p) => ({
+              ...p,
+              current_page: p.current_page + 1,
+            }));
           }}
         >
           Next
