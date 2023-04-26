@@ -81,7 +81,7 @@ type GammaState = {
 };
 
 type ImageElementState = {
-  target: HTMLImageElement | null;
+  natural: HTMLImageElement | null;
   synthesized: HTMLImageElement | null;
 };
 
@@ -128,7 +128,7 @@ export default function create_app_state(): AppState {
     current_page: 1,
   });
   const image_elements = useStateObject<ImageElementState>({
-    target: null,
+    natural: null,
     synthesized: null,
   });
   const sort_by = useStateObject<Field>("model_name");
