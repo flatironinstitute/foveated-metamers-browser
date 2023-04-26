@@ -1,9 +1,8 @@
 "use client";
 
-import type { SyntheticEvent } from "react";
 import type { StudyImage, Position, Dimensions } from "./types";
 import type { AppState, MagnifierState } from "./app_state";
-import { useEffect, useContext, useState, useRef } from "react";
+import { useEffect, useContext, useState, useRef, useMemo } from "react";
 import * as d3 from "./d3";
 import { AppContext, DATA_URL_BASE } from "./app_state";
 import { Overlay, Slider, log } from "./utils";
@@ -208,6 +207,33 @@ function set_magnifier_center(
   };
 }
 
+function get_cropped_region(
+  state: MagnifierState
+): (Dimensions & Position) | null {
+  const size = get_magnifier_size(state);
+  const { center, natural_size, viewport_size } = state;
+  if (!size) return null;
+  if (!center) return null;
+  if (!natural_size) return null;
+  if (!viewport_size) return null;
+  const box_left = center.x - size.width / 2;
+  const box_top = center.y - size.height / 2;
+  const box_left_percent = box_left / viewport_size.width;
+  const box_top_percent = box_top / viewport_size.height;
+  const box_width_percent = size.width / viewport_size.width;
+  const box_height_percent = size.height / viewport_size.height;
+  const x = natural_size.width * box_left_percent;
+  const y = natural_size.height * box_top_percent;
+  const width = natural_size.width * box_width_percent;
+  const height = natural_size.height * box_height_percent;
+  return {
+    x,
+    y,
+    width,
+    height,
+  };
+}
+
 function MagnifyingGlass() {
   const context = useContext(AppContext);
 
@@ -265,47 +291,6 @@ function MagnifyingGlass() {
   );
 }
 
-function useSizeReporter({
-  measure,
-  image_ref,
-}: {
-  measure?: boolean;
-  image_ref: React.RefObject<HTMLImageElement>;
-}) {
-  const context = useContext(AppContext);
-  // Get the image viewport size, maybe
-  useEffect(() => {
-    log(`useSizeReporter`, {
-      measure,
-      image_ref,
-      current: image_ref.current,
-    });
-    if (!measure) return;
-    if (!image_ref.current) return;
-    const element = image_ref.current;
-    const updateDimensions = () => {
-      const rect = element.getBoundingClientRect();
-      context.magnifier.set((state) => ({
-        ...state,
-        viewport_size: {
-          width: rect.width,
-          height: rect.height,
-        },
-      }));
-    };
-    updateDimensions();
-    const resizeObserver = new ResizeObserver(() => {
-      updateDimensions();
-    });
-    resizeObserver.observe(element);
-    return () => {
-      if (resizeObserver && element) {
-        resizeObserver.unobserve(element);
-      }
-    };
-  }, [measure, image_ref, image_ref.current]);
-}
-
 function ImageWrapper({
   label,
   loading,
@@ -328,60 +313,179 @@ function ImageWrapper({
   );
 }
 
+function CanvasImage({
+  type,
+  zoom,
+}: {
+  type: "natural" | "synthesized";
+  zoom?: boolean;
+}): JSX.Element {
+  const context = useContext(AppContext);
+  const magnifier_state = context.magnifier.value;
+  const image_element = context.image_elements.value[type];
+  const gamma_active = context.gamma.value.active;
+  const gamma_exponent = context.gamma.value.exponent;
+
+  const canvas_ref = useRef<HTMLCanvasElement>(null);
+
+  const image_data = useMemo(() => {
+    const { viewport_size } = magnifier_state;
+    if (!viewport_size) return null;
+    if (!image_element) return null;
+    const hidden_canvas = new OffscreenCanvas(
+      viewport_size.width,
+      viewport_size.height
+    );
+    const context = hidden_canvas.getContext("2d");
+    if (!context) return null;
+    let source_x = 0;
+    let source_y = 0;
+    let source_width = image_element.naturalWidth;
+    let source_height = image_element.naturalHeight;
+    let dest_x = 0;
+    let dest_y = 0;
+    let dest_width = viewport_size.width;
+    let dest_height = viewport_size.height;
+    if (zoom) {
+      const cropped = get_cropped_region(magnifier_state);
+      if (cropped) {
+        source_x = cropped.x;
+        source_y = cropped.y;
+        source_width = cropped.width;
+        source_height = cropped.height;
+      }
+    }
+    context.drawImage(
+      image_element,
+      source_x,
+      source_y,
+      source_width,
+      source_height,
+      dest_x,
+      dest_y,
+      dest_width,
+      dest_height
+    );
+    const data = context.getImageData(
+      0,
+      0,
+      hidden_canvas.width,
+      hidden_canvas.height
+    );
+    return data;
+  }, [image_element, magnifier_state, zoom]);
+
+  useEffect(() => {
+    const canvas = canvas_ref.current;
+    if (!canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    if (!image_data) return;
+    let output_data = image_data;
+    if (gamma_active) {
+      const { width, height, data } = image_data;
+      const modifed_data = context.createImageData(width, height);
+      const gamma_inverse = 1 / gamma_exponent;
+      const gamma_table = Array.from(
+        { length: 256 },
+        (_, i) => Math.pow(i / 255, gamma_inverse) * 255
+      );
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const alpha = data[i + 3];
+        const [r2, g2, b2] = [r, g, b].map((v) => gamma_table[v]);
+        modifed_data.data[i] = r2;
+        modifed_data.data[i + 1] = g2;
+        modifed_data.data[i + 2] = b2;
+        modifed_data.data[i + 3] = alpha;
+      }
+      output_data = modifed_data;
+    }
+    context.putImageData(output_data, 0, 0);
+  }, [image_data, canvas_ref.current, gamma_active, gamma_exponent]);
+
+  return (
+    <canvas
+      ref={canvas_ref}
+      width={magnifier_state.viewport_size?.width}
+      height={magnifier_state.viewport_size?.height}
+      className="block absolute top-0 left-0 h-full w-full box-border"
+    />
+  );
+}
+
 function ImageBox({
-  label,
   type,
   measure,
 }: {
-  label: string;
   type: "natural" | "synthesized";
   measure?: boolean;
 }) {
+  const label = type === "natural" ? "Target Image" : "Synthesized Image";
+
   const context = useContext(AppContext);
 
   const src = useImageSrc(type);
 
-  // Get the rendered image size
+  const [loading, set_loading] = useState(false);
+
   const image_ref = useRef<HTMLImageElement>(null);
-  useSizeReporter({ measure, image_ref });
 
-  // Apply gamma correction filter
-  const use_gamma = useContext(AppContext).gamma.value.active;
-  const style = {
-    filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
-  };
+  useEffect(() => {
+    if (!measure) return;
+    if (!image_ref.current) return;
+    const image_element = image_ref.current;
+    const updateDimensions = () => {
+      const rect = image_element.getBoundingClientRect();
+      context.magnifier.set((state) => ({
+        ...state,
+        viewport_size: {
+          width: rect.width,
+          height: rect.height,
+        },
+      }));
+    };
+    updateDimensions();
+    const resizeObserver = new ResizeObserver(() => updateDimensions());
+    resizeObserver.observe(image_element);
+    return () => {
+      if (resizeObserver && image_element) {
+        resizeObserver.unobserve(image_element);
+      }
+    };
+  }, [image_ref, image_ref.current]);
 
-  // Show loading overlay, set image natural size
-  const [loading, set_loading] = useState(true);
   useEffect(() => {
     set_loading(true);
   }, [src]);
-  const onLoad = (evt: SyntheticEvent<HTMLImageElement, Event>) => {
-    const image_element = evt.target as HTMLImageElement;
-    log(`Loaded image:`, image_element);
+
+  const onLoad: React.ReactEventHandler<HTMLImageElement> = (event) => {
     set_loading(false);
-    // Get natural size of image
-    if (measure && image_element) {
-      context.magnifier.set((state) => ({
-        ...state,
-        natural_size: {
-          width: image_element.naturalWidth,
-          height: image_element.naturalHeight,
-        },
-      }));
-    }
+    const image_element = event.target as HTMLImageElement;
+    context.image_elements.set((d) => ({ ...d, [type]: image_element }));
+    context.magnifier.set((state) => ({
+      ...state,
+      natural_size: {
+        width: image_element.naturalWidth,
+        height: image_element.naturalHeight,
+      },
+    }));
   };
 
   return (
     <ImageWrapper label={label} loading={loading}>
       <div className="relative">
+        <CanvasImage type={type} />
         <img
+          className="opacity-0"
           key={src}
           alt={label}
           src={src}
           onLoad={onLoad}
-          style={style}
           ref={image_ref}
+          crossOrigin="anonymous"
         />
         {context.magnifier.value.active && <MagnifyingGlass />}
       </div>
@@ -389,107 +493,30 @@ function ImageBox({
   );
 }
 
-function ImageBoxZoomed({
-  label,
-  type,
-}: {
-  label: string;
-  type: "natural" | "synthesized";
-}) {
+function ImageBoxZoomed({ type }: { type: "natural" | "synthesized" }) {
+  const label =
+    type === "natural" ? "Target Image (Zoomed)" : "Synthesized Image (Zoomed)";
+
   const context = useContext(AppContext);
-  const center = context.magnifier.value.center;
-  const zoom_multiplier = context.magnifier.value.zoom_multiplier;
   const viewport_size = context.magnifier.value.viewport_size;
   const natural_size = context.magnifier.value.natural_size;
-  const use_gamma = context.gamma.value.active;
-
-  const src = useImageSrc(type);
 
   if (!(viewport_size && natural_size)) {
     return null;
   }
 
-  const image_size = {
-    width: natural_size.width * zoom_multiplier,
-    height: natural_size.height * zoom_multiplier,
-  };
-
-  const center_percent = {
-    x: center.x / viewport_size.width,
-    y: center.y / viewport_size.height,
-  };
-
-  const image_center = {
-    x: image_size.width * center_percent.x,
-    y: image_size.height * center_percent.y,
-  };
-
-  const image_position = {
-    x: -image_center.x + viewport_size.width / 2,
-    y: -image_center.y + viewport_size.height / 2,
-  };
-
-  // Show loading overlay, set image natural size
-  const [loading, set_loading] = useState(true);
-  useEffect(() => {
-    set_loading(true);
-  }, [src]);
-  const onLoad = (evt: SyntheticEvent<HTMLImageElement, Event>) => {
-    const image_element = evt.target as HTMLImageElement;
-    log(`Loaded image:`, image_element);
-    set_loading(false);
-  };
-
   return (
-    <ImageWrapper label={label} loading={loading}>
+    <ImageWrapper label={label}>
       <div
-        className="relative overflow-hidden"
+        className="relative"
         style={{
-          width: `${viewport_size.width}px`,
-          height: `${viewport_size.height}px`,
+          height: viewport_size.height + `px`,
+          width: viewport_size.width + `px`,
         }}
       >
-        <img
-          key={src}
-          src={src}
-          className="absolute max-w-none"
-          alt={label}
-          onLoad={onLoad}
-          style={{
-            filter: use_gamma ? `url(#${GAMMA_FILTER_ID})` : undefined,
-            width: `${image_size.width}px`,
-            height: `${image_size.height}px`,
-            top: `${image_position.y}px`,
-            left: `${image_position.x}px`,
-          }}
-        />
+        <CanvasImage type={type} zoom />
       </div>
     </ImageWrapper>
-  );
-}
-
-function GammaFilter() {
-  const context = useContext(AppContext);
-  const gamma_exponent = context.gamma.value.exponent;
-  const inverse = 1 / gamma_exponent;
-  const props = {
-    type: "gamma",
-    amplitude: "1",
-    exponent: inverse.toString(),
-    offset: "0",
-  };
-  return (
-    <svg width="0" height="0">
-      <defs>
-        <filter id={GAMMA_FILTER_ID}>
-          <feComponentTransfer>
-            <feFuncR {...props}></feFuncR>
-            <feFuncG {...props}></feFuncG>
-            <feFuncB {...props}></feFuncB>
-          </feComponentTransfer>
-        </filter>
-      </defs>
-    </svg>
   );
 }
 
@@ -506,23 +533,19 @@ export function ImageGrid() {
           <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
             {selected_image_path && (
               <>
-                <ImageBox type="natural" label="Target Image" measure />
-                <ImageBox type="synthesized" label="Synthesized Image" />
+                <ImageBox type="natural" measure />
+                <ImageBox type="synthesized" />
               </>
             )}
             {magnifier_active && (
               <>
-                <ImageBoxZoomed type="natural" label="Target Image (Zoomed)" />
-                <ImageBoxZoomed
-                  type="synthesized"
-                  label="Synthesized Image (Zoomed)"
-                />
+                <ImageBoxZoomed type="natural" />
+                <ImageBoxZoomed type="synthesized" />
               </>
             )}
           </div>
         </div>
       </div>
-      <GammaFilter />
     </div>
   );
 }
