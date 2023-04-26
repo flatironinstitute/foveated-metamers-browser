@@ -156,6 +156,7 @@ export function ImageTools() {
 }
 
 function useImageSrc(type: "natural" | "synthesized") {
+  if (process.env.NEXT_PUBLIC_GAMMA_TEST) return "/gamma-test.png";
   const context = useContext(AppContext);
   const context_key: keyof AppState =
     type === "natural" ? "selected_natural_image" : "selected_image";
