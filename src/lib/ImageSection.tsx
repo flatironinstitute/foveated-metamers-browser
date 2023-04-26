@@ -78,7 +78,12 @@ function GammaForm() {
         id="use-gamma"
         label="Gamma Correction"
         checked={gamma_enabled}
-        onChange={() => context.gamma.set((d) => ({ ...d, active: !d.active }))}
+        onChange={() =>
+          context.gamma.set((d) => ({
+            ...d,
+            active: !d.active,
+          }))
+        }
       />
       <Slider
         disabled={!gamma_enabled}
@@ -522,9 +527,10 @@ export function ImageGrid() {
 
   const selected_image_path = context.selected_image?.file;
   const magnifier_active = context.magnifier.value.active;
+  const gamma_active = context.gamma.value.active;
   const gamma_exponent = context.gamma.value.exponent;
 
-  const bg = 255 * 0.5 ** (1 / gamma_exponent);
+  const bg = gamma_active ? 255 * 0.5 ** (1 / gamma_exponent) : 255 / 2;
   const bg_color = `rgba(${bg}, ${bg}, ${bg}, 1)`;
 
   return (
