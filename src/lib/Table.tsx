@@ -442,8 +442,8 @@ function Table() {
             <TableBody />
           </table>
         </div>
+        <Pagination />
       </div>
-      <Pagination />
     </>
   );
 }
