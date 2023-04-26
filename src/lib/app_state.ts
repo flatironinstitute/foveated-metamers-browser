@@ -46,7 +46,7 @@ export const TABLE_COLUMNS: Field[] = FIELDS.filter(
   (d: Field) => d !== "gamma_corrected"
 );
 
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 24;
 
 const INITIAL_FILTER_STATE = Object.fromEntries(
   FILTER_IDS.map((filter_id) => [filter_id, {}])

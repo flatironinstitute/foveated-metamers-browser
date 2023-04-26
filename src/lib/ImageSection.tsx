@@ -83,7 +83,7 @@ function GammaForm() {
       <Slider
         disabled={!gamma_enabled}
         id="gamma-value"
-        min={0.1}
+        min={1}
         max={3}
         step={0.1}
         value={context.gamma.value.exponent}
@@ -524,7 +524,7 @@ export function ImageGrid() {
   const magnifier_active = context.magnifier.value.active;
   const gamma_exponent = context.gamma.value.exponent;
 
-  const bg = 255 / 2;
+  const bg = 255 * 0.5 ** (1 / gamma_exponent);
   const bg_color = `rgba(${bg}, ${bg}, ${bg}, 1)`;
 
   return (
