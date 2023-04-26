@@ -6,8 +6,7 @@ import { useEffect, useContext, useState, useRef, useMemo } from "react";
 import * as d3 from "./d3";
 import { AppContext, DATA_URL_BASE } from "./app_state";
 import { Overlay, Slider, log } from "./utils";
-
-const GAMMA_FILTER_ID = `gamma-adjustment`;
+import gamma_correction from "./gamma-correction";
 
 export function ImageMeta() {
   const context = useContext(AppContext);
@@ -383,24 +382,15 @@ function CanvasImage({
     if (!image_data) return;
     let output_data = image_data;
     if (gamma_active) {
-      const { width, height, data } = image_data;
-      const modifed_data = context.createImageData(width, height);
-      const gamma_inverse = 1 / gamma_exponent;
-      const gamma_table = Array.from(
-        { length: 256 },
-        (_, i) => Math.pow(i / 255, gamma_inverse) * 255
+      const modifed_data = context.createImageData(
+        image_data.width,
+        image_data.height
       );
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const alpha = data[i + 3];
-        const [r2, g2, b2] = [r, g, b].map((v) => gamma_table[v]);
-        modifed_data.data[i] = r2;
-        modifed_data.data[i + 1] = g2;
-        modifed_data.data[i + 2] = b2;
-        modifed_data.data[i + 3] = alpha;
-      }
+      gamma_correction({
+        input_data: image_data.data,
+        output_data: modifed_data.data,
+        gamma_exponent,
+      });
       output_data = modifed_data;
     }
     context.putImageData(output_data, 0, 0);
