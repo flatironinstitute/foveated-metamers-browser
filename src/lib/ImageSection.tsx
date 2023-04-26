@@ -174,7 +174,6 @@ function get_magnifier_size(state: MagnifierState): Dimensions | null {
   const view = state.viewport_size;
   const nat = state.natural_size;
   const mult = state.zoom_multiplier;
-  // log(`MagnifyingGlass`, { view, nat, mult });
   if (!view) return null;
   if (!nat) return null;
   return {

@@ -11,7 +11,7 @@ import type {
   Dimensions,
   Position,
 } from "./types";
-import { useEffect, useMemo, useState, createContext } from "react";
+import { useEffect, useMemo, useState, createContext, useRef } from "react";
 import * as d3 from "./d3";
 import { log } from "./utils";
 
@@ -131,10 +131,6 @@ export default function create_app_state(): AppState {
     natural: null,
     synthesized: null,
   });
-  const sort_by = useStateObject<Field>("model_name");
-  const sort_direction = useStateObject<"ascending" | "descending">(
-    "ascending"
-  );
 
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
@@ -183,11 +179,12 @@ export default function create_app_state(): AppState {
   const filtered_rows = useMemo<StudyImage[]>(() => {
     if (!metadata.value) return [];
     if (!filters.value) return [];
+    const { sort_direction, sort_by } = table.value;
     const metamers_unsorted = metadata.value?.metamers ?? [];
     const sort_func =
-      sort_direction.value === "ascending" ? d3.ascending : d3.descending;
+      sort_direction === "ascending" ? d3.ascending : d3.descending;
     const metamers_sorted = d3.sort(metamers_unsorted, (a, b) =>
-      sort_func(a[sort_by.value], b[sort_by.value])
+      sort_func(a[sort_by], b[sort_by])
     );
     const filter_state = filters.value;
     const filtered_metamers = metamers_sorted.filter((image: StudyImage) => {
@@ -211,7 +208,7 @@ export default function create_app_state(): AppState {
     });
 
     return filtered_metamers;
-  }, [metadata.value, filters.value, sort_by.value, sort_direction.value]);
+  }, [metadata.value, filters.value, table.value]);
 
   const page_start = (table.value.current_page - 1) * PAGE_SIZE;
   const page_end = page_start + PAGE_SIZE;
@@ -239,6 +236,61 @@ export default function create_app_state(): AppState {
       (d) => d.target_image === selected_image?.target_image
     );
   }, [selected_image?.target_image, metadata.value]);
+
+  /**
+   * Magic filter selection.
+   * When filter state changes, determine which filter it was.
+   * Update all other filters based on data.
+   */
+  // const previous_filter_string_ref = useRef<string>(JSON.stringify(null));
+  // useEffect(() => {
+  //   const current_filters = filters.value;
+  //   if (!current_filters) return;
+  //   const filter_string = JSON.stringify(filters.value);
+  //   const previous_filter_string = previous_filter_string_ref.current;
+  //   if (filter_string === previous_filter_string) return;
+  //   previous_filter_string_ref.current = filter_string;
+  //   if (previous_filter_string === "null") return;
+  //   const previous_filters = JSON.parse(previous_filter_string);
+  //   // Determine which filter changed
+  //   let changed_filter_id: string | null = null;
+  //   for (const filter_id of Object.keys(current_filters)) {
+  //     const current_filter_state = JSON.stringify(
+  //       current_filters[filter_id as Field]
+  //     );
+  //     const previous_filter_state = JSON.stringify(
+  //       previous_filters[filter_id as Field]
+  //     );
+  //     if (current_filter_state !== previous_filter_state) {
+  //       changed_filter_id = filter_id;
+  //       break;
+  //     }
+  //   }
+  //   log(`Changed filter: ${changed_filter_id}`);
+  //   if (!changed_filter_id) return;
+  //   // Update all other filters based on data
+  //   const new_filters = { ...current_filters };
+  //   for (const [filter_id, prev_filter_state] of Object.entries(new_filters)) {
+  //     if (filter_id === changed_filter_id) continue;
+  //     const available_values = new Set(
+  //       filtered_rows.map((image) => image[filter_id as Field].toString())
+  //     );
+  //     log(`Available values for ${filter_id}`, available_values);
+  //     const new_filter_state: { [k: string]: boolean } = {
+  //       ...prev_filter_state,
+  //     };
+  //     for (const key of Object.keys(new_filter_state)) {
+  //       if (!available_values.has(key)) {
+  //         new_filter_state[key.toString()] = false;
+  //       }
+  //     }
+  //     new_filters[filter_id as Field] = new_filter_state;
+  //   }
+  //   // We don't want this to trigger again, so we need to set the prev string
+  //   // to the new stringified filters
+  //   previous_filter_string_ref.current = JSON.stringify(new_filters);
+  //   filters.set(new_filters);
+  // }, [filters.value, filtered_rows]);
 
   return {
     metadata,

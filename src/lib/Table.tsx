@@ -103,22 +103,26 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
   const min = +(d3.min(filter_keys_sorted, (d) => +d)?.toFixed(1) ?? 0);
   const max = +(d3.max(filter_keys_sorted, (d) => +d)?.toFixed(1) ?? 1.5);
 
-  const [from_internal, set_from_internal] = useState<number>(min);
-  const [to_internal, set_to_internal] = useState<number>(max);
+  const current_true_keys = filter_keys_sorted.filter(
+    (key) => filter_state[key]
+  );
 
-  // Find the closest value in filter_keys_sorted to from_internal
-  const from_index = d3.bisectLeft(filter_keys_sorted, from_internal);
-  const to_index = d3.bisectLeft(filter_keys_sorted, to_internal);
-  let from = filter_keys_sorted[from_index] ?? min;
-  let to = filter_keys_sorted[to_index] ?? max;
+  // Get the minimum key of filter_state with a value of `true`
+  const from = d3.min(current_true_keys) ?? min;
+  const to = d3.max(current_true_keys) ?? max;
 
-  useEffect(() => {
+  const handle_change = (value_internal: number, type: "from" | "to") => {
+    const index = d3.bisectLeft(filter_keys_sorted, value_internal);
+    const target_value = filter_keys_sorted[index];
+    let from_value = type === "from" ? target_value : from;
+    let to_value = type === "to" ? target_value : to;
+    if (type === "from" && from_value > to_value) to_value = from_value;
+    if (type === "to" && to_value < from_value) from_value = to_value;
     context.filters.set((prev) => {
       if (!prev) return prev;
-      const new_filter_state: { [k: string]: boolean } = {};
+      const new_filter_state: { [k: string]: boolean } = { ...prev[filter_id] };
       for (const key of filter_keys_sorted) {
-        const value = +key;
-        if (value >= from && value <= to) {
+        if (+key >= from_value && +key <= to_value) {
           new_filter_state[key.toString()] = true;
         } else {
           new_filter_state[key.toString()] = false;
@@ -126,7 +130,7 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
       }
       return { ...prev, [filter_id]: new_filter_state };
     });
-  }, [from, to]);
+  };
 
   return (
     <div className="grid" style={{ gridTemplateColumns: `8ch 1fr` }}>
@@ -136,14 +140,11 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
         min={min}
         max={max}
         step="0.001"
-        value={+from}
         format={d3.format(`.3f`)}
+        value={+from}
         onChange={(evt) => {
           const value = evt.target.valueAsNumber;
-          set_from_internal(value);
-          if (value > to) {
-            set_to_internal(value);
-          }
+          handle_change(value, "from");
         }}
       />
       <div>To:</div>
@@ -152,14 +153,11 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
         min={min}
         max={max}
         step="0.001"
-        value={+to}
         format={d3.format(`.3f`)}
+        value={+to}
         onChange={(evt) => {
           const value = evt.target.valueAsNumber;
-          set_to_internal(value);
-          if (value < from) {
-            set_from_internal(value);
-          }
+          handle_change(value, "to");
         }}
       />
     </div>
@@ -393,7 +391,7 @@ function Pagination() {
           Previous
         </PrevNext>
       </div>
-      <div className="hidden md:-mt-px md:flex">
+      <div className="hidden md:flex">
         <p
           id="nowshowing"
           className="font-medium text-xs text-neutral-900 uppercase pt-4 px-4 inline-flex items-center"
@@ -433,18 +431,20 @@ function Pagination() {
 
 function Table() {
   return (
-    <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8 rounded">
-      <div className="overflow-hidden rounded">
-        <table
-          id="table"
-          className="min-w-full divide-y divide-gamma-200 border border-gamma-200 rounded"
-        >
-          <TableHead />
-          <TableBody />
-        </table>
-        <Pagination />
+    <>
+      <div className="py-2 align-middle inline-block min-w-full rounded">
+        <div className="overflow-x-auto rounded">
+          <table
+            id="table"
+            className="min-w-full divide-y divide-gamma-200 border border-gamma-200 rounded"
+          >
+            <TableHead />
+            <TableBody />
+          </table>
+        </div>
       </div>
-    </div>
+      <Pagination />
+    </>
   );
 }
 
@@ -456,13 +456,7 @@ export default function TableAndFilters() {
     >
       <div className="grid grid-cols-1 gap-x-8 gap-y-10 pt-6">
         <Filters />
-        <div className="lg:col-span-5">
-          <div className="flex flex-col">
-            <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <Table />
-            </div>
-          </div>
-        </div>
+        <Table />
       </div>
     </section>
   );
