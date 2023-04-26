@@ -123,10 +123,13 @@ function ZoomForm() {
         value={context.magnifier.value.zoom_multiplier}
         onChange={(e) => {
           const element = e.target as HTMLInputElement;
-          context.magnifier.set((state) => ({
-            ...state,
-            zoom_multiplier: parseFloat(element.value),
-          }));
+          context.magnifier.set((state) => {
+            const with_zoom = {
+              ...state,
+              zoom_multiplier: parseFloat(element.value),
+            };
+            return set_magnifier_center(with_zoom);
+          });
         }}
         format={d3.format(`.0f`)}
       />
@@ -180,7 +183,7 @@ function clamp(x: number, min: number, max: number) {
 
 function set_magnifier_center(
   state: MagnifierState,
-  dragged: Position
+  dragged: Position = state.center
 ): MagnifierState {
   const { viewport_size } = state;
   const size = get_magnifier_size(state);
