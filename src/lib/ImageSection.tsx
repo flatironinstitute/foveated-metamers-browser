@@ -368,13 +368,17 @@ function CanvasImage({
       dest_width,
       dest_height
     );
-    const data = context.getImageData(
-      0,
-      0,
-      hidden_canvas.width,
-      hidden_canvas.height
-    );
-    return data;
+    try {
+      const data = context.getImageData(
+        0,
+        0,
+        hidden_canvas.width,
+        hidden_canvas.height
+      );
+      return data;
+    } catch {
+      return null;
+    }
   }, [image_element, magnifier_state, zoom]);
 
   useEffect(() => {
@@ -518,10 +522,19 @@ export function ImageGrid() {
 
   const selected_image_path = context.selected_image?.file;
   const magnifier_active = context.magnifier.value.active;
+  const gamma_exponent = context.gamma.value.exponent;
+
+  const bg = 255 / 2;
+  const bg_color = `rgba(${bg}, ${bg}, ${bg}, 1)`;
 
   return (
     <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-6 gap-x-8 gap-y-10">
-      <div className="bg-gamma-500 rounded lg:col-span-6">
+      <div
+        className="rounded lg:col-span-6"
+        style={{
+          backgroundColor: bg_color,
+        }}
+      >
         <div className="max-w-max mx-auto py-4 px-10 mb-12">
           <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
             {selected_image_path && (
