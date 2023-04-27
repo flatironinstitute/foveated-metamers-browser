@@ -370,14 +370,13 @@ export default function create_app_state(): AppState {
     const selected = RESULT_SETS.find((d) => d.label === result_set.value);
     if (!selected) return;
     log(`Selected result set:`, selected.label);
-
     log(`Selected filters:`, selected.filters);
     // Filter all the metamers by the selected result set
     const filtered_metamers: StudyImage[] = filter_metamers(
       metamers,
       selected.filters
     );
-    log(`Filtered metamers:`, filtered_metamers.length);
+    // log(`Filtered metamers:`, filtered_metamers.length);
     const new_filter_state = {
       ...get_initial_filters(),
       ...selected.filters,
@@ -391,14 +390,14 @@ export default function create_app_state(): AppState {
       const available_values = new Set(
         filtered_metamers.map((image) => image[filter_id as Field].toString())
       );
-      log(`Available values for ${filter_id}`, available_values);
+      // log(`Available values for ${filter_id}`, available_values);
       for (const key of Object.keys(new_filter_state)) {
         const unpacked = unpack_filter_key(key);
         if (unpacked.filter_id !== filter_id) continue;
         new_filter_state[key] = available_values.has(unpacked.filter_key);
       }
     }
-    log(`New filter state:`, new_filter_state);
+    // log(`New filter state:`, new_filter_state);
     filters.set(new_filter_state);
   }, [result_set.value]);
 
