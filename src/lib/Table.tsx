@@ -1,6 +1,6 @@
 "use client";
 
-import type { Field, FilterState } from "./main";
+import type { Field } from "./main";
 import { useContext, useState, useEffect } from "react";
 import * as d3 from "./d3";
 import {
@@ -15,35 +15,24 @@ import { Slider } from "./utils";
 
 type CheckboxChipProps = {
   filter_id: Field;
-  filter_value: string;
+  filter_key: string;
 };
 
-function CheckboxChip({ filter_id, filter_value }: CheckboxChipProps) {
+function CheckboxChip({ filter_id, filter_key }: CheckboxChipProps) {
   const context = useContext(AppContext);
-  const filter_state = context.filters.value?.[filter_id] ?? {};
-  const filter_is_checked = filter_state[filter_value];
+  const filter_is_checked = context.get_filter_value(filter_id, filter_key);
 
-  const id = `filter-${filter_id}-${filter_value}`;
+  const id = `filter-${filter_id}-${filter_key}`;
 
   return (
     <div className="flex items-center cursor-pointer">
       <input
         id={id}
-        value={filter_value}
         type="checkbox"
         checked={filter_is_checked}
         className="hidden"
         onChange={(event) => {
-          context.filters.set((prev) => {
-            if (!prev) return prev;
-            return {
-              ...prev,
-              [filter_id]: {
-                ...(prev[filter_id] ?? {}),
-                [filter_value]: event.target.checked,
-              },
-            };
-          });
+          context.set_filter_value(filter_id, filter_key, event.target.checked);
         }}
       />
       <label
@@ -51,7 +40,7 @@ function CheckboxChip({ filter_id, filter_value }: CheckboxChipProps) {
         htmlFor={id}
         className="text-sm cursor-pointer rounded-xl bg-slate-200 opacity-40 px-2 aria-checked:opacity-100"
       >
-        {filter_value?.toString()}
+        {filter_key?.toString()}
       </label>
     </div>
   );
@@ -59,7 +48,7 @@ function CheckboxChip({ filter_id, filter_value }: CheckboxChipProps) {
 
 function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
   const context = useContext(AppContext);
-  const filter_state = context.filters.value?.[filter_id] ?? {};
+  const filter_state = context.get_filter_values(filter_id);
 
   const filter_values_sorted: string[] = d3.sort(
     Object.keys(filter_state),
@@ -67,10 +56,10 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
   );
 
   const filter_options: Array<CheckboxChipProps> = filter_values_sorted.map(
-    (filter_value) => {
+    (filter_key) => {
       return {
         filter_id,
-        filter_value,
+        filter_key,
       };
     }
   );
@@ -83,9 +72,9 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
     >
       {filter_options.map((option) => (
         <CheckboxChip
-          key={`filter-${option.filter_id}-${option.filter_value}`}
+          key={`filter-${option.filter_id}-${option.filter_key}`}
           filter_id={option.filter_id}
-          filter_value={option.filter_value}
+          filter_key={option.filter_key}
         />
       ))}
     </div>
@@ -94,7 +83,7 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
 
 function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
   const context = useContext(AppContext);
-  const filter_state = context.filters.value?.[filter_id] ?? {};
+  const filter_state = context.get_filter_values(filter_id);
 
   const filter_keys_sorted: number[] = d3.sort<number>(
     Object.keys(filter_state).map((d) => +d)
@@ -118,18 +107,15 @@ function RangeSlider({ id: filter_id }: { id: Field }): JSX.Element | null {
     let to_value = type === "to" ? target_value : to;
     if (type === "from" && from_value > to_value) to_value = from_value;
     if (type === "to" && to_value < from_value) from_value = to_value;
-    context.filters.set((prev) => {
-      if (!prev) return prev;
-      const new_filter_state: { [k: string]: boolean } = { ...prev[filter_id] };
-      for (const key of filter_keys_sorted) {
-        if (+key >= from_value && +key <= to_value) {
-          new_filter_state[key.toString()] = true;
-        } else {
-          new_filter_state[key.toString()] = false;
-        }
+    const new_filter_state: { [k: string]: boolean } = { ...filter_state };
+    for (const key of filter_keys_sorted) {
+      if (+key >= from_value && +key <= to_value) {
+        new_filter_state[key.toString()] = true;
+      } else {
+        new_filter_state[key.toString()] = false;
       }
-      return { ...prev, [filter_id]: new_filter_state };
-    });
+    }
+    context.set_filter_values(filter_id, new_filter_state);
   };
 
   return (
@@ -173,17 +159,7 @@ function Filter({ id: filter_id }: { id: Field }): JSX.Element {
         key={value.toString()}
         className="cursor-pointer text-xs uppercase text-blue-500 underline"
         onClick={() => {
-          context.filters.set((d: FilterState | null) => {
-            if (!d) return d;
-            const filter_options = d[filter_id];
-            for (const option of Object.keys(filter_options)) {
-              filter_options[option] = value;
-            }
-            return {
-              ...d,
-              [filter_id]: filter_options,
-            };
-          });
+          context.toggle_all_filters(filter_id, value);
         }}
       >
         {value ? "all" : "none"}

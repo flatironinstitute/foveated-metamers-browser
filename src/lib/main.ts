@@ -33,9 +33,7 @@ export type FieldMap<T> = {
 };
 
 export type FilterState = {
-  [filter_id: string]: {
-    [filter_value: string]: boolean;
-  };
+  [key: string]: boolean;
 };
 
 export type StateObject<T> = {
@@ -79,7 +77,6 @@ type TableState = {
 
 export type AppState = {
   metadata: StateObject<MetadataJson | null>;
-  filters: StateObject<FilterState | null>;
   result_set: StateObject<string | null>;
   selected_image_key: StateObject<string | null>;
   sorted_rows: StudyImage[];
@@ -92,6 +89,18 @@ export type AppState = {
   image_elements: StateObject<ImageElementState>;
   page_start: number;
   page_end: number;
+  get_filter_value: (filter_id: Field, filter_value: string) => boolean;
+  get_filter_values: (filter_id: Field) => { [filter_value: string]: boolean };
+  set_filter_value: (
+    filter_id: Field,
+    filter_value: string,
+    value: boolean
+  ) => void;
+  set_filter_values: (
+    filter_id: Field,
+    filter_values: { [filter_value: string]: boolean }
+  ) => void;
+  toggle_all_filters: (filter_id: Field, value: boolean) => void;
 };
 
 export const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
@@ -152,15 +161,10 @@ export const RESULT_SETS: Array<{
       downsampled ? " (downsampled)" : ""
     }`,
     filters: {
-      model_name: {
-        [model_name]: true,
-      },
-      psychophysics_comparison: {
-        [psychophysics_comparison]: true,
-      },
-      downsampled: {
-        [downsampled.toString()]: true,
-      },
+      [create_filter_key("model_name", model_name)]: true,
+      [create_filter_key("psychophysics_comparison", psychophysics_comparison)]:
+        true,
+      [create_filter_key("downsampled", downsampled.toString())]: true,
     },
   };
 });
@@ -175,33 +179,25 @@ function get_image_hash(image: StudyImage) {
   return string;
 }
 
-function turn_on_all_filters(filters: FilterState) {
-  const out: FilterState = {};
-  for (const filter_id of FILTER_IDS) {
-    out[filter_id] = {};
-    const filter_values = filters[filter_id];
-    for (const filter_value of Object.keys(filter_values)) {
-      out[filter_id][filter_value] = true;
-    }
-  }
-  return out;
-}
-
-function filter_metamers(metamers: StudyImage[], filters: FilterState) {
+function filter_metamers(
+  metamers: StudyImage[],
+  filters: { [key: string]: boolean }
+) {
+  const filter_ids = Object.keys(filters).map(
+    (k) => unpack_filter_key(k).filter_id
+  );
   const filtered_metamers: StudyImage[] = metamers.filter(
     (image: StudyImage) => {
       let keep = true;
-      for (const filter_id of Object.keys(filters)) {
+      for (const filter_id of filter_ids) {
         if (!(filter_id in image)) {
           console.log(`Filter ${filter_id} not in image`, image);
           continue;
         }
         const image_value = image[filter_id as Field];
         const value_as_string = image_value.toString();
-        // The current filter state for this filter_id and value
-        const this_filter_state =
-          filters?.[filter_id as Field]?.[value_as_string];
-        if (!this_filter_state) {
+        const key = create_filter_key(filter_id as Field, value_as_string);
+        if (!filters[key]) {
           keep = false;
           break;
         }
@@ -210,6 +206,18 @@ function filter_metamers(metamers: StudyImage[], filters: FilterState) {
     }
   );
   return filtered_metamers;
+}
+
+function create_filter_key(filter_id: Field, filter_key: string) {
+  return `${filter_id}____${filter_key}`;
+}
+
+function unpack_filter_key(key: string): {
+  filter_id: string;
+  filter_key: string;
+} {
+  const [filter_id, filter_key] = key.split("____");
+  return { filter_id, filter_key };
 }
 
 function useStateObject<T>(initial_value: T): StateObject<T> {
@@ -221,7 +229,6 @@ export const AppContext: Context<AppState> = createContext({} as AppState);
 
 export default function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
-  const filters = useStateObject<FilterState | null>(null);
   const result_set = useStateObject<string | null>(null);
   const selected_image_key = useStateObject<string | null>(null);
   const gamma = useStateObject<GammaState>({
@@ -245,6 +252,70 @@ export default function create_app_state(): AppState {
     synthesized: null,
   });
 
+  const filters = useStateObject<{ [filter_id: string]: boolean }>({});
+  const filters_available = useRef<Set<string>>(new Set());
+
+  const get_filter_value = (filter_id: Field, filter_key: string): boolean => {
+    return filters.value?.[create_filter_key(filter_id, filter_key)] ?? false;
+  };
+
+  const get_filter_values = (
+    filter_id: Field
+  ): { [filter_key: string]: boolean } => {
+    const out: { [filter_key: string]: boolean } = {};
+    for (const [key, value] of Object.entries(filters.value)) {
+      const { filter_id: this_filter_id, filter_key } = unpack_filter_key(key);
+      if (this_filter_id !== filter_id) continue;
+      out[filter_key] = value;
+    }
+    return out;
+  };
+
+  const set_filter_value = (
+    filter_id: Field,
+    filter_key: string,
+    value: boolean
+  ) => {
+    filters.set((prev) => ({
+      ...prev,
+      [create_filter_key(filter_id, filter_key)]: value,
+    }));
+  };
+
+  const set_filter_values = (
+    filter_id: Field,
+    filter_values: { [filter_key: string]: boolean }
+  ) => {
+    filters.set((prev) => {
+      const out = { ...prev };
+      for (const filter_key of Object.keys(filter_values)) {
+        out[create_filter_key(filter_id, filter_key)] =
+          filter_values[filter_key];
+      }
+      return out;
+    });
+  };
+
+  const toggle_all_filters = (filter_id: Field, value: boolean) => {
+    filters.set((prev) => {
+      const out = { ...prev };
+      for (const key of Object.keys(prev)) {
+        const { filter_id: this_filter_id } = unpack_filter_key(key);
+        if (this_filter_id !== filter_id) continue;
+        out[key] = value;
+      }
+      return out;
+    });
+  };
+
+  const get_initial_filters = (): FilterState => {
+    const all_filter_keys = Array.from(filters_available.current.values());
+    const initial_filters = Object.fromEntries(
+      all_filter_keys.map((v) => [v, true])
+    );
+    return initial_filters;
+  };
+
   // Fetch the metadata, and populate the initial filters state
   useEffect(() => {
     const url = new URL(`${DATA_URL_BASE}/metadata.json`, window.location.href);
@@ -267,23 +338,22 @@ export default function create_app_state(): AppState {
       }
 
       // Populate filter options state using all values of each field
-      const initial_filter_state: FilterState = {};
-      // For each filter_id, create an object with all possible values
-      // and set them to true
       for (const filter_id of FILTER_IDS) {
         // Create a set of all values for this filter
         const filter_values = Array.from(
           new Set(metamers.map((image) => image[filter_id as Field]))
         );
-        // All values start out `true`
-        const active_filters: { [k: string]: true } = Object.fromEntries(
-          filter_values.map((v) => [v, true])
-        );
-        initial_filter_state[filter_id as Field] = active_filters;
+        filter_values.forEach((filter_key) => {
+          filters_available.current.add(
+            create_filter_key(filter_id, filter_key.toString())
+          );
+        });
       }
 
+      // Set initial filters
+      filters.set(get_initial_filters());
+
       metadata.set(metadata_);
-      filters.set(initial_filter_state);
     })();
   }, []);
 
@@ -300,15 +370,18 @@ export default function create_app_state(): AppState {
     const selected = RESULT_SETS.find((d) => d.label === result_set.value);
     if (!selected) return;
     log(`Selected result set:`, selected.label);
-    const new_filter_state = {
-      ...turn_on_all_filters(filters.value),
-      ...selected.filters,
-    };
+
+    log(`Selected filters:`, selected.filters);
     // Filter all the metamers by the selected result set
     const filtered_metamers: StudyImage[] = filter_metamers(
       metamers,
       selected.filters
     );
+    log(`Filtered metamers:`, filtered_metamers.length);
+    const new_filter_state = {
+      ...get_initial_filters(),
+      ...selected.filters,
+    };
     // Update selected filters based on available values
     for (const filter_id of [
       "scaling",
@@ -319,9 +392,10 @@ export default function create_app_state(): AppState {
         filtered_metamers.map((image) => image[filter_id as Field].toString())
       );
       log(`Available values for ${filter_id}`, available_values);
-      for (const filter_value of Object.keys(new_filter_state[filter_id])) {
-        new_filter_state[filter_id][filter_value] =
-          available_values.has(filter_value);
+      for (const key of Object.keys(new_filter_state)) {
+        const unpacked = unpack_filter_key(key);
+        if (unpacked.filter_id !== filter_id) continue;
+        new_filter_state[key] = available_values.has(unpacked.filter_key);
       }
     }
     log(`New filter state:`, new_filter_state);
@@ -376,7 +450,6 @@ export default function create_app_state(): AppState {
 
   return {
     metadata,
-    filters,
     result_set,
     sorted_rows,
     selected_image_key,
@@ -389,5 +462,10 @@ export default function create_app_state(): AppState {
     magnifier,
     table,
     image_elements,
+    get_filter_value,
+    get_filter_values,
+    set_filter_value,
+    set_filter_values,
+    toggle_all_filters,
   };
 }
