@@ -94,8 +94,6 @@ export type AppState = {
   page_end: number;
 };
 
-export const AppContext: Context<AppState> = createContext({} as AppState);
-
 export const DATA_URL_BASE = process.env.NEXT_PUBLIC_DATA_URL;
 
 log(`Data URL:`, DATA_URL_BASE);
@@ -177,10 +175,49 @@ function get_image_hash(image: StudyImage) {
   return string;
 }
 
+function turn_on_all_filters(filters: FilterState) {
+  const out: FilterState = {};
+  for (const filter_id of FILTER_IDS) {
+    out[filter_id] = {};
+    const filter_values = filters[filter_id];
+    for (const filter_value of Object.keys(filter_values)) {
+      out[filter_id][filter_value] = true;
+    }
+  }
+  return out;
+}
+
+function filter_metamers(metamers: StudyImage[], filters: FilterState) {
+  const filtered_metamers: StudyImage[] = metamers.filter(
+    (image: StudyImage) => {
+      let keep = true;
+      for (const filter_id of Object.keys(filters)) {
+        if (!(filter_id in image)) {
+          console.log(`Filter ${filter_id} not in image`, image);
+          continue;
+        }
+        const image_value = image[filter_id as Field];
+        const value_as_string = image_value.toString();
+        // The current filter state for this filter_id and value
+        const this_filter_state =
+          filters?.[filter_id as Field]?.[value_as_string];
+        if (!this_filter_state) {
+          keep = false;
+          break;
+        }
+      }
+      return keep;
+    }
+  );
+  return filtered_metamers;
+}
+
 function useStateObject<T>(initial_value: T): StateObject<T> {
   const [value, set] = useState<T>(initial_value);
   return { value, set };
 }
+
+export const AppContext: Context<AppState> = createContext({} as AppState);
 
 export default function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
@@ -255,19 +292,40 @@ export default function create_app_state(): AppState {
     table.set((d) => ({ ...d, current_page: 1 }));
   }, [filters.value]);
 
-  // If our result set changes, update the filters
+  // When the result set changes, update the filters based on filtered data
   useEffect(() => {
     if (!result_set.value) return;
+    if (!filters.value) return;
+    const metamers = metadata.value?.metamers ?? [];
     const selected = RESULT_SETS.find((d) => d.label === result_set.value);
     if (!selected) return;
     log(`Selected result set:`, selected.label);
-    filters.set((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        ...selected.filters,
-      };
-    });
+    const new_filter_state = {
+      ...turn_on_all_filters(filters.value),
+      ...selected.filters,
+    };
+    // Filter all the metamers by the selected result set
+    const filtered_metamers: StudyImage[] = filter_metamers(
+      metamers,
+      selected.filters
+    );
+    // Update selected filters based on available values
+    for (const filter_id of [
+      "scaling",
+      "target_image",
+      "initialization_type",
+    ]) {
+      const available_values = new Set(
+        filtered_metamers.map((image) => image[filter_id as Field].toString())
+      );
+      log(`Available values for ${filter_id}`, available_values);
+      for (const filter_value of Object.keys(new_filter_state[filter_id])) {
+        new_filter_state[filter_id][filter_value] =
+          available_values.has(filter_value);
+      }
+    }
+    log(`New filter state:`, new_filter_state);
+    filters.set(new_filter_state);
   }, [result_set.value]);
 
   // Get filtered rows from current filter state
@@ -275,27 +333,10 @@ export default function create_app_state(): AppState {
     if (!metadata.value) return [];
     if (!filters.value) return [];
     const metamers = metadata.value?.metamers ?? [];
-    const filter_state = filters.value;
-    const filtered_metamers = metamers.filter((image: StudyImage) => {
-      let keep = true;
-      for (const filter_id of Object.keys(filter_state)) {
-        if (!(filter_id in image)) {
-          console.log(`Filter ${filter_id} not in image`, image);
-          continue;
-        }
-        const image_value = image[filter_id as Field];
-        const value_as_string = image_value.toString();
-        // The current filter state for this filter_id and value
-        const this_filter_state =
-          filter_state?.[filter_id as Field]?.[value_as_string];
-        if (!this_filter_state) {
-          keep = false;
-          break;
-        }
-      }
-      return keep;
-    });
-
+    const filtered_metamers: StudyImage[] = filter_metamers(
+      metamers,
+      filters.value
+    );
     return filtered_metamers;
   }, [metadata.value, filters.value]);
 
@@ -328,6 +369,10 @@ export default function create_app_state(): AppState {
       (d) => d.target_image === selected_image?.target_image
     );
   }, [selected_image?.target_image, metadata.value]);
+
+  useEffect(() => {
+    log(`Filters`, filters.value);
+  }, [filters.value]);
 
   return {
     metadata,
