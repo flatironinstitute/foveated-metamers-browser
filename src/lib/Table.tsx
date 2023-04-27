@@ -1,6 +1,6 @@
 "use client";
 
-import type { Field, FilterState } from "./types";
+import type { Field, FilterState } from "./main";
 import { useContext, useState, useEffect } from "react";
 import * as d3 from "./d3";
 import {
@@ -9,7 +9,7 @@ import {
   FIELD_DESCRIPTIONS,
   PAGE_SIZE,
   TABLE_COLUMNS,
-} from "./app_state";
+} from "./main";
 import { Slider } from "./utils";
 
 type CheckboxChipProps = {

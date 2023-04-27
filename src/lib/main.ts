@@ -1,19 +1,97 @@
 "use client";
 
-import type { Context } from "react";
-import type {
-  MetadataJson,
-  StudyImage,
-  Field,
-  FilterState,
-  StateObject,
-  FieldMap,
-  Dimensions,
-  Position,
-} from "./types";
+import type { Context, Dispatch, SetStateAction } from "react";
 import { useEffect, useMemo, useState, createContext, useRef } from "react";
 import * as d3 from "./d3";
 import { log } from "./utils";
+
+export interface Metadata {
+  model_name: string;
+  downsampled: boolean;
+  psychophysics_comparison: string;
+  target_image: string;
+  scaling: number;
+  initialization_type: string;
+  random_seed: number;
+  gamma_corrected: boolean;
+}
+
+export type StudyImage = Metadata & {
+  file: string;
+  __hash?: string;
+};
+
+export type MetadataJson = {
+  metamers: StudyImage[];
+  natural_images: StudyImage[];
+};
+
+export type Field = keyof Metadata;
+
+export type FieldMap<T> = {
+  [Property in Field]: T;
+};
+
+export type FilterState = {
+  [Key in Field]: {
+    [k: string]: boolean;
+  };
+};
+
+export type StateObject<T> = {
+  value: T;
+  set: Dispatch<SetStateAction<T>>;
+};
+
+export interface Dimensions {
+  height: number;
+  width: number;
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export type MagnifierState = {
+  active: boolean;
+  zoom_multiplier: number;
+  center: Position;
+  natural_size: Dimensions | null;
+  viewport_size: Dimensions | null;
+};
+
+type GammaState = {
+  active: boolean;
+  exponent: number;
+};
+
+type ImageElementState = {
+  natural: HTMLImageElement | null;
+  synthesized: HTMLImageElement | null;
+};
+
+type TableState = {
+  sort_by: Field;
+  sort_direction: "ascending" | "descending";
+  current_page: number;
+};
+
+export type AppState = {
+  metadata: StateObject<MetadataJson | null>;
+  filters: StateObject<FilterState | null>;
+  selected_image_key: StateObject<string | null>;
+  filtered_rows: StudyImage[];
+  paginated_rows: StudyImage[];
+  selected_image: StudyImage | undefined;
+  selected_natural_image: StudyImage | undefined;
+  gamma: StateObject<GammaState>;
+  magnifier: StateObject<MagnifierState>;
+  table: StateObject<TableState>;
+  image_elements: StateObject<ImageElementState>;
+  page_start: number;
+  page_end: number;
+};
 
 export const AppContext: Context<AppState> = createContext({} as AppState);
 
@@ -66,46 +144,6 @@ function useStateObject<T>(initial_value: T): StateObject<T> {
   const [value, set] = useState<T>(initial_value);
   return { value, set };
 }
-
-export type MagnifierState = {
-  active: boolean;
-  zoom_multiplier: number;
-  center: Position;
-  natural_size: Dimensions | null;
-  viewport_size: Dimensions | null;
-};
-
-type GammaState = {
-  active: boolean;
-  exponent: number;
-};
-
-type ImageElementState = {
-  natural: HTMLImageElement | null;
-  synthesized: HTMLImageElement | null;
-};
-
-type TableState = {
-  sort_by: Field;
-  sort_direction: "ascending" | "descending";
-  current_page: number;
-};
-
-export type AppState = {
-  metadata: StateObject<MetadataJson | null>;
-  filters: StateObject<FilterState | null>;
-  selected_image_key: StateObject<string | null>;
-  filtered_rows: StudyImage[];
-  paginated_rows: StudyImage[];
-  selected_image: StudyImage | undefined;
-  selected_natural_image: StudyImage | undefined;
-  gamma: StateObject<GammaState>;
-  magnifier: StateObject<MagnifierState>;
-  table: StateObject<TableState>;
-  image_elements: StateObject<ImageElementState>;
-  page_start: number;
-  page_end: number;
-};
 
 export default function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
@@ -236,61 +274,6 @@ export default function create_app_state(): AppState {
       (d) => d.target_image === selected_image?.target_image
     );
   }, [selected_image?.target_image, metadata.value]);
-
-  /**
-   * Magic filter selection.
-   * When filter state changes, determine which filter it was.
-   * Update all other filters based on data.
-   */
-  // const previous_filter_string_ref = useRef<string>(JSON.stringify(null));
-  // useEffect(() => {
-  //   const current_filters = filters.value;
-  //   if (!current_filters) return;
-  //   const filter_string = JSON.stringify(filters.value);
-  //   const previous_filter_string = previous_filter_string_ref.current;
-  //   if (filter_string === previous_filter_string) return;
-  //   previous_filter_string_ref.current = filter_string;
-  //   if (previous_filter_string === "null") return;
-  //   const previous_filters = JSON.parse(previous_filter_string);
-  //   // Determine which filter changed
-  //   let changed_filter_id: string | null = null;
-  //   for (const filter_id of Object.keys(current_filters)) {
-  //     const current_filter_state = JSON.stringify(
-  //       current_filters[filter_id as Field]
-  //     );
-  //     const previous_filter_state = JSON.stringify(
-  //       previous_filters[filter_id as Field]
-  //     );
-  //     if (current_filter_state !== previous_filter_state) {
-  //       changed_filter_id = filter_id;
-  //       break;
-  //     }
-  //   }
-  //   log(`Changed filter: ${changed_filter_id}`);
-  //   if (!changed_filter_id) return;
-  //   // Update all other filters based on data
-  //   const new_filters = { ...current_filters };
-  //   for (const [filter_id, prev_filter_state] of Object.entries(new_filters)) {
-  //     if (filter_id === changed_filter_id) continue;
-  //     const available_values = new Set(
-  //       filtered_rows.map((image) => image[filter_id as Field].toString())
-  //     );
-  //     log(`Available values for ${filter_id}`, available_values);
-  //     const new_filter_state: { [k: string]: boolean } = {
-  //       ...prev_filter_state,
-  //     };
-  //     for (const key of Object.keys(new_filter_state)) {
-  //       if (!available_values.has(key)) {
-  //         new_filter_state[key.toString()] = false;
-  //       }
-  //     }
-  //     new_filters[filter_id as Field] = new_filter_state;
-  //   }
-  //   // We don't want this to trigger again, so we need to set the prev string
-  //   // to the new stringified filters
-  //   previous_filter_string_ref.current = JSON.stringify(new_filters);
-  //   filters.set(new_filters);
-  // }, [filters.value, filtered_rows]);
 
   return {
     metadata,

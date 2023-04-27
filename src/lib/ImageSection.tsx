@@ -1,10 +1,9 @@
 "use client";
 
-import type { StudyImage, Position, Dimensions } from "./types";
-import type { AppState, MagnifierState } from "./app_state";
+import type { AppState, MagnifierState, StudyImage, Position, Dimensions } from "./main";
 import { useEffect, useContext, useState, useRef, useMemo } from "react";
 import * as d3 from "./d3";
-import { AppContext, DATA_URL_BASE } from "./app_state";
+import { AppContext, DATA_URL_BASE } from "./main";
 import { Overlay, Slider, log } from "./utils";
 import gamma_correction from "./gamma-correction";
 

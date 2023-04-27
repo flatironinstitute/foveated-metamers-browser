@@ -1,13 +1,13 @@
 "use client";
 
-import create_app_state, { AppContext } from "./app_state";
+import create_app_state, { AppContext } from "./main";
 import ImageSection from "./ImageSection";
 import TableAndFilters from "./Table";
 import { Overlay, log } from "./utils";
 
 log(`Build Date:`, process.env.NEXT_PUBLIC_BUILD_DATE);
 
-export default function App() {
+export default function Browser() {
   const app_state = create_app_state();
 
   const overlay = <Overlay>Loading...</Overlay>;
