@@ -9,19 +9,21 @@ import {
   FIELD_DESCRIPTIONS,
   PAGE_SIZE,
   TABLE_COLUMNS,
+  RESULT_SETS,
 } from "./main";
 import { Slider } from "./utils";
 
 type CheckboxChipProps = {
-  id: string;
   filter_id: Field;
   filter_value: string;
 };
 
-function CheckboxChip({ id, filter_id, filter_value }: CheckboxChipProps) {
+function CheckboxChip({ filter_id, filter_value }: CheckboxChipProps) {
   const context = useContext(AppContext);
   const filter_state = context.filters.value?.[filter_id] ?? {};
   const filter_is_checked = filter_state[filter_value];
+
+  const id = `filter-${filter_id}-${filter_value}`;
 
   return (
     <div className="flex items-center cursor-pointer">
@@ -65,9 +67,8 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
   );
 
   const filter_options: Array<CheckboxChipProps> = filter_values_sorted.map(
-    (filter_value, index) => {
+    (filter_value) => {
       return {
-        id: `filter-${filter_id}-${index}`,
         filter_id,
         filter_value,
       };
@@ -82,8 +83,7 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
     >
       {filter_options.map((option) => (
         <CheckboxChip
-          key={option.id}
-          id={option.id}
+          key={`filter-${option.filter_id}-${option.filter_value}`}
           filter_id={option.filter_id}
           filter_value={option.filter_value}
         />
@@ -211,12 +211,52 @@ function Filter({ id: filter_id }: { id: Field }): JSX.Element {
   );
 }
 
+function ResultSetPicker(): JSX.Element {
+  const context = useContext(AppContext);
+
+  const selected_key = context.result_set.value;
+
+  return (
+    <div>
+      <div className="text-3xl">Result set</div>
+      <div className="h-4"></div>
+      <div className="flex flex-col gap-y-2">
+        {RESULT_SETS.map((option) => (
+          <label
+            key={option.label}
+            className="flex gap-x-2 items-center cursor-pointer text-xl"
+          >
+            <input
+              className="cursor-pointer"
+              type="radio"
+              name="result-set"
+              value={option.label}
+              checked={selected_key === option.label}
+              onChange={() => context.result_set.set(option.label)}
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Filters() {
   return (
-    <form className="grid gap-y-8 md:grid-cols-2 gap-x-12 max-w-6xl mx-auto" id="filterform">
-      {FILTER_IDS.map((filter_id) => (
-        <Filter id={filter_id} key={filter_id} />
-      ))}
+    <form className="max-w-8xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-y-6">
+      <div>
+        <ResultSetPicker />
+      </div>
+      <div>
+        <div className="text-3xl">Filters</div>
+        <div className="h-4"></div>
+        <div className="grid gap-y-8 gap-x-12">
+          {FILTER_IDS.map((filter_id) => (
+            <Filter id={filter_id} key={filter_id} />
+          ))}
+        </div>
+      </div>
     </form>
   );
 }
@@ -230,13 +270,7 @@ function TableHead() {
     <thead className="bg-neutral-50">
       <tr>
         {TABLE_COLUMNS.map((field_id: Field) => {
-          let arrow = null;
           const sort_this_field = sort_by === field_id;
-          if (sort_this_field) {
-            arrow = (
-              <span>&ensp;{sort_direction === "ascending" ? "▲" : "▼"}</span>
-            );
-          }
           return (
             <th
               key={field_id}
@@ -261,7 +295,9 @@ function TableHead() {
               }}
             >
               <span>{field_id.replaceAll("_", " ")}</span>
-              {arrow}
+              <span className={sort_this_field ? `` : `invisible`}>
+                &ensp;{sort_direction === "ascending" ? "▲" : "▼"}
+              </span>
             </th>
           );
         })}
@@ -371,7 +407,7 @@ function PrevNext({
 
 function Pagination() {
   const context = useContext(AppContext);
-  const filtered_rows = context?.filtered_rows ?? [];
+  const filtered_rows = context?.sorted_rows ?? [];
   const page_start = context?.page_start ?? 0;
   const page_end = context?.page_end ?? 0;
   const format_commas = d3.format(`,`);

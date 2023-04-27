@@ -33,8 +33,8 @@ export type FieldMap<T> = {
 };
 
 export type FilterState = {
-  [Key in Field]: {
-    [k: string]: boolean;
+  [filter_id: string]: {
+    [filter_value: string]: boolean;
   };
 };
 
@@ -80,8 +80,9 @@ type TableState = {
 export type AppState = {
   metadata: StateObject<MetadataJson | null>;
   filters: StateObject<FilterState | null>;
+  result_set: StateObject<string | null>;
   selected_image_key: StateObject<string | null>;
-  filtered_rows: StudyImage[];
+  sorted_rows: StudyImage[];
   paginated_rows: StudyImage[];
   selected_image: StudyImage | undefined;
   selected_natural_image: StudyImage | undefined;
@@ -116,19 +117,55 @@ export const FIELD_DESCRIPTIONS: FieldMap<string> = {
 
 export const FIELDS: Field[] = Object.keys(FIELD_DESCRIPTIONS) as Field[];
 
-export const FILTER_IDS: Field[] = FIELDS.filter(
-  (d) => d !== "random_seed" && d !== "gamma_corrected"
-);
+export const FILTER_IDS: Field[] = [
+  "scaling",
+  "target_image",
+  "initialization_type",
+];
 
-export const TABLE_COLUMNS: Field[] = FIELDS.filter(
-  (d: Field) => d !== "gamma_corrected"
-);
+export const TABLE_COLUMNS: Field[] = [
+  "model_name",
+  "psychophysics_comparison",
+  "downsampled",
+  "scaling",
+  "target_image",
+  "initialization_type",
+  "random_seed",
+];
 
 export const PAGE_SIZE = 24;
 
-const INITIAL_FILTER_STATE = Object.fromEntries(
-  FILTER_IDS.map((filter_id) => [filter_id, {}])
-) as FilterState;
+export const RESULT_SETS: Array<{
+  label: string;
+  filters: FilterState;
+}> = (
+  [
+    ["Luminance model", "Original vs. Synth: white noise", false],
+    ["Luminance model", "Synth vs. Synth: white noise", false],
+    ["Energy model", "Original vs. Synth: white noise", false],
+    ["Energy model", "Synth vs. Synth: white noise", false],
+    ["Energy model", "Original vs. Synth: natural image", false],
+    ["Energy model", "Synth vs. Synth: natural image", false],
+    ["Energy model", "Original vs. Synth: white noise", true],
+  ] as [string, string, boolean][]
+).map(([model_name, psychophysics_comparison, downsampled]) => {
+  return {
+    label: `${model_name}: ${psychophysics_comparison}${
+      downsampled ? " (downsampled)" : ""
+    }`,
+    filters: {
+      model_name: {
+        [model_name]: true,
+      },
+      psychophysics_comparison: {
+        [psychophysics_comparison]: true,
+      },
+      downsampled: {
+        [downsampled.toString()]: true,
+      },
+    },
+  };
+});
 
 function get_image_hash(image: StudyImage) {
   let string = ``;
@@ -148,6 +185,7 @@ function useStateObject<T>(initial_value: T): StateObject<T> {
 export default function create_app_state(): AppState {
   const metadata = useStateObject<MetadataJson | null>(null);
   const filters = useStateObject<FilterState | null>(null);
+  const result_set = useStateObject<string | null>(null);
   const selected_image_key = useStateObject<string | null>(null);
   const gamma = useStateObject<GammaState>({
     active: false,
@@ -192,11 +230,10 @@ export default function create_app_state(): AppState {
       }
 
       // Populate filter options state using all values of each field
-      const next_filter_state: FilterState = INITIAL_FILTER_STATE;
+      const initial_filter_state: FilterState = {};
       // For each filter_id, create an object with all possible values
       // and set them to true
-      const entries = Object.entries(next_filter_state);
-      for (const [filter_id, filter_values] of entries) {
+      for (const filter_id of FILTER_IDS) {
         // Create a set of all values for this filter
         const filter_values = Array.from(
           new Set(metamers.map((image) => image[filter_id as Field]))
@@ -205,27 +242,41 @@ export default function create_app_state(): AppState {
         const active_filters: { [k: string]: true } = Object.fromEntries(
           filter_values.map((v) => [v, true])
         );
-        next_filter_state[filter_id as Field] = active_filters;
+        initial_filter_state[filter_id as Field] = active_filters;
       }
 
       metadata.set(metadata_);
-      filters.set(next_filter_state);
+      filters.set(initial_filter_state);
     })();
   }, []);
+
+  // If our filters update, reset the current page to 1
+  useEffect(() => {
+    table.set((d) => ({ ...d, current_page: 1 }));
+  }, [filters.value]);
+
+  // If our result set changes, update the filters
+  useEffect(() => {
+    if (!result_set.value) return;
+    const selected = RESULT_SETS.find((d) => d.label === result_set.value);
+    if (!selected) return;
+    log(`Selected result set:`, selected.label);
+    filters.set((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        ...selected.filters,
+      };
+    });
+  }, [result_set.value]);
 
   // Get filtered rows from current filter state
   const filtered_rows = useMemo<StudyImage[]>(() => {
     if (!metadata.value) return [];
     if (!filters.value) return [];
-    const { sort_direction, sort_by } = table.value;
-    const metamers_unsorted = metadata.value?.metamers ?? [];
-    const sort_func =
-      sort_direction === "ascending" ? d3.ascending : d3.descending;
-    const metamers_sorted = d3.sort(metamers_unsorted, (a, b) =>
-      sort_func(a[sort_by], b[sort_by])
-    );
+    const metamers = metadata.value?.metamers ?? [];
     const filter_state = filters.value;
-    const filtered_metamers = metamers_sorted.filter((image: StudyImage) => {
+    const filtered_metamers = metamers.filter((image: StudyImage) => {
       let keep = true;
       for (const filter_id of Object.keys(filter_state)) {
         if (!(filter_id in image)) {
@@ -246,20 +297,23 @@ export default function create_app_state(): AppState {
     });
 
     return filtered_metamers;
-  }, [metadata.value, filters.value, table.value]);
+  }, [metadata.value, filters.value]);
 
-  // If our filters update, reset the current page to 1
-  useEffect(() => {
-    table.set((d) => ({ ...d, current_page: 1 }));
-  }, [filters.value]);
+  const sorted_rows = useMemo<StudyImage[]>(() => {
+    const { sort_direction, sort_by } = table.value;
+    const sort_func =
+      sort_direction === "ascending" ? d3.ascending : d3.descending;
+    return d3.sort(filtered_rows, (a, b) => sort_func(a[sort_by], b[sort_by]));
+  }, [filtered_rows, table.value]);
 
   const page_start = (table.value.current_page - 1) * PAGE_SIZE;
+
   const page_end = page_start + PAGE_SIZE;
 
   const paginated_rows = useMemo<StudyImage[]>(() => {
     // Slice the rows to the current page
-    return filtered_rows.slice(page_start, page_end);
-  }, [filtered_rows, page_start, page_end]);
+    return sorted_rows.slice(page_start, page_end);
+  }, [sorted_rows, page_start, page_end]);
 
   const selected_image = useMemo<StudyImage | undefined>(() => {
     const metamers = metadata.value?.metamers ?? [];
@@ -278,7 +332,8 @@ export default function create_app_state(): AppState {
   return {
     metadata,
     filters,
-    filtered_rows,
+    result_set,
+    sorted_rows,
     selected_image_key,
     page_start,
     page_end,
