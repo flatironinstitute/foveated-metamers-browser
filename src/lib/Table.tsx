@@ -15,30 +15,30 @@ import { Slider } from "./utils";
 type CheckboxChipProps = {
   id: string;
   filter_id: Field;
-  value: string;
+  filter_value: string;
 };
 
-function CheckboxChip({ id, filter_id, value }: CheckboxChipProps) {
-  const filters = useContext(AppContext).filters;
-  const filter_state = filters.value?.[filter_id] ?? {};
-  const filter_is_checked = filter_state[value];
+function CheckboxChip({ id, filter_id, filter_value }: CheckboxChipProps) {
+  const context = useContext(AppContext);
+  const filter_state = context.filters.value?.[filter_id] ?? {};
+  const filter_is_checked = filter_state[filter_value];
 
   return (
     <div className="flex items-center cursor-pointer">
       <input
         id={id}
-        value={value}
+        value={filter_value}
         type="checkbox"
         checked={filter_is_checked}
         className="hidden"
         onChange={(event) => {
-          filters.set((prev) => {
+          context.filters.set((prev) => {
             if (!prev) return prev;
             return {
               ...prev,
               [filter_id]: {
                 ...(prev[filter_id] ?? {}),
-                [value]: event.target.checked,
+                [filter_value]: event.target.checked,
               },
             };
           });
@@ -49,7 +49,7 @@ function CheckboxChip({ id, filter_id, value }: CheckboxChipProps) {
         htmlFor={id}
         className="text-sm cursor-pointer rounded-xl bg-slate-200 opacity-40 px-2 aria-checked:opacity-100"
       >
-        {value?.toString()}
+        {filter_value?.toString()}
       </label>
     </div>
   );
@@ -65,11 +65,11 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
   );
 
   const filter_options: Array<CheckboxChipProps> = filter_values_sorted.map(
-    (value, index) => {
+    (filter_value, index) => {
       return {
         id: `filter-${filter_id}-${index}`,
         filter_id,
-        value,
+        filter_value,
       };
     }
   );
@@ -85,7 +85,7 @@ function CheckBoxes({ id: filter_id }: { id: Field }): JSX.Element {
           key={option.id}
           id={option.id}
           filter_id={option.filter_id}
-          value={option.value}
+          filter_value={option.filter_value}
         />
       ))}
     </div>
@@ -213,7 +213,7 @@ function Filter({ id: filter_id }: { id: Field }): JSX.Element {
 
 function Filters() {
   return (
-    <form className="grid gap-y-8 md:grid-cols-2 gap-x-12" id="filterform">
+    <form className="grid gap-y-8 md:grid-cols-2 gap-x-12 max-w-6xl mx-auto" id="filterform">
       {FILTER_IDS.map((filter_id) => (
         <Filter id={filter_id} key={filter_id} />
       ))}

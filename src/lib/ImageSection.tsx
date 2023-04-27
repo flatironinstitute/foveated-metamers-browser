@@ -1,6 +1,12 @@
 "use client";
 
-import type { AppState, MagnifierState, StudyImage, Position, Dimensions } from "./main";
+import type {
+  AppState,
+  MagnifierState,
+  StudyImage,
+  Position,
+  Dimensions,
+} from "./main";
 import { useEffect, useContext, useState, useRef, useMemo } from "react";
 import * as d3 from "./d3";
 import { AppContext, DATA_URL_BASE } from "./main";
@@ -115,7 +121,9 @@ function ZoomForm() {
         label="Zoom"
         checked={zoom_enabled}
         onChange={() =>
-          context.magnifier.set((d) => ({ ...d, active: !d.active }))
+          context.magnifier.set((d) =>
+            set_magnifier_center({ ...d, active: !d.active })
+          )
         }
       />
       <Slider
@@ -128,11 +136,10 @@ function ZoomForm() {
         onChange={(e) => {
           const element = e.target as HTMLInputElement;
           context.magnifier.set((state) => {
-            const with_zoom = {
+            return set_magnifier_center({
               ...state,
               zoom_multiplier: parseFloat(element.value),
-            };
-            return set_magnifier_center(with_zoom);
+            });
           });
         }}
         format={d3.format(`.0f`)}

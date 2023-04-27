@@ -248,6 +248,11 @@ export default function create_app_state(): AppState {
     return filtered_metamers;
   }, [metadata.value, filters.value, table.value]);
 
+  // If our filters update, reset the current page to 1
+  useEffect(() => {
+    table.set((d) => ({ ...d, current_page: 1 }));
+  }, [filters.value]);
+
   const page_start = (table.value.current_page - 1) * PAGE_SIZE;
   const page_end = page_start + PAGE_SIZE;
 
@@ -255,11 +260,6 @@ export default function create_app_state(): AppState {
     // Slice the rows to the current page
     return filtered_rows.slice(page_start, page_end);
   }, [filtered_rows, page_start, page_end]);
-
-  // If our filters update, reset the current page to 1
-  useEffect(() => {
-    table.set((d) => ({ ...d, current_page: 1 }));
-  }, [filters.value]);
 
   const selected_image = useMemo<StudyImage | undefined>(() => {
     const metamers = metadata.value?.metamers ?? [];
