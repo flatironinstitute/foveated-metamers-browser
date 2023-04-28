@@ -334,6 +334,7 @@ function CanvasImage({
   zoom?: boolean;
 }): JSX.Element {
   const context = useContext(AppContext);
+  const selected_image = context.selected_image;
   const magnifier_state = context.magnifier.value;
   const image_element = context.image_elements.value[type];
   const gamma_active = context.gamma.value.active;
@@ -345,6 +346,7 @@ function CanvasImage({
     const { viewport_size } = magnifier_state;
     if (!viewport_size) return null;
     if (!image_element) return null;
+    if (viewport_size.width === 0) return null;
     const hidden_canvas = new OffscreenCanvas(
       viewport_size.width,
       viewport_size.height
@@ -355,10 +357,6 @@ function CanvasImage({
     let source_y = 0;
     let source_width = image_element.naturalWidth;
     let source_height = image_element.naturalHeight;
-    let dest_x = 0;
-    let dest_y = 0;
-    let dest_width = viewport_size.width;
-    let dest_height = viewport_size.height;
     if (zoom) {
       const cropped = get_cropped_region(magnifier_state);
       if (cropped) {
@@ -366,6 +364,14 @@ function CanvasImage({
         source_y = cropped.y;
         source_width = cropped.width;
         source_height = cropped.height;
+        // FIXME: This is a hack to account for the fact that the
+        // synthesized image is downsampled by a factor of 2.
+        if (type === "synthesized" && selected_image?.downsampled) {
+          source_x /= 2;
+          source_y /= 2;
+          source_width /= 2;
+          source_height /= 2;
+        }
       }
     }
     context.drawImage(
@@ -374,10 +380,10 @@ function CanvasImage({
       source_y,
       source_width,
       source_height,
-      dest_x,
-      dest_y,
-      dest_width,
-      dest_height
+      0, // destination x
+      0, // destination y
+      viewport_size.width, // destination width
+      viewport_size.height // destination height
     );
     try {
       const data = context.getImageData(
@@ -387,7 +393,8 @@ function CanvasImage({
         hidden_canvas.height
       );
       return data;
-    } catch {
+    } catch (err) {
+      log(`Error getting image data:`, err);
       return null;
     }
   }, [image_element, magnifier_state, zoom]);
@@ -473,13 +480,15 @@ function ImageBox({
     set_loading(false);
     const image_element = event.target as HTMLImageElement;
     context.image_elements.set((d) => ({ ...d, [type]: image_element }));
-    context.magnifier.set((state) => ({
-      ...state,
-      natural_size: {
-        width: image_element.naturalWidth,
-        height: image_element.naturalHeight,
-      },
-    }));
+    if (measure) {
+      context.magnifier.set((state) => ({
+        ...state,
+        natural_size: {
+          width: image_element.naturalWidth,
+          height: image_element.naturalHeight,
+        },
+      }));
+    }
   };
 
   return (
