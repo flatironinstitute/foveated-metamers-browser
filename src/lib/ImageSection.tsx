@@ -351,8 +351,9 @@ function CanvasImage({
       viewport_size.width,
       viewport_size.height
     );
-    const context = hidden_canvas.getContext("2d");
-    if (!context) return null;
+    const hidden_canvas_context = hidden_canvas.getContext("2d");
+    if (!hidden_canvas_context) return null;
+    hidden_canvas_context.imageSmoothingEnabled = false;
     let source_x = 0;
     let source_y = 0;
     let source_width = image_element.naturalWidth;
@@ -374,7 +375,7 @@ function CanvasImage({
         }
       }
     }
-    context.drawImage(
+    hidden_canvas_context.drawImage(
       image_element,
       source_x,
       source_y,
@@ -386,7 +387,7 @@ function CanvasImage({
       viewport_size.height // destination height
     );
     try {
-      const data = context.getImageData(
+      const data = hidden_canvas_context.getImageData(
         0,
         0,
         hidden_canvas.width,
@@ -402,12 +403,13 @@ function CanvasImage({
   useEffect(() => {
     const canvas = canvas_ref.current;
     if (!canvas) return;
-    const context = canvas.getContext("2d");
-    if (!context) return;
+    const canvas_context = canvas.getContext("2d");
+    if (!canvas_context) return;
+    canvas_context.imageSmoothingEnabled = false;
     if (!image_data) return;
     let output_data = image_data;
     if (gamma_active) {
-      const modifed_data = context.createImageData(
+      const modifed_data = canvas_context.createImageData(
         image_data.width,
         image_data.height
       );
@@ -418,7 +420,7 @@ function CanvasImage({
       });
       output_data = modifed_data;
     }
-    context.putImageData(output_data, 0, 0);
+    canvas_context.putImageData(output_data, 0, 0);
   }, [image_data, canvas_ref.current, gamma_active, gamma_exponent]);
 
   return (
