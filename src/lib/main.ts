@@ -153,7 +153,7 @@ export const RESULT_SETS: Array<{
     ["Energy model", "Synth vs. Synth: white noise", false],
     ["Energy model", "Original vs. Synth: natural image", false],
     ["Energy model", "Synth vs. Synth: natural image", false],
-    ["Energy model", "Original vs. Synth: white noise", true],
+    ["Energy model", "Synth vs. Synth: white noise", true],
   ] as [string, string, boolean][]
 ).map(([model_name, psychophysics_comparison, downsampled]) => {
   return {
