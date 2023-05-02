@@ -375,16 +375,31 @@ function CanvasImage({
         }
       }
     }
+    const dest_x = 0;
+    const dest_y = 0;
+    const dest_width = 100;
+    const dest_height = 100;
+    // log(`Drawing image to hidden canvas (zoom: ${zoom} type: ${type})`, {
+    //   zoom,
+    //   source_x,
+    //   source_y,
+    //   source_width,
+    //   source_height,
+    //   dest_x,
+    //   dest_y,
+    //   dest_width,
+    //   dest_height,
+    // });
     hidden_canvas_context.drawImage(
       image_element,
       source_x,
       source_y,
       source_width,
       source_height,
-      0, // destination x
-      0, // destination y
-      viewport_size.width, // destination width
-      viewport_size.height // destination height
+      dest_x,
+      dest_y,
+      dest_width,
+      dest_height
     );
     try {
       const data = hidden_canvas_context.getImageData(
