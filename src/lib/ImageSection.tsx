@@ -377,8 +377,8 @@ function CanvasImage({
     }
     const dest_x = 0;
     const dest_y = 0;
-    const dest_width = 100;
-    const dest_height = 100;
+    const dest_width = viewport_size.width;
+    const dest_height = viewport_size.height;
     // log(`Drawing image to hidden canvas (zoom: ${zoom} type: ${type})`, {
     //   zoom,
     //   source_x,
