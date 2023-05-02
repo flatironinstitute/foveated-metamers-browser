@@ -342,18 +342,16 @@ function CanvasImage({
 
   const canvas_ref = useRef<HTMLCanvasElement>(null);
 
-  const image_data = useMemo(() => {
+  useEffect(() => {
     const { viewport_size } = magnifier_state;
-    if (!viewport_size) return null;
-    if (!image_element) return null;
-    if (viewport_size.width === 0) return null;
+    if (!viewport_size) return;
+    if (!image_element) return;
+    if (viewport_size.width === 0) return;
     const hidden_canvas = new OffscreenCanvas(
       viewport_size.width,
       viewport_size.height
     );
-    const hidden_canvas_context = hidden_canvas.getContext("2d");
-    if (!hidden_canvas_context) return null;
-    hidden_canvas_context.imageSmoothingEnabled = false;
+
     let source_x = 0;
     let source_y = 0;
     let source_width = image_element.naturalWidth;
@@ -379,17 +377,20 @@ function CanvasImage({
     const dest_y = 0;
     const dest_width = viewport_size.width;
     const dest_height = viewport_size.height;
-    // log(`Drawing image to hidden canvas (zoom: ${zoom} type: ${type})`, {
-    //   zoom,
-    //   source_x,
-    //   source_y,
-    //   source_width,
-    //   source_height,
-    //   dest_x,
-    //   dest_y,
-    //   dest_width,
-    //   dest_height,
-    // });
+    const use_smoothing = zoom ? false : true;
+    const hidden_canvas_context = hidden_canvas.getContext("2d", {
+      alpha: false,
+      desynchronized: true,
+      willReadFrequently: true,
+    });
+    if (!hidden_canvas_context) return;
+    hidden_canvas_context.clearRect(
+      0,
+      0,
+      hidden_canvas.width,
+      hidden_canvas.height
+    );
+    hidden_canvas_context.imageSmoothingEnabled = use_smoothing;
     hidden_canvas_context.drawImage(
       image_element,
       source_x,
@@ -401,26 +402,17 @@ function CanvasImage({
       dest_width,
       dest_height
     );
-    try {
-      const data = hidden_canvas_context.getImageData(
-        0,
-        0,
-        hidden_canvas.width,
-        hidden_canvas.height
-      );
-      return data;
-    } catch (err) {
-      log(`Error getting image data:`, err);
-      return null;
-    }
-  }, [image_element, magnifier_state, zoom]);
-
-  useEffect(() => {
+    const image_data = hidden_canvas_context.getImageData(
+      0,
+      0,
+      hidden_canvas.width,
+      hidden_canvas.height
+    );
     const canvas = canvas_ref.current;
     if (!canvas) return;
     const canvas_context = canvas.getContext("2d");
     if (!canvas_context) return;
-    canvas_context.imageSmoothingEnabled = false;
+    canvas_context.imageSmoothingEnabled = use_smoothing;
     if (!image_data) return;
     let output_data = image_data;
     if (gamma_active) {
@@ -436,7 +428,13 @@ function CanvasImage({
       output_data = modifed_data;
     }
     canvas_context.putImageData(output_data, 0, 0);
-  }, [image_data, canvas_ref.current, gamma_active, gamma_exponent]);
+  }, [
+    image_element,
+    canvas_ref.current,
+    magnifier_state,
+    gamma_active,
+    gamma_exponent,
+  ]);
 
   return (
     <canvas
