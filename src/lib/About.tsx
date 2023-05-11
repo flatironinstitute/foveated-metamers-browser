@@ -134,6 +134,13 @@ export default function About() {
               </div>
             </div>
           </div>
+          <div className="h-5"></div>
+          <div className="relative bg-white p-6 rounded text-gamma-600 prose prose-lg lg:max-w-none">
+            <span className="text-orange-600 font-bold">WARNING:</span> Depending on your screen resolution and zoom level, the
+            full-sized synthesized image might have display artifacts due to
+            aliasing. The zoomed-in image will not have any aliasing, so if the
+            two differ, trust the zoomed-in version.
+          </div>
         </div>
       </div>
     </section>
