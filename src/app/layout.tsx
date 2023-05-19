@@ -2,7 +2,7 @@ import 'src/lib/globals.css'
 
 export const metadata = {
   title: 'Foveated Metamers Browser',
-  description: 'Search model metamers from Foveated metamers of the early visual system, Broderick et al. 2022',
+  description: 'Search model metamers from Foveated metamers of the early visual system, Broderick et al. 2023',
 }
 
 export default function RootLayout({
