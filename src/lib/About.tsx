@@ -139,7 +139,7 @@ export default function About() {
             <span className="text-yellow-600 font-bold">NOTE:</span> The "Result sets" below correspond
             to different experimental conditions: they specify the model, the comparison the participant
             was performing (whether they were comparing two synthesized images to each other, or a synthesized
-            to a natural image), and how the synthesized images were initialized.
+            to a natural image), and how the synthesized images were initialized. See the poster for more details.
 
             You may find it helpful to look at the "Sherlock" result set, which was not included in the experiment,
             but includes some examples of model metamers based on a block of text, which may make the types of differences
