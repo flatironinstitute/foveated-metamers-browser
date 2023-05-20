@@ -35,9 +35,9 @@ where humans and the models are discarding the same
 information. This allows us to reason about how similar
 processing steps happen in the human visual system
 
-See the Vision Science Society 2020
-[conference poster](https://osf.io/aketq/) for more
-details about the experiment.
+See the Vision Science Society 2023
+[conference poster](https://osf.io/8hdaz/) for more
+details about the experiment, including what the different "Result sets" below mean.
 
 This website will allow you to browse all of the synthetic
 images generated for this project: you can filter by model,
@@ -135,6 +135,16 @@ export default function About() {
             </div>
           </div>
           <div className="h-5"></div>
+          <div className="relative bg-white p-6 rounded text-gamma-600 prose prose-lg lg:max-w-none">
+            <span className="text-yellow-600 font-bold">NOTE:</span> The "Result sets" below correspond
+            to different experimental conditions: they specify the model, the comparison the participant
+            was performing (whether they were comparing two synthesized images to each other, or a synthesized
+            to a natural image), and how the synthesized images were initialized.
+
+            You may find it helpful to look at the "Sherlock" result set, which was not included in the experiment,
+            but includes some examples of model metamers based on a block of text, which may make the types of differences
+            between natural images and our model metamers more obvious.
+          </div>
           <div className="relative bg-white p-6 rounded text-gamma-600 prose prose-lg lg:max-w-none">
             <span className="text-orange-600 font-bold">WARNING:</span> Depending on your screen resolution and zoom level, the
             full-sized synthesized image might have display artifacts due to

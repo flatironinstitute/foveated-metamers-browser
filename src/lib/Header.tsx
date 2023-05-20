@@ -4,7 +4,7 @@ export default function Header() {
   const title = `Foveated Metamers Browser`;
   const description = `Search model metamers from _Foveated metamers of the early visual system_, Broderick et al. 2023`;
   const button_text = `View Poster`;
-  const button_link = `https://osf.io/aketq/`;
+  const button_link = `https://osf.io/8hdaz/`;
   return (
     <header className="max-w-auto mx-auto px-4 sm:px-6 lg:px-8 bg-white border-b border-gamma-200">
       <div className="relative z-10 flex items-end justify-between pt-8 pb-6">
