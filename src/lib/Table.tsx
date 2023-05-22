@@ -194,7 +194,7 @@ function ResultSetPicker(): JSX.Element {
 
   return (
     <div>
-      <div className="text-3xl">Result set</div>
+      <div className="text-3xl">Result sets</div>
       <div className="h-4"></div>
       <div className="flex flex-col gap-y-2">
         {RESULT_SETS.map((option) => (
