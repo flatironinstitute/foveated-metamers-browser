@@ -167,7 +167,12 @@ export const RESULT_SETS: Array<{
       [create_filter_key("downsampled", downsampled.toString())]: true,
     },
   };
-});
+}).concat({
+  label: `Sherlock: example metamers`,
+  filters: {
+    [create_filter_key("target_image", "sherlock")]: true,
+  }
+})
 
 function get_image_hash(image: StudyImage) {
   let string = ``;
