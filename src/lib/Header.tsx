@@ -3,8 +3,8 @@ import Markdown from "react-markdown";
 export default function Header() {
   const title = `Foveated Metamers Browser`;
   const description = `Search model metamers from _Foveated metamers of the early visual system_, Broderick et al. 2023`;
-  const button_text = `View Poster`;
-  const button_link = `https://osf.io/8hdaz/`;
+  const button_text = `View Preprint`;
+  const button_link = `https://www.biorxiv.org/content/early/2023/05/22/2023.05.18.541306`;
   return (
     <header className="max-w-auto mx-auto px-4 sm:px-6 lg:px-8 bg-white border-b border-gamma-200">
       <div className="relative z-10 flex items-end justify-between pt-8 pb-6">

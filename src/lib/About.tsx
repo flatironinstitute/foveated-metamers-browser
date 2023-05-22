@@ -4,8 +4,7 @@ const left_side = `
 
 [Foveated Metamers Browser](/) contains a
 searchable database of the synthesized model metamers for the
-paper _Foveated Metamers of the Early Visual System_
-(currently in preparation).
+paper [_Foveated Metamers of the Early Visual System_](https://www.biorxiv.org/content/early/2023/05/22/2023.05.18.541306).
 
 This project investigates how human perception changes across
 the visual field using behavioral experiments and
@@ -35,9 +34,10 @@ where humans and the models are discarding the same
 information. This allows us to reason about how similar
 processing steps happen in the human visual system
 
-See the Vision Science Society 2023
+See the [preprint](https://www.biorxiv.org/content/early/2023/05/22/2023.05.18.541306)
+or the Vision Science Society 2023
 [conference poster](https://osf.io/8hdaz/) for more
-details about the experiment.
+details about the project.
 
 This website will allow you to browse all of the synthetic
 images generated for this project: you can filter by model,
