@@ -53,6 +53,25 @@ for more details about using the code or data.
 
 `.trim();
 
+const first_note = `
+*NOTE:* The "Result sets" below correspond
+to different experimental conditions: they specify the model, the comparison the participant
+was performing (whether they were comparing two synthesized images to each other, or a synthesized
+to a natural image), and how the synthesized images were initialized. See the poster for more details.
+
+You may find it helpful to look at the "Sherlock" result set, which was not included in the experiment,
+but includes some examples of model metamers based on a block of text, which may make the types of differences
+between natural images and our model metamers more obvious.
+`.trim();
+
+const second_note = `
+
+*WARNING:* Depending on your screen resolution and zoom level, the full-sized
+synthesized image might have display artifacts due to aliasing. The
+zoomed-in image will not have any aliasing, so if the two differ,
+trust the zoomed-in version.
+`.trim();
+
 export default function About() {
   return (
     <section className="py-8 xl:py-16 px-4 sm:px-6 lg:px-8 bg-gamma-50 overflow-hidden">
@@ -136,20 +155,27 @@ export default function About() {
           </div>
           <div className="h-5"></div>
           <div className="relative bg-white p-6 rounded text-gamma-600 prose prose-lg lg:max-w-none">
-            <span className="text-yellow-600 font-bold">NOTE:</span> The "Result sets" below correspond
-            to different experimental conditions: they specify the model, the comparison the participant
-            was performing (whether they were comparing two synthesized images to each other, or a synthesized
-            to a natural image), and how the synthesized images were initialized. See the poster for more details.
-
-            You may find it helpful to look at the "Sherlock" result set, which was not included in the experiment,
-            but includes some examples of model metamers based on a block of text, which may make the types of differences
-            between natural images and our model metamers more obvious.
+            <Markdown
+              components={{
+                em: ({ node, ...props }) => (
+                  <span className="text-yellow-600 font-bold" {...props} />
+                ),
+              }}
+            >
+              {first_note}
+            </Markdown>
           </div>
+          <div className="h-5"></div>
           <div className="relative bg-white p-6 rounded text-gamma-600 prose prose-lg lg:max-w-none">
-            <span className="text-orange-600 font-bold">WARNING:</span> Depending on your screen resolution and zoom level, the
-            full-sized synthesized image might have display artifacts due to
-            aliasing. The zoomed-in image will not have any aliasing, so if the
-            two differ, trust the zoomed-in version.
+            <Markdown
+              components={{
+                em: ({ node, ...props }) => (
+                  <span className="text-orange-600 font-bold" {...props} />
+                ),
+              }}
+            >
+              {second_note}
+            </Markdown>
           </div>
         </div>
       </div>
