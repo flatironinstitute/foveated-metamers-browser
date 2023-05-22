@@ -37,7 +37,7 @@ processing steps happen in the human visual system
 
 See the Vision Science Society 2023
 [conference poster](https://osf.io/8hdaz/) for more
-details about the experiment, including what the different "Result sets" below mean.
+details about the experiment.
 
 This website will allow you to browse all of the synthetic
 images generated for this project: you can filter by model,
@@ -45,7 +45,7 @@ scaling value, target image, and more. Please
 [open an issue](https://github.com/flatironinstitute/foveated-metamers-browser/issues)
 if you have any difficulties.
 
-Please see [the project's OSF page](https://osf.io/kjf75) 
+Please see [the project's OSF page](https://osf.io/67tbe/)
 if you wish to download all the images in bulk (as well as other associated 
 files, such as the behavioral data), and the 
 [project Github page](https://github.com/billbrod/foveated-metamers/)
